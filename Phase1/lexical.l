@@ -210,6 +210,10 @@ LINE_COMMENT "//".*
     insert_token(yylineno, token++, yytext, "STRING", "char *", string);
 }
 
+{LINE_COMMENT} {
+    
+}
+
 %%
 
 
