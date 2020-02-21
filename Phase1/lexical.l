@@ -18,12 +18,6 @@ struct alpha_token_t {
 struct alpha_token_t *head=NULL, *tail=NULL;
 int token = 1;
 
-char * appendChar(int * size, char * string, char c){
-    (*size)++;
-    string = realloc(string, *size);
-    string[*size - 1] = c;
-}
-
 struct alpha_token_t insert_token(int line, int tokenno,char* type,char *general_type, char *token_type, char* value){
 	struct alpha_token_t *new_token, *tmp=head;
 	new_token = (struct alpha_token_t *) malloc(sizeof(struct alpha_token_t));
@@ -51,6 +45,13 @@ void print_tokens(struct alpha_token_t *head){
 		tmp = tmp->next;
 	}
 }
+
+char * appendChar(int * size, char * string, char c){
+    (*size)++;
+    string = realloc(string, *size);
+    string[*size - 1] = c;
+}
+
 %}
 
 /* key words */
@@ -164,69 +165,49 @@ LINE_COMMENT "//".*
 {INTCONST} {insert_token(yylineno,token++, yytext, "CONST_INT", "integer", yytext);}
 {REALCONST} {insert_token(yylineno,token++, yytext, "CONST_REAL", "real", yytext);}
 {ID} {insert_token(yylineno,token++, yytext, "ID", "char*", yytext);}
-{INTCONST} {insert_token(yylineno,token++, yytext, "CONST_INT", "integer", yytext);}
 
-{STRING} {    
-	  char c;
-	  int i = 0;
-	  int error_flag = 1;
-	  char *str=(char *)malloc(sizeof(char));
-	  *(str + i) = '\0';
-          while((c=input())!=EOF)
-	  {			
+{STRING} {
+    char curr;
+    char * string;
+    int size;
+    int flag = 0;
+    int state = 0;
 
-	  	while (c == '\\'){/*auth h while voleuei gia ta sunexomena slash
-	      			    vlepei pote uparxei slash kai analoga vazei sto string
-					ton katallhlo escape character h' petaei warning */
+    string = (char *) malloc(sizeof(char));
+    size = 0;
 
-			c = input();
+    curr = (char) input();
+    while(curr != EOF){
+        if(curr == '\"' && state == 0){
+            flag = 1;
+            break;
+        } else if(curr != '\\' && state == 0){
+            state = 0;
+            appendChar(&size, string, curr);
+        } else if(curr == '\\' && state == 0){
+            state = 1;
+        } else if(curr == '\\' && state == 1){
+            state = 0;
+            appendChar(&size, string, '\\');
+        } else if(curr == 'n' && state == 1){
+            state = 0;
+            appendChar(&size, string, '\n');
+        } else if(curr == 't' && state == 1){
+            state = 0;
+            appendChar(&size, string, '\t');
+        } else if(curr == '\"' && state == 1){
+            state = 0;
+            appendChar(&size, string, '\"');
+        }
 
-	      		if ( c == 'n'){
-				
-                        	*(str+i) = '\n';
-			}
-			else if ( c == 't' ){
-				
-				c = '\t';
-                	        *(str+i) = c; // kai ena oti na nai gramma na valeis edw den mpainei sto string
-			}
-                        else if ( c == '\\' ){//auto k to apo katw mporei na 8eloun allagh :/
-                                
-				*(str+i)='\\';
-                        }
-                        else if ( c == '\"' ){
-                                
-                                *(str+i)='"';
-                        }
-			else{
-				/*otan vrei kati pou den to anagnwrizei dinei keno xarakthra sto string*/
-	                        *(str+i)=' ';
-				printf("WARNING, Unknown character found! a space character was added.\n");
-			}
-			 str=(char *)realloc(str, ((++i)+1)*sizeof(char));/*realloc gia ton epomeno xarakthra*/
-			*(str+i)= '\0';
-			c = input();
-			printf("\nhere should be next of escape character... %c\n",c);
-	      	}
+        curr = input();
+    }
+    appendChar(&size, string, '\0');
 
-		if (c == '\"'){			/*an den dei autakia xwris na dei slash to string eftase sto telos tou*/
-			error_flag = 0;				/*mhdemismos ths error flag gia na mhn petaksei la8os*/
-			insert_token(yylineno,token++, str, "STRING", "char*", str);/*eisagwgh sth lista*/
-			break;
-		}
-		else 	/*alliws sunexizri na vazei xarakthres*/
-		{		  
-			*(str+i)=c;	
-			str=(char *)realloc(str, ((++i)+1)*sizeof(char));
-			*(str + i ) = '\0';
-		}
-          }
-
-	  if(error_flag){	/*an h error flag den mhdenistei pote tote exoume ftasei sto EOF
-				  xwris na kleisei to string opote exoume error			*/
-	  	insert_token(yylineno,token++, str, "STRING", "char*", "WRONG FORM");
-		error_flag = 1;		//for next string probably not needed
-	  }
+    if(!flag)
+        string = "Missing closing quote";
+    
+    insert_token(yylineno, token++, yytext, "STRING", "char *", string);
 }
 
 %%
