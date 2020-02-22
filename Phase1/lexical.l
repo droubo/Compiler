@@ -221,7 +221,6 @@ MULTILINE_COMMENT "/*"
     curr = input();
     while(curr != EOF){
         if(curr == '/' && state == 3){
-            appendChar(&size, string, curr);
             counter--;
             if(counter == 0)
                 break;
@@ -229,23 +228,21 @@ MULTILINE_COMMENT "/*"
                 state = 0;
         } else if(curr == '/' && state == 0){
             state = 1;
-            appendChar(&size, string, curr);
         } else if(curr == '*' && state == 1){
             state = 0;
             counter++;
-            appendChar(&size, string, curr);
         } else if(curr == '*' && state == 0){
             state = 3;
-            appendChar(&size, string, curr);
-        } else {
-            appendChar(&size, string, curr);
         }
         curr = input();
     }
     appendChar(&size, string, '\0');
 
     if(counter != 0)
-        string = "Missing closing */";
+        string = "Malformed multiline comment";
+    else
+        string = "Well formed multiline comment";
+    
 
     insert_token(yylineno, token++, yytext, "MULTILINE COMMENT", "enumerated", string);
 }
