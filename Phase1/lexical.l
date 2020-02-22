@@ -113,7 +113,7 @@ ID [a-zA-Z][a-zA-Z0-9_]*
 
 /* comments */
 LINE_COMMENT "//".*
-
+MULTILINE_COMMENT "/*"
 
 %option noyywrap
 %option yylineno
@@ -169,14 +169,14 @@ LINE_COMMENT "//".*
 {STRING} {
     char curr;
     char * string;
-    int size;
+    int size = 0;
     int flag = 0;
     int state = 0;
 
     string = (char *) malloc(sizeof(char));
     size = 0;
 
-    curr = (char) input();
+    curr = input();
     while(curr != EOF){
         if(curr == '\"' && state == 0){
             flag = 1;
@@ -199,7 +199,6 @@ LINE_COMMENT "//".*
             state = 0;
             appendChar(&size, string, '\"');
         }
-
         curr = input();
     }
     appendChar(&size, string, '\0');
@@ -210,8 +209,45 @@ LINE_COMMENT "//".*
     insert_token(yylineno, token++, yytext, "STRING", "char *", string);
 }
 
-{LINE_COMMENT} {
-    
+{LINE_COMMENT} {}
+
+{MULTILINE_COMMENT} {
+    char curr;
+    int size = 0;
+    int counter = 1;
+    int state = 0;
+    char * string;
+    string = (char *) malloc(sizeof(char));
+    curr = input();
+    while(curr != EOF){
+        if(curr == '/' && state == 3){
+            appendChar(&size, string, curr);
+            counter--;
+            if(counter == 0)
+                break;
+            else
+                state = 0;
+        } else if(curr == '/' && state == 0){
+            state = 1;
+            appendChar(&size, string, curr);
+        } else if(curr == '*' && state == 1){
+            state = 0;
+            counter++;
+            appendChar(&size, string, curr);
+        } else if(curr == '*' && state == 0){
+            state = 3;
+            appendChar(&size, string, curr);
+        } else {
+            appendChar(&size, string, curr);
+        }
+        curr = input();
+    }
+    appendChar(&size, string, '\0');
+
+    if(counter != 0)
+        string = "Missing closing */";
+
+    insert_token(yylineno, token++, yytext, "MULTILINE COMMENT", "enumerated", string);
 }
 
 %%
