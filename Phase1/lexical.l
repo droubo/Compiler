@@ -219,6 +219,16 @@ LINE_COMMENT "//".*
 
 int main(int argc , char** args)
 {
+    if(argc == 1)
+    {
+       /* output --> stdout */
+    }
+    else if(argc == 2)
+    {
+         /* output --> args[1] */
+         int _t;
+       
+    }
     alpha_yylex(NULL);
 	print_tokens(head);
 
