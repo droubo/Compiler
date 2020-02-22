@@ -217,7 +217,9 @@ MULTILINE_COMMENT "/*"
     int counter = 1;
     int state = 0;
     char * string;
-    string = (char *) malloc(sizeof(char));
+    int startline = yylineno;
+    int endline;
+
     curr = input();
     while(curr != EOF){
         if(curr == '/' && state == 3){
@@ -236,7 +238,10 @@ MULTILINE_COMMENT "/*"
         }
         curr = input();
     }
-    appendChar(&size, string, '\0');
+
+    endline == yylineno;
+
+    string = malloc(sizeof(char)*((int)log10(startline) + (int)log10(endline) + 4);
 
     if(counter != 0)
         string = "Malformed multiline comment";
@@ -244,7 +249,7 @@ MULTILINE_COMMENT "/*"
         string = "Well formed multiline comment";
     
 
-    insert_token(yylineno, token++, yytext, "MULTILINE COMMENT", "enumerated", string);
+    insert_token(startline, token++, yytext, "MULTILINE COMMENT", "enumerated", string);
 }
 
 %%
