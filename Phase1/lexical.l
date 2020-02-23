@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h> 
+#include <fcntl.h>
 #define INT_MIN -2147483647
 #define INT_MAX 2147483647
 #define YY_DECL int alpha_yylex (void* yylval)
@@ -40,10 +42,10 @@ struct alpha_token_t insert_token(int line, int tokenno,char* type,char *general
 	}
 }
 
-void print_tokens(struct alpha_token_t *head){
+void print_tokens(FILE* f,struct alpha_token_t *head){
 	struct alpha_token_t *tmp = head;
 	while(tmp != NULL){
-		printf("%d:  #%d  \"%s\" %s %s  <- %s\n", tmp->numline, tmp->numToken, tmp->content, tmp->general_type, tmp->type, tmp->token_type);
+		fprintf(f,"%d:  #%d  \"%s\" %s %s  <- %s\n", tmp->numline, tmp->numToken, tmp->content, tmp->general_type, tmp->type, tmp->token_type);
 		tmp = tmp->next;
 	}
 }
@@ -273,17 +275,19 @@ UNDEFINED .
 
 int main(int argc , char** args)
 {
-    if(argc == 1)
+     alpha_yylex(NULL);
+    /* input <-- args[1] output --> args[2] */
+    if(argc == 3)
     {
-       /* output --> stdout */
+        FILE* f = fopen(args[1],"w");
+        print_tokens(f,head);
+        fclose(f);
     }
-    else if(argc == 2)
+    /* output ->> stdout */
+    else
     {
-         /* output --> args[1] */
-         int _t;
-       
+        print_tokens(stdout,head);
     }
-    alpha_yylex(NULL);
-	print_tokens(head);
+	
 
 }
