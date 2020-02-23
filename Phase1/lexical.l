@@ -77,7 +77,7 @@ OR "or"
 LOCAL "local"
 TRUE "true"
 FALSE "false"
-NULL "null"
+NIL "nil"
 
 /* operators */
 ASSINGN "="
@@ -93,11 +93,11 @@ MINUS_MINUS "--"
 GREATER ">"
 LESS "<"
 GREATER_EQUAL ">="
-SMALL_EQUAL "<="
+LESS_EQUAL "<="
 
 /* const */
+REALCONST ([0-9]+)"."([0-9]+)
 INTCONST [0-9]+
-REALCONST [0-9]"."[0-9]+
 
 /* string */
 STRING \"
@@ -144,7 +144,7 @@ UNDEFINED .
 {LOCAL} {insert_token(yylineno,token++,"LOCAL", "KEYWORD", "enumerated", "local");}
 {TRUE} {insert_token(yylineno,token++,"TRUE", "KEYWORD", "enumerated", "true");}
 {FALSE} {insert_token(yylineno,token++,"FALSE", "KEYWORD", "enumerated", "false");}
-{NULL} {insert_token(yylineno,token++,"NULL", "KEYWORD", "enumerated", "null");}
+{NIL} {insert_token(yylineno,token++,"NIL", "KEYWORD", "enumerated", "nil");}
 
 {ASSINGN} {insert_token(yylineno,token++,"ASSINGN", "OPERATOR", "enumerated", "=");}
 {PLUS} {insert_token(yylineno,token++,"PLUS", "OPERATOR", "enumerated", "+");}
@@ -159,7 +159,7 @@ UNDEFINED .
 {GREATER} {insert_token(yylineno,token++,"GREATER", "OPERATOR", "enumerated", ">");}
 {LESS} {insert_token(yylineno,token++,"LESS", "OPERATOR", "enumerated", "<");}
 {GREATER_EQUAL} {insert_token(yylineno,token++,"GREATER_EQUAL", "OPERATOR", "enumerated", ">=");}
-{SMALL_EQUAL} {insert_token(yylineno,token++,"SMALL_EQUAL", "OPERATOR", "enumerated", "<=");}
+{LESS_EQUAL} {insert_token(yylineno,token++,"LESS_EQUAL", "OPERATOR", "enumerated", "<=");}
 
 {LEFT_BRACE} {insert_token(yylineno,token++,"LEFT_BRACE", "PUNCUATION", "enumerated", "{");}
 {RIGHT_BRACE} {insert_token(yylineno,token++,"RIGHT_BRACE", "PUNCUATION", "enumerated", "}");}
@@ -174,8 +174,8 @@ UNDEFINED .
 {DOT} {insert_token(yylineno,token++,"DOT", "PUNCUATION", "enumerated", ".");}
 {DOUBLE_DOT} {insert_token(yylineno,token++,"DOUBLE_DOT", "PUNCUATION", "enumerated", "..");}
 
-{INTCONST} {insert_token(yylineno,token++, yytext, "CONST_INT", "integer", yytext);}
 {REALCONST} {insert_token(yylineno,token++, yytext, "CONST_REAL", "real", yytext);}
+{INTCONST} {insert_token(yylineno,token++, yytext, "CONST_INT", "integer", yytext);}
 {ID} {insert_token(yylineno,token++, yytext, "ID", "char*", yytext);}
 
 {STRING} {
