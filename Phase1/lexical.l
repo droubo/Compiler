@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#define INT_MIN -2147483647
+#define INT_MAX 2147483647
 #define YY_DECL int alpha_yylex (void* yylval)
 
 struct alpha_token_t {
@@ -50,6 +52,12 @@ char * appendChar(int * size, char * string, char c){
     (*size)++;
     string = realloc(string, *size);
     string[*size - 1] = c;
+}
+
+int numPlaces (int n) {
+    if (n < 0) return numPlaces ((n == INT_MIN) ? INT_MAX: -n);
+    if (n < 10) return 1;
+    return 1 + numPlaces (n / 10);
 }
 
 %}
@@ -239,14 +247,13 @@ MULTILINE_COMMENT "/*"
         curr = input();
     }
 
-    endline == yylineno;
+    endline = yylineno;
 
-    string = malloc(sizeof(char)*((int)log10(startline) + (int)log10(endline) + 4);
+    string = malloc(sizeof(char)*(numPlaces(startline) + numPlaces(endline) + 4));
+    sprintf(string, "%d - %d", startline, endline);
 
     if(counter != 0)
         string = "Malformed multiline comment";
-    else
-        string = "Well formed multiline comment";
     
 
     insert_token(startline, token++, yytext, "MULTILINE COMMENT", "enumerated", string);
