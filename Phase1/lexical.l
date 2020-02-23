@@ -7,7 +7,8 @@
 #define INT_MIN -2147483647
 #define INT_MAX 2147483647
 #define YY_DECL int alpha_yylex (void* yylval)
-
+extern FILE * yyin;
+extern FILE * yyout;
 struct alpha_token_t {
 	unsigned int     numline;
 	unsigned int     numToken;
@@ -186,7 +187,7 @@ UNDEFINED .
     int size = 0;
     int flag = 0;
     int state = 0;
-
+    int startline = yylineno;
     string = (char *) malloc(sizeof(char));
     size = 0;
 
@@ -220,7 +221,7 @@ UNDEFINED .
     if(!flag)
         string = "Missing closing quote";
     
-    insert_token(yylineno, token++, yytext, "STRING", "char *", string);
+    insert_token(startline, token++, yytext, "STRING", "char *", string);
 }
 
 {LINE_COMMENT} {insert_token(yylineno,token++,"LINE_COMMENT","COMMENT","enumerated","");}
@@ -268,26 +269,28 @@ UNDEFINED .
 }
 
 {OTHER} {}
-{UNDEFINED} {printf("undefined input %s in line %d\n",yytext,yylineno);}
+{UNDEFINED} {fprintf(stderr, "Invalid character %s at line %d\n",yytext,yylineno);}
 
 %%
 
 
-int main(int argc , char** args)
-{
-     alpha_yylex(NULL);
-    /* input <-- args[1] output --> args[2] */
-    if(argc == 3)
-    {
-        FILE* f = fopen(args[1],"w");
-        print_tokens(f,head);
-        fclose(f);
+int main(int argc , char** args) {
+    FILE *fin = stdin, *fout = stdout;
+    if(argc == 3) {
+        fin = fopen(args[1], "r");
+        fout = fopen(args[2], "w");
+        yyin = fin;
+    } else if(argc == 2) {
+        fin = fopen(args[1], "r");
+        yyin = fin;
+    } else {
+        fprintf(stderr, "Error, no input file\n");
+        return -1;
     }
-    /* output ->> stdout */
-    else
-    {
-        print_tokens(stdout,head);
-    }
-	
+	alpha_yylex(NULL);
+    print_tokens(fout,head);
+    fclose(fout);
+    fclose(fin);
 
+    return 0;
 }
