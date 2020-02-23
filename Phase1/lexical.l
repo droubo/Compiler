@@ -123,6 +123,10 @@ ID [a-zA-Z][a-zA-Z0-9_]*
 LINE_COMMENT "//".*
 MULTILINE_COMMENT "/*"
 
+/* other and undefined */
+OTHER [\t' '\r\n]*
+UNDEFINED .
+
 %option noyywrap
 %option yylineno
 %%
@@ -217,7 +221,7 @@ MULTILINE_COMMENT "/*"
     insert_token(yylineno, token++, yytext, "STRING", "char *", string);
 }
 
-{LINE_COMMENT} {}
+{LINE_COMMENT} {insert_token(yylineno,token++,"LINE_COMMENT","COMMENT","enumerated","");}
 
 {MULTILINE_COMMENT} {
     char curr;
@@ -256,8 +260,11 @@ MULTILINE_COMMENT "/*"
         string = "Malformed multiline comment";
     
 
-    insert_token(startline, token++, yytext, "MULTILINE COMMENT", "enumerated", string);
+    insert_token(startline, token++, "MULTILINE_COMMENT", "COMMENT", "enumerated", string);
 }
+
+{OTHER} {}
+{UNDEFINED} {printf("undefined input %s in line %d\n",yytext,yylineno);}
 
 %%
 
