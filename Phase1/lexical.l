@@ -247,6 +247,8 @@ UNDEFINED .
             counter++;
         } else if(curr == '*' && state == 0){
             state = 3;
+        } else {
+            state = 0;
         }
         curr = input();
     }
