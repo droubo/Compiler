@@ -269,7 +269,8 @@ UNDEFINED .
 }
 
 {OTHER} {}
-{UNDEFINED} {fprintf(stderr, "Invalid character %s at line %d\n",yytext,yylineno);}
+{UNDEFINED} {/*fprintf(stderr, "Invalid character %s at line %d\n",yytext,yylineno);*/
+             insert_token(yylineno,-1,yytext,"UNDEFINED_EXPRESSION","unsupported",yytext);}
 
 %%
 
