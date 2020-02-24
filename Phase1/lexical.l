@@ -1,4 +1,18 @@
 %{
+/**
+ * CS-240 Compilers
+ * Spring 2020
+ * 
+ * Project Phase 1: Lexical Analysis
+ * 
+ * Antonis Droubogiannis    csd4014@csd.uoc.gr
+ * Georgios Marios Kokiadis csd3962@csd.uoc.gr
+ * Nikolaos Gounakis        csd3932@csd.uoc.gr
+ * 
+ * lexical.l
+ * Lexical analyzer file for use with flex.
+ */ 
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
