@@ -60,7 +60,8 @@ struct alpha_token_t insert_token(int line, int tokenno,char* type,char *general
 void print_tokens(FILE* f,struct alpha_token_t *head){
 	struct alpha_token_t *tmp = head;
 	while(tmp != NULL){
-		fprintf(f,"%d:  #%d  \"%s\" %s %s  <- %s\n", tmp->numline, tmp->numToken, tmp->content, tmp->general_type, tmp->type, tmp->token_type);
+		if(strcmp(tmp->general_type, "STRING") != 0) fprintf(f,"%d:  #%d  \"%s\" %s %s  <- %s\n", tmp->numline, tmp->numToken, tmp->content, tmp->general_type, tmp->type, tmp->token_type);
+		else fprintf(f,"%d:  #%d  \"%s\" %s \"%s\"  <- %s\n", tmp->numline, tmp->numToken, tmp->content, tmp->general_type, tmp->type, tmp->content);
 		tmp = tmp->next;
 	}
 }
@@ -235,7 +236,7 @@ UNDEFINED .
     if(!flag)
         string = "Missing closing quote";
     
-    insert_token(startline, token++, yytext, "STRING", "char *", string);
+    insert_token(startline, token++, string, "STRING", "char *", string);
 }
 
 {LINE_COMMENT} {insert_token(yylineno,token++,"LINE_COMMENT","COMMENT","enumerated","");}
