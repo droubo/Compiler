@@ -20,6 +20,7 @@ ERROR_COLOR=\033[31;01m
 NO_COLOR=\033[0m
 
 %.c: %.l
+	@echo "$(SUCC_COLOR)>>$(WARN_COLOR) Converting .l to .c... $(NO_COLOR)"
 	flex --outfile=lexical.c $^
 
 %.o : %.c %.h
