@@ -277,15 +277,18 @@ UNDEFINED .
 
 int main(int argc , char** args) {
     FILE *fin = stdin, *fout = stdout;
-    if(argc == 3) {
+    if(argc == 2 || argc == 3) {
         fin = fopen(args[1], "r");
-        fout = fopen(args[2], "w");
+        if(fin == NULL)
+        { 
+            fprintf(stderr, "Error, %s not found\n",args[1]);
+            exit(-1);
+        }
+        if(argc == 3) fout = fopen(args[2], "w");
         yyin = fin;
-    } else if(argc == 2) {
-        fin = fopen(args[1], "r");
-        yyin = fin;
+        
     } else {
-        fprintf(stderr, "Error, no input file\n");
+        fprintf(stderr, "Error, zero or too many arguments\n");
         return -1;
     }
 	alpha_yylex(NULL);
