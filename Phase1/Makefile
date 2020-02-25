@@ -1,5 +1,5 @@
 # 
-# CS-240 Compilers
+# CS-340 Compilers
 # Spring 2020
 # 
 # Project Phase 1: Lexical Analysis
