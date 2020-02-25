@@ -21,15 +21,15 @@ NO_COLOR=\033[0m
 
 %.c: %.l
 	@echo "$(SUCC_COLOR)>>$(WARN_COLOR) Converting .l to .c... $(NO_COLOR)"
-	flex --outfile=lexical.c $^
+	flex --outfile=al.c $^
 
 %.o : %.c %.h
 	@echo "$(SUCC_COLOR)>>$(WARN_COLOR) Compiling Object files... $(NO_COLOR)"
 	$(CC) $^ -c $(CFLAGS)
 
-all: lexical.c
+make: al.c
 	@echo "$(SUCC_COLOR)>>$(WARN_COLOR) Compiling implementation... $(NO_COLOR)"
-	@if $(CC) $^ -o lexical $(CFLAGS) ; then echo "$(SUCC_COLOR)Compilation Complete!$(NO_COLOR)"; fi;
+	@if $(CC) $^ -o al $(CFLAGS) ; then echo "$(SUCC_COLOR)Compilation Complete!$(NO_COLOR)"; fi;
 
 .PHONY: clean
 
