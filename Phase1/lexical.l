@@ -18,11 +18,14 @@
 #include <stdlib.h>
 #include <unistd.h> 
 #include <fcntl.h>
+
 #define INT_MIN -2147483647
 #define INT_MAX 2147483647
 #define YY_DECL int alpha_yylex (void* yylval)
+
 extern FILE * yyin;
 extern FILE * yyout;
+
 struct alpha_token_t {
 	unsigned int     numline;
 	unsigned int     numToken;
@@ -284,8 +287,7 @@ UNDEFINED .
 }
 
 {OTHER} {}
-{UNDEFINED} {/*fprintf(stderr, "Invalid character %s at line %d\n",yytext,yylineno);*/
-             insert_token(yylineno,-1,yytext,"UNDEFINED_EXPRESSION","unsupported",yytext);}
+{UNDEFINED} {insert_token(yylineno,-1,yytext,"UNDEFINED_EXPRESSION","unsupported",yytext);}
 
 %%
 
@@ -303,7 +305,7 @@ int main(int argc , char** args) {
         yyin = fin;
         
     } else {
-        fprintf(stderr, "Error, zero or too many arguments\n");
+        fprintf(stderr, "Invalid arguments. Usage:\nlexical <input filename> <output filename>\nlexical <input filename>");
         return -1;
     }
 	alpha_yylex(NULL);
