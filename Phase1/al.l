@@ -1,6 +1,6 @@
 %{
 /**
- * CS-240 Compilers
+ * CS-340 Compilers
  * Spring 2020
  * 
  * Project Phase 1: Lexical Analysis
@@ -9,7 +9,7 @@
  * Georgios Marios Kokiadis csd3962@csd.uoc.gr
  * Nikolaos Gounakis        csd3932@csd.uoc.gr
  * 
- * lexical.l
+ * al.l
  * Lexical analyzer file for use with flex.
  */ 
 
