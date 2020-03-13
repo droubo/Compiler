@@ -88,10 +88,10 @@
 %%
 
 program : stmts
-        |
         ;
 
 stmts : stmt stmts
+      |
       ;
 
 stmt : expr SEMICOLON
@@ -172,9 +172,67 @@ normcall : LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
 methodcall : DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
            ;
 
-elist : 
+elist : expr comaexpr
+      |
+      ;
 
-comaexpr : expr COMA comaexpr
+comaexpr : COMA expr comaexpr
+         |
          ;
+
+objectdef : LEFT_BRACKET elist RIGHT_BRACKET
+          | LEFT_BRACKET indexed RIGHT_BRACKET
+          | LEFT_BRACKET RIGHT_BRACKET
+          ;
+
+indexed : indexedelem comaindexedelem
+        |
+        ;
+
+comaindexedelem : COMA indexedelem comaindexedelem
+                 |
+                 ;
+
+indexedelem : LEFT_BRACE expr COLON expr RIGHT_BRACE
+            ;
+
+block : LEFT_BRACE stmts RIGHT_BRACE
+      | LEFT_BRACE RIGHT_BRACE
+      ;
+
+funcdef : FUNCTION ID LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block
+        | FUNCTION LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block
+        ;
+
+const : REALCONST 
+      | INTCONST
+      | STRING
+      | NIL
+      | TRUE
+      | FALSE
+      ;
+ 
+idlist : ID
+        | ID comaid
+        |
+        ;
+
+comaid : COMA ID comaid
+       |
+       ;
+
+ifstmt : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ElSE stmt
+       | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
+       ;
+
+whilestmt : while LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
+          ;
+
+forstmt : FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt
+        ;
+
+returnstmt : RETURN expr SEMICOLON
+           | RETURN SEMICOLON
+           ;
 
 %%
