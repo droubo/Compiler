@@ -56,6 +56,26 @@
 %token<id> ID
 %token UNDEFINED
 
+/* priority */
+
+%right ASSING
+
+%left OR
+%left AND
+
+%nonassoc EQUAL NOT_EQUAL
+%nonassoc GREATER GREATER_EQUAL LESS LESS_EQUAL
+
+%left PLUS MINUS
+%left MULT DIV MOD
+/* UMINUS is minus infront of a term */
+%right NOT PLUS_PLUS MINUS_MINUS UMINUS
+
+%left DOT DOUBLE_DOT
+%left LEFT_BRACKET RIGHT_BRACKET
+%left LEFT_PARENTHESIS RIGHT_PARENTHESIS
+
+
 %%
 
 program : stmt ';'
