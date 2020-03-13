@@ -1,3 +1,9 @@
+/**
+ * Scope List implementation
+ * 
+ * One main list (ScopeList) contains a head for every scope list.
+ * The index for said list is actually the scope of the list.
+ */
 #include <stdlib.h>
 #include <stdio.h>
 #include "symtable_types.c"
@@ -49,49 +55,46 @@ ScopeList * init_ScopeList(){
 	return list;
 }
 
+ScopeListEntry * get_ScopeList(ScopeList * list, int index) {
+	ScopeListEntry * currScope;
+	int i;
+	
+	if(list->maxScope < index)
+		return NULL;
+	
+	currScope = list->first;
+	for(i = 0; i < index; i++)
+		currScope = currScope->next;
+	
+	return currScope;
+}
+
 void insert_ScopeList(ScopeList * list, SymTabEntry * node) {
 	ScopeListEntry * currScope;
 	SymTabEntry * currEntry;
 	int i;
 	int createdScopeNodes;
 
-	/* Base case */
-	if(list->maxScope == -1){
-		list->first = malloc(sizeof(ScopeListEntry));
-		*(list->first) = new_ScopeListEntry(NULL, NULL);\
-		list->maxScope = 0;
-	}
-
 	/* List already has the correct size */
 	if(list->maxScope >= node->scope) {
-printf("if\n");
-		/* Find the correct scope list */
-		currScope = list->first;
-
-		for(i = 0; i < node->scope; i++){
-			currScope = currScope->next;
-		}
-
+		
+		currEntry = get_ScopeList(list, node->scope)->first;
 		/* Base case where there are no entries */
 		if(currEntry == NULL){
-			currScope->first = node;
+			currEntry = node;
+			return;
 		}
 
-		/* Find the last node of the list */
-		currEntry = currScope->first;
 		while(currEntry->nextInScope != NULL){
 			currEntry = currEntry->nextInScope;
 		}
-printf("uum\n");
 		currEntry->nextInScope = node;
 		return;
 	/* List does not have the correct size and we need to make room */
 	} else {
-printf("else\n");
 		/* We need to create maxScope - node->scope nodes*/
 		createdScopeNodes = node->scope - list->maxScope;
-		
-printf("- Need to create %d nodes\n", createdScopeNodes);
+
 		/* Get to the bottom of the list */
 		currScope = list->first;
 		for(i = 0; i < list->maxScope; i++){
