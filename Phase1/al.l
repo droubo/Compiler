@@ -233,7 +233,7 @@ UNDEFINED .
             state = 0;
             appendChar(&size, string, '\"');
         } else if(state == 1){
-            fprintf(stderr, "Invalid escape character\n");
+            fprintf(stderr, "Invalid escape character in string at line %d\n", startline);
             appendChar(&size, string, curr);
             state = 0;
         }
@@ -242,7 +242,7 @@ UNDEFINED .
     appendChar(&size, string, '\0');
 
     if(!flag){
-        fprintf(stderr, "Missing closing quote\n");
+        fprintf(stderr, "Missing closing quote at the end of string at line %d\n", startline);
         return;
     }
     
@@ -284,7 +284,7 @@ UNDEFINED .
     endline = yylineno;
 
     if(counter != 0){
-        fprintf(stderr, "Malformed multiline comment\n");
+        fprintf(stderr, "Malformed multiline comment at line %d\n", startline);
         return;
     }
 
