@@ -204,6 +204,7 @@ UNDEFINED .
     char * string;
     int size = 0;
     int flag = 0;
+    int illegal = 0;
     int state = 0;
     int startline = yylineno;
     string = (char *) malloc(sizeof(char));
@@ -231,13 +232,20 @@ UNDEFINED .
         } else if(curr == '\"' && state == 1){
             state = 0;
             appendChar(&size, string, '\"');
+        } else if(state == 1){
+            fprintf(stderr, "Invalid escape character\n");
+            illegal = 1;
+            appendChar(&size, string, curr);
+            state = 0;
         }
         curr = input();
     }
     appendChar(&size, string, '\0');
 
-    if(!flag)
-        string = "Missing closing quote";
+    if(!flag){
+        fprintf(stderr, "Missing closing quote\n");
+        return;
+    }
     
     insert_token(startline, token++, string, "STRING", "char *", string);
 }
@@ -276,18 +284,20 @@ UNDEFINED .
 
     endline = yylineno;
 
+    if(counter != 0){
+        fprintf(stderr, "Malformed multiline comment\n");
+    }
+
     string = malloc(sizeof(char)*(numPlaces(startline) + numPlaces(endline) + 4));
     sprintf(string, "%d - %d", startline, endline);
 
-    if(counter != 0)
-        string = "Malformed multiline comment";
     
 
     insert_token(startline, token++, "MULTILINE_COMMENT", "COMMENT", "enumerated", string);
 }
 
 {OTHER} {}
-{UNDEFINED} {insert_token(yylineno,-1,yytext,"UNDEFINED_EXPRESSION","unsupported",yytext);}
+{UNDEFINED} {fprintf(stderr, "Undefined input\n");}
 
 %%
 
