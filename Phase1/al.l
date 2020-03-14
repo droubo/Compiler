@@ -268,19 +268,19 @@ UNDEFINED .
                 break;
             else
                 state = 0;
-        } else if(curr == '/' && (state == 0 || state == 1)){
-            state = 1;
         } else if(curr == '*' && state == 1){
             state = 0;
             counter++;
         } else if(curr == '*' && state == 0){
             state = 2;
-        } else if(curr == '/' && state == 1) {
+        } else if(curr == '/' && state == 0) {
             state = 1;
+        } else if(state == 1 || state == 2){
+            state = 0;
         }
         curr = input();
     }
-
+    printf("...........................\n");
     endline = yylineno;
 
     if(counter != 0){
