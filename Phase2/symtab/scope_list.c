@@ -73,6 +73,7 @@ SymTabEntry * lookup_ScopeListExclusive(ScopeList * list, int scope, const char 
 }
 
 SymTabEntry * lookup_ScopeList(ScopeList * list, int scope, const char * name){
+	
 	int i;
 	SymTabEntry * currEntry;
 
@@ -92,20 +93,23 @@ void print_ScopeList(ScopeList * list){
 	SymTabEntry * currEntry;
 
 	currScope = list->firstScopeEntry;
+	printf(">>> Symbols by scope\n");
 	for(i = 0; i < list->maxScope + 1; i++) {
-		printf("Scope = %d\n", i);
+		printf(">> Scope %d :\n", i);
 		currEntry = currScope->firstSymEntry;
 		while(currEntry != NULL){
-			printf(">> %s\n", currEntry->name);
+			print_SymTabEntry(*currEntry);
 			currEntry = currEntry->nextInScope;
 		}
+		printf("\n");
 		currScope = currScope->next;
 	}
+	printf(">>> End\n");
 }
 
 int insert_ScopeList(ScopeList * list, SymTabEntry * node) {
 	ScopeListEntry * currScope;
-	SymTabEntry * currEntry;
+	SymTabEntry * currEntry, * temp;
 	int i;
 	int createdScopeNodes;
 
@@ -114,21 +118,17 @@ int insert_ScopeList(ScopeList * list, SymTabEntry * node) {
 
 	/* List already has the correct size */
 	if(list->maxScope >= node->scope) {
-
 		currScope = get_ScopeList(list, node->scope);
-		currEntry = currScope->firstSymEntry;
 
 		/* Base case where there are no entries */
-		if(currEntry == NULL){
+		if(currScope->firstSymEntry == NULL){
 			currScope->firstSymEntry = node;
-
-			return;
+			return 0;
 		}
 
-		while(currEntry->nextInScope != NULL){
-			currEntry = currEntry->nextInScope;
-		}
-		currEntry->nextInScope = node;
+		temp = currScope->firstSymEntry;
+		currScope->firstSymEntry = node;
+		currScope->firstSymEntry->nextInScope = temp;
 		return 0;
 	/* List does not have the correct size and we need to make room */
 	} else {
@@ -150,10 +150,5 @@ int insert_ScopeList(ScopeList * list, SymTabEntry * node) {
 		currScope->firstSymEntry = node;
 		return 0;
 	}
-
 	return 1;
-}
-
-int main(){
-	printf("helo\n");
 }

@@ -1,4 +1,5 @@
 #include "symtable_types.h"
+#include <stdio.h>
 
 Variable new_Variable(void * value) {
 	Variable v;
@@ -29,4 +30,19 @@ SymTabEntry new_SymTabEntry(const char * name, unsigned int line, int isActive, 
 	s.nextInHash = nextInHash;
 
 	return s;
+}
+
+void print_SymTabEntry(SymTabEntry entry){
+	printf("%s @%d | active: %d type: %s\n", entry.name, entry.line, entry.isActive, SymbolTypeToString(entry.type));
+}
+
+const char * SymbolTypeToString(SymbolType type){
+	switch(type){
+		case GLOBAL: return "GLOBAL";
+		case LOCAL: return "LOCAL";
+		case FORMAL: return "FORMAL";
+		case USERFUNC: return "USERFUNC";
+		case LIBFUNC: return "LIBFUNC";
+	}
+	return NULL;
 }

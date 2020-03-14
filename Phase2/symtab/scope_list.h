@@ -9,10 +9,7 @@
 #ifndef SCOPE_LIST_H
 #define SCOPE_LIST_H
 
-#include <stdlib.h>
-#include <stdio.h>
 #include "symtable_types.h"
-#include <string.h>
 
 /* ***** */
 /* Types */

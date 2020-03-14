@@ -39,4 +39,8 @@ SymTabEntry new_SymTabEntry(const char * name, unsigned int line, int isActive, 
 							Function * funcVal, unsigned int scope, SymbolType type, 
 							SymTabEntry * nextInScope, SymTabEntry * nextInHash);
 
+void print_SymTabEntry(SymTabEntry entry);
+
+const char * SymbolTypeToString(SymbolType type);
+
 #endif
