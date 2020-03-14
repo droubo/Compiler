@@ -5,8 +5,6 @@
 #include <unistd.h> 
 #include <fcntl.h>
 
-#define INT_MIN -2147483647
-#define INT_MAX 2147483647
 #define YY_DECL int alpha_yylex (void* yylval)
   
   extern int yylineno;
@@ -97,10 +95,10 @@
 
 %%
 
-program : stmts
+program : stmts  {fprintf(stdout, "programm -> stmts");}
         ;
 
-stmts : stmt stmts {fprintf(yyout, "programm -> stmts");}
+stmts : stmt stmts
       |
       ;
 
