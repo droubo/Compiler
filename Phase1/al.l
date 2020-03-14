@@ -252,6 +252,7 @@ UNDEFINED .
 {LINE_COMMENT} {insert_token(yylineno,token++,"LINE_COMMENT","COMMENT","enumerated","");}
 
 {MULTILINE_COMMENT} {
+    /* CORRECT COMMENTS */
     char curr;
     int size = 0;
     int counter = 1;
@@ -280,7 +281,6 @@ UNDEFINED .
         }
         curr = input();
     }
-    printf("...........................\n");
     endline = yylineno;
 
     if(counter != 0){
