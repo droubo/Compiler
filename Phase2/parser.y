@@ -92,14 +92,13 @@
 %left LEFT_BRACKET RIGHT_BRACKET
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 
-
 %%
 
 program : stmts  {fprintf(yyout, "program -> stmts\n");}
         ;
 
 stmts : stmt stmts {fprintf(yyout,"stmts -> stmt stmts\n");}
-      |
+      | {fprintf(yyout,"stmts -> empty\n");}
       ;
 
 stmt : expr SEMICOLON {fprintf(yyout,"stmt -> expr ;\n");}
@@ -146,14 +145,14 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
 
 assignexpr : lvalue EQUAL expr {fprintf(yyout,"assignexpr -> lvalue = expr\n");}
 
-primary : lvalue
+primary : lvalue {fprintf(yyout,"primary -> lvalue\n");}
         | call
         | objectdef
         | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
         | const
         ;
 
-lvalue : ID
+lvalue : ID {fprintf(yyout,"lvalue -> ID\n");}
        | LOCAL ID
        | DOUBLE_COLON ID
        | member
@@ -194,7 +193,7 @@ objectdef : LEFT_BRACKET elist RIGHT_BRACKET
           ;
 
 indexed : indexedelem comaindexedelem
-        /*|*/
+        |
         ;
 
 comaindexedelem : COMA indexedelem comaindexedelem
@@ -220,10 +219,9 @@ const : REALCONST
       | FALSE
       ;
  
-idlist : ID
-        | ID comaid
-        /*|*/
-        ;
+idlist : ID comaid {fprintf(yyout,"idlist -> ID\n");}
+       |
+       ;
 
 comaid : COMA ID comaid
        |
