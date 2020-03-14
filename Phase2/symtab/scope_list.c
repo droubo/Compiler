@@ -6,22 +6,9 @@
  */
 #include <stdlib.h>
 #include <stdio.h>
-#include "symtable_types.c"
+#include "scope_list.h"
+#include "symtable_types.h"
 #include <string.h>
-
-/* ***** */
-/* Types */
-/* ***** */
-
-typedef struct ScopeListEntry {
-	SymTabEntry * firstSymEntry;
-	struct ScopeListEntry * next;
-} ScopeListEntry;
-
-typedef struct ScopeList {
-	int maxScope;
-	ScopeListEntry * firstScopeEntry;
-} ScopeList;
 
 /* ************ */
 /* Constructors */
@@ -167,45 +154,6 @@ int insert_ScopeList(ScopeList * list, SymTabEntry * node) {
 	return 1;
 }
 
-int main() {
-	ScopeList * list;
-	SymTabEntry * entry1, * entry2, * entry3, * entry4, * entry5, * entry6, * entry7;
-	ScopeListEntry * scope0, * scope1;
-	list = init_ScopeList();
-	
-	entry1 = malloc(sizeof(SymTabEntry));
-	*entry1 = new_SymTabEntry("entry1", 0, 1, NULL, NULL, 0, USERFUNC, NULL, NULL);
-
-	entry2 = malloc(sizeof(SymTabEntry));
-	*entry2 = new_SymTabEntry("entry2", 0, 1, NULL, NULL, 0, LIBFUNC, NULL, NULL);
-	
-	entry3 = malloc(sizeof(SymTabEntry));
-	*entry3 = new_SymTabEntry("entry2", 0, 1, NULL, NULL, 1, USERFUNC, NULL, NULL);
-
-	entry4 = malloc(sizeof(SymTabEntry));
-	*entry4 = new_SymTabEntry("entry4", 0, 1, NULL, NULL, 1, LIBFUNC, NULL, NULL);
-	
-	entry5 = malloc(sizeof(SymTabEntry));
-	*entry5 = new_SymTabEntry("entry5", 0, 1, NULL, NULL, 2, USERFUNC, NULL, NULL);
-
-	entry6 = malloc(sizeof(SymTabEntry));
-	*entry6 = new_SymTabEntry("entry6", 0, 1, NULL, NULL, 2, LIBFUNC, NULL, NULL);
-	
-	entry7 = malloc(sizeof(SymTabEntry));
-	*entry7 = new_SymTabEntry("entry7", 0, 1, NULL, NULL, 4, USERFUNC, NULL, NULL);
-
-	printf("Done creating\n");
-	
-	insert_ScopeList(list, entry1);
-	insert_ScopeList(list, entry2);
-	insert_ScopeList(list, entry3);
-	insert_ScopeList(list, entry4);
-	insert_ScopeList(list, entry5);
-	insert_ScopeList(list, entry6);
-	insert_ScopeList(list, entry7);
-
-	print_ScopeList(list);
-
-	printf("%s\n", lookup_ScopeList(list, 4, "entry3")->name);
-
+int main(){
+	printf("helo\n");
 }
