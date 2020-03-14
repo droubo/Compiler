@@ -15,6 +15,65 @@
 
  #include "parser.h"
 
+#define INT_MIN -2147483647
+#define INT_MAX 2147483647
+
+ struct alpha_token_t {
+	unsigned int     numline;
+	unsigned int     numToken;
+	char          *content;
+	char          *type;
+	char		  *general_type;
+	char		  *token_type;
+	struct alpha_token_t *next;
+
+};
+
+struct alpha_token_t *head=NULL, *tail=NULL;
+int token = 1;
+
+struct alpha_token_t insert_token(int line, int tokenno,char* type,char *general_type, char *token_type, char* value){
+	struct alpha_token_t *new_token, *tmp=head;
+	new_token = (struct alpha_token_t *) malloc(sizeof(struct alpha_token_t));
+	new_token->numline = line;
+	new_token->numToken = tokenno;
+	new_token->content = strdup(value);
+	new_token->type = strdup(type);
+	new_token->general_type = strdup(general_type);
+	new_token->token_type = strdup(token_type);
+	new_token->next = NULL;
+	if(head == NULL){	
+		head = new_token;
+		tail = new_token;
+	}
+	else{
+		tail->next = new_token;
+		tail = new_token;
+	}
+}
+
+void print_tokens(FILE* f,struct alpha_token_t *head){
+	struct alpha_token_t *tmp = head;
+	while(tmp != NULL){
+		if(strcmp(tmp->general_type, "STRING") != 0) fprintf(f,"%d:  #%d  \"%s\" %s %s  <- %s\n", tmp->numline, tmp->numToken, tmp->content, tmp->general_type, tmp->type, tmp->token_type);
+		else fprintf(f,"%d:  #%d  \"%s\" %s \"%s\"  <- %s\n", tmp->numline, tmp->numToken, tmp->content, tmp->general_type, tmp->type, tmp->token_type);
+		tmp = tmp->next;
+	}
+}
+
+char * appendChar(int * size, char * string, char c){
+    (*size)++;
+    string = realloc(string, *size);
+    string[*size - 1] = c;
+}
+
+int numPlaces (int n) {
+    if (n < 0) return numPlaces ((n == INT_MIN) ? INT_MAX: -n);
+    if (n < 10) return 1;
+    return 1 + numPlaces (n / 10);
+}
+
+
 %}
 
 /* key words */
