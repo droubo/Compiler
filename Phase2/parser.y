@@ -164,8 +164,8 @@ stmt : expr SEMICOLON
      | whilestmt
      | forstmt
      | returnstmt
-     | break SEMICOLON
-     | continue SEMICOLON
+     | BREAK SEMICOLON
+     | CONTINUE SEMICOLON
      | block
      | funcdef
      | SEMICOLON
