@@ -209,13 +209,3 @@ int main() {
 	printf("%s\n", lookup_ScopeList(list, 4, "entry3")->name);
 
 }
-
-
-{
-	int a;
-	{
-		int x;
-	}
-	
-	int x;
-}
