@@ -69,50 +69,6 @@ ScopeListEntry * get_ScopeList(ScopeList * list, int scope) {
 	return currScope;
 }
 
-void insert_ScopeList(ScopeList * list, SymTabEntry * node) {
-	ScopeListEntry * currScope;
-	SymTabEntry * currEntry;
-	int i;
-	int createdScopeNodes;
-
-	/* List already has the correct size */
-	if(list->maxScope >= node->scope) {
-		
-		currScope = get_ScopeList(list, node->scope);
-		currEntry = currScope->firstSymEntry;
-
-		/* Base case where there are no entries */
-		if(currEntry == NULL){
-			currScope->firstSymEntry = node;
-
-			return;
-		}
-
-		while(currEntry->nextInScope != NULL){
-			currEntry = currEntry->nextInScope;
-		}
-		currEntry->nextInScope = node;
-		return;
-	/* List does not have the correct size and we need to make room */
-	} else {
-		/* We need to create maxScope - node->scope nodes*/
-		createdScopeNodes = node->scope - list->maxScope;
-
-		/* Get to the bottom of the list */
-		currScope = list->firstScopeEntry;
-		for(i = 0; i < list->maxScope; i++){
-			currScope = currScope->next;
-		}
-		
-		for(i = 0; i < createdScopeNodes; i++){
-			currScope->next = malloc(sizeof(ScopeListEntry));
-			*(currScope->next) = new_ScopeListEntry(NULL, NULL);
-			currScope = currScope->next;
-		}
-		list->maxScope = node->scope;
-		currScope->firstSymEntry = node;
-	}
-}
 
 SymTabEntry * lookup_ScopeListExclusive(ScopeList * list, int scope, const char * name){
 	ScopeListEntry * currScope;
@@ -160,6 +116,57 @@ void print_ScopeList(ScopeList * list){
 	}
 }
 
+int insert_ScopeList(ScopeList * list, SymTabEntry * node) {
+	ScopeListEntry * currScope;
+	SymTabEntry * currEntry;
+	int i;
+	int createdScopeNodes;
+
+	if(lookup_ScopeList(list, list->maxScope, node->name) != NULL)
+		return 1;
+
+	/* List already has the correct size */
+	if(list->maxScope >= node->scope) {
+
+		currScope = get_ScopeList(list, node->scope);
+		currEntry = currScope->firstSymEntry;
+
+		/* Base case where there are no entries */
+		if(currEntry == NULL){
+			currScope->firstSymEntry = node;
+
+			return;
+		}
+
+		while(currEntry->nextInScope != NULL){
+			currEntry = currEntry->nextInScope;
+		}
+		currEntry->nextInScope = node;
+		return 0;
+	/* List does not have the correct size and we need to make room */
+	} else {
+		/* We need to create maxScope - node->scope nodes*/
+		createdScopeNodes = node->scope - list->maxScope;
+
+		/* Get to the bottom of the list */
+		currScope = list->firstScopeEntry;
+		for(i = 0; i < list->maxScope; i++){
+			currScope = currScope->next;
+		}
+		
+		for(i = 0; i < createdScopeNodes; i++){
+			currScope->next = malloc(sizeof(ScopeListEntry));
+			*(currScope->next) = new_ScopeListEntry(NULL, NULL);
+			currScope = currScope->next;
+		}
+		list->maxScope = node->scope;
+		currScope->firstSymEntry = node;
+		return 0;
+	}
+
+	return 1;
+}
+
 int main() {
 	ScopeList * list;
 	SymTabEntry * entry1, * entry2, * entry3, * entry4, * entry5, * entry6, * entry7;
@@ -173,7 +180,7 @@ int main() {
 	*entry2 = new_SymTabEntry("entry2", 0, 1, NULL, NULL, 0, LIBFUNC, NULL, NULL);
 	
 	entry3 = malloc(sizeof(SymTabEntry));
-	*entry3 = new_SymTabEntry("entry3", 0, 1, NULL, NULL, 1, USERFUNC, NULL, NULL);
+	*entry3 = new_SymTabEntry("entry2", 0, 1, NULL, NULL, 1, USERFUNC, NULL, NULL);
 
 	entry4 = malloc(sizeof(SymTabEntry));
 	*entry4 = new_SymTabEntry("entry4", 0, 1, NULL, NULL, 1, LIBFUNC, NULL, NULL);
@@ -201,4 +208,14 @@ int main() {
 
 	printf("%s\n", lookup_ScopeList(list, 4, "entry3")->name);
 
+}
+
+
+{
+	int a;
+	{
+		int x;
+	}
+	
+	int x;
 }
