@@ -90,7 +90,7 @@
 program : stmts
         ;
 
-stmts : stmt stmts
+stmts : stmt stmts {fprintf(yyout, "programm -> stmts");}
       |
       ;
 
@@ -236,3 +236,37 @@ returnstmt : RETURN expr SEMICOLON
            ;
 
 %%
+
+
+int yyerror (char* yaccProvidedMessage)
+{
+	fprintf(stderr, "%s: at line %d, before token: '%s'\n", yaccProvidedMessage, yylineno, yytext);
+}
+
+int main(int argc, char** argv)
+{
+
+	if (argc == 3){
+		if( !(yyin = fopen(argv[1], "r")) ) {
+			fprintf(stderr, "Cannot Open File: %s\n", argv[1]);
+			yyin = stdin;
+		}
+		if(!(yyout = fopen(argv[2], "w")) )
+		{
+			fprintf(stderr, "Cannot Open File: %s\n", argv[2]);
+			yyout = stdout;
+		}
+	}
+	else if (argc == 2){
+		if( !(yyin = fopen(argv[1], "r")) ) {
+			fprintf(stderr, "Cannot Open File: %s\n", argv[1]);
+			yyin = stdin;
+		}
+	}
+	else{
+		fprintf(stderr, "WTF...Give mama some arguments ;P \n");
+		return 0;
+	}
+	
+	return 0;
+}
