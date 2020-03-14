@@ -94,7 +94,7 @@ FALSE "false"
 NIL "nil"
 
 /* operators */
-ASSINGN "="
+ASSIGN "="
 PLUS "+"
 MINUS "-"
 MULT "*"
@@ -160,7 +160,7 @@ UNDEFINED .
 {FALSE} {insert_token(yylineno,token++,"FALSE", "KEYWORD", "enumerated", "false");}
 {NIL} {insert_token(yylineno,token++,"NIL", "KEYWORD", "enumerated", "nil");}
 
-{ASSINGN} {insert_token(yylineno,token++,"ASSINGN", "OPERATOR", "enumerated", "=");}
+{ASSIGN} {insert_token(yylineno,token++,"ASSIGN", "OPERATOR", "enumerated", "=");}
 {PLUS} {insert_token(yylineno,token++,"PLUS", "OPERATOR", "enumerated", "+");}
 {MINUS} {insert_token(yylineno,token++,"MINUS", "OPERATOR", "enumerated", "-");}
 {MULT} {insert_token(yylineno,token++,"MULT", "OPERATOR", "enumerated", "*");}

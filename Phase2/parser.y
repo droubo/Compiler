@@ -37,7 +37,7 @@
 %token FALSE
 %token NIL
 
-%token ASSING
+%token ASSIGN
 %token PLUS
 %token MINUS
 %token MULT
@@ -75,7 +75,7 @@
 
 /* priority */
 
-%right ASSING
+%right ASSIGN
 
 %left OR
 %left AND
@@ -92,17 +92,16 @@
 %left LEFT_BRACKET RIGHT_BRACKET
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 
-
 %%
 
-program : stmts  {fprintf(stdout, "programm -> stmts");}
+program : stmts  {fprintf(yyout, "program -> stmts\n");}
         ;
 
-stmts : stmt stmts
-      |
+stmts : stmt stmts {fprintf(yyout,"stmts -> stmt stmts\n");}
+      | {fprintf(yyout,"stmts -> empty\n");}
       ;
 
-stmt : expr SEMICOLON
+stmt : expr SEMICOLON {fprintf(yyout,"stmt -> expr ;\n");}
      | ifstmt
      | whilestmt
      | forstmt
@@ -114,9 +113,9 @@ stmt : expr SEMICOLON
      | SEMICOLON
      ;
 
-expr : assignexpr
+expr : assignexpr {fprintf(yyout,"expr -> assignexpr\n");}
      | expr op expr
-     | term
+     | term {fprintf(yyout,"expr -> term\n");}
      ;
 
 op : PLUS
@@ -144,16 +143,16 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
      | primary
      ;
 
-assignexpr : lvalue EQUAL expr
+assignexpr : lvalue EQUAL expr {fprintf(yyout,"assignexpr -> lvalue = expr\n");}
 
-primary : lvalue
+primary : lvalue {fprintf(yyout,"primary -> lvalue\n");}
         | call
         | objectdef
         | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
         | const
         ;
 
-lvalue : ID
+lvalue : ID {fprintf(yyout,"lvalue -> ID\n");}
        | LOCAL ID
        | DOUBLE_COLON ID
        | member
@@ -220,10 +219,9 @@ const : REALCONST
       | FALSE
       ;
  
-idlist : ID
-        | ID comaid
-        |
-        ;
+idlist : ID comaid {fprintf(yyout,"idlist -> ID\n");}
+       |
+       ;
 
 comaid : COMA ID comaid
        |
@@ -275,6 +273,6 @@ int main(int argc, char** argv)
 		fprintf(stderr, "WTF...Give mama some arguments ;P \n");
 		return 0;
 	}
-	
+	yyparse();
 	return 0;
 }
