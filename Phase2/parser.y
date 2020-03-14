@@ -37,7 +37,7 @@
 %token FALSE
 %token NIL
 
-%token ASSING
+%token ASSIGN
 %token PLUS
 %token MINUS
 %token MULT
@@ -75,7 +75,7 @@
 
 /* priority */
 
-%right ASSING
+%right ASSIGN
 
 %left OR
 %left AND
@@ -95,14 +95,14 @@
 
 %%
 
-program : stmts  {fprintf(stdout, "programm -> stmts");}
+program : stmts  {fprintf(yyout, "program -> stmts\n");}
         ;
 
-stmts : stmt stmts
+stmts : stmt stmts {fprintf(yyout,"stmts -> stmt stmts\n");}
       |
       ;
 
-stmt : expr SEMICOLON
+stmt : expr SEMICOLON {fprintf(yyout,"stmt -> expr ;\n");}
      | ifstmt
      | whilestmt
      | forstmt
@@ -114,9 +114,9 @@ stmt : expr SEMICOLON
      | SEMICOLON
      ;
 
-expr : assignexpr
+expr : assignexpr {fprintf(yyout,"expr -> assignexpr\n");}
      | expr op expr
-     | term
+     | term {fprintf(yyout,"expr -> term\n");}
      ;
 
 op : PLUS
@@ -144,7 +144,7 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
      | primary
      ;
 
-assignexpr : lvalue EQUAL expr
+assignexpr : lvalue EQUAL expr {fprintf(yyout,"assignexpr -> lvalue = expr\n");}
 
 primary : lvalue
         | call
@@ -194,7 +194,7 @@ objectdef : LEFT_BRACKET elist RIGHT_BRACKET
           ;
 
 indexed : indexedelem comaindexedelem
-        |
+        /*|*/
         ;
 
 comaindexedelem : COMA indexedelem comaindexedelem
@@ -222,7 +222,7 @@ const : REALCONST
  
 idlist : ID
         | ID comaid
-        |
+        /*|*/
         ;
 
 comaid : COMA ID comaid
@@ -275,6 +275,6 @@ int main(int argc, char** argv)
 		fprintf(stderr, "WTF...Give mama some arguments ;P \n");
 		return 0;
 	}
-	
+	yyparse();
 	return 0;
 }
