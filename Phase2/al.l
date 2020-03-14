@@ -233,7 +233,7 @@ UNDEFINED .
 
 %%
 
-
+/*
 int main(int argc , char** args) {
     FILE *fin = stdin, *fout = stdout;
     if(argc == 2 || argc == 3) {
@@ -256,4 +256,4 @@ int main(int argc , char** args) {
     fclose(fin);
 
     return 0;
-}
+}*/
