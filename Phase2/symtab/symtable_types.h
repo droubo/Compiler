@@ -2,14 +2,11 @@
 #define SYMTABLE_TYPES_H
 
 typedef struct Variable {
-	const char *name;
-	unsigned int line;
 	void * value;
 } Variable;
 
 typedef struct Function {
-	const char *name;
-	unsigned int line;
+	void * args;
 } Function;
 
 typedef enum SymbolType {
@@ -21,6 +18,8 @@ typedef enum SymbolType {
 } SymbolType;
 
 typedef struct SymTabEntry {
+	const char *name;
+	unsigned int line;
 	int isActive;
 	union {
 		Variable *varVal;

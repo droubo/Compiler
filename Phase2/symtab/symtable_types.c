@@ -1,25 +1,25 @@
 #include "symtable_types.h"
 
-Variable new_Variable(const char * name, int line, void * value) {
+Variable new_Variable(void * value) {
 	Variable v;
-	v.name = name;
-	v.line = line;
 	v.value = value;
 
 	return v;
 }
 
-Function new_Function(const char * name, int line) {
+Function new_Function(void * args) {
 	Function f;
-	f.name = name;
-	f.line = line;
+	f.args = args;
 
 	return f;
 }
 
-SymTabEntry new_SymTabEntry(int isActive, Variable * varVal, Function * funcVal, unsigned int scope, 
-							SymbolType type, SymTabEntry * nextInScope, SymTabEntry * nextInHash){
+SymTabEntry new_SymTabEntry(const char * name, unsigned int line, int isActive, Variable * varVal,
+							Function * funcVal, unsigned int scope, SymbolType type, 
+							SymTabEntry * nextInScope, SymTabEntry * nextInHash){
 	SymTabEntry s;
+	s.name = name;
+	s.line = line;
 	s.isActive = isActive;
 	s.value.varVal = varVal;
 	s.value.funcVal = funcVal;
