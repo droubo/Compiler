@@ -44,7 +44,6 @@ ScopeList * init_ScopeList();
 
 ScopeListEntry * get_ScopeList(ScopeList * list, int scope);
 
-
 SymTabEntry * lookup_ScopeListExclusive(ScopeList * list, int scope, const char * name);
 
 SymTabEntry * lookup_ScopeList(ScopeList * list, int scope, const char * name);
