@@ -144,7 +144,7 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {fprintf(yyout,"term -> ( expr )\
      | primary {fprintf(yyout,"term -> primary\n");}
      ;
 
-assignexpr : lvalue EQUAL expr {fprintf(yyout,"assignexpr -> lvalue = expr\n");}
+assignexpr : lvalue ASSIGN expr {fprintf(yyout,"assignexpr -> lvalue = expr\n");}
 
 primary : lvalue {fprintf(yyout,"primary -> lvalue\n");}
         | call {fprintf(yyout,"primary -> call\n");}
