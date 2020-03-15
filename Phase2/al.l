@@ -73,7 +73,6 @@ int numPlaces (int n) {
     return 1 + numPlaces (n / 10);
 }
 
-
 %}
 
 /* key words */

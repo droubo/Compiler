@@ -12,6 +12,7 @@
   extern char * yytext;
   extern FILE * yyin;
   extern FILE * yyout;
+  
 
 %}
 
@@ -70,7 +71,6 @@
 %token DOUBLE_DOT
 
 %token<id> ID
-%token UNDEFINED
 
 /* priority */
 
@@ -153,7 +153,7 @@ primary : lvalue {fprintf(yyout,"primary -> lvalue\n");}
         | const {fprintf(yyout,"primary -> const\n");}
         ;
 
-lvalue : ID {fprintf(yyout,"lvalue -> ID\n");}
+lvalue : ID {fprintf(yyout,"lvalue %s -> ID\n");}
        | LOCAL ID {fprintf(yyout,"lvalue -> local ID\n");}
        | DOUBLE_COLON ID {fprintf(yyout,"lvalue -> :: ID\n");}
        | member {fprintf(yyout,"lvalue -> member\n");}
@@ -239,6 +239,7 @@ returnstmt : RETURN expr SEMICOLON {fprintf(yyout,"returnstmt -> return expr ;\n
            | RETURN SEMICOLON {fprintf(yyout,"returnstmt -> return ;\n");}
            ;
 
+
 %%
 
 
@@ -268,9 +269,10 @@ int main(int argc, char** argv)
 		}
 	}
 	else{
-		fprintf(stderr, "WTF...Give mama some arguments ;P \n");
+		fprintf(stderr, "ERROR : no arguments..\n");
 		return 0;
 	}
+        
 	yyparse();
 	return 0;
 }
