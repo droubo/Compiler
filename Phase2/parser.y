@@ -17,7 +17,6 @@
 
 /* Yacc Definitions */
 
-%union {int num; char* id; double real;}
 %start program
 %token IF
 %token ElSE
@@ -92,6 +91,8 @@
 %left LEFT_BRACKET RIGHT_BRACKET
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 
+%union {int num; char* id; double real;}
+
 %%
 
 program : stmts  {fprintf(yyout, "program -> stmts\n");}
@@ -102,143 +103,140 @@ stmts : stmt stmts {fprintf(yyout,"stmts -> stmt stmts\n");}
       ;
 
 stmt : expr SEMICOLON {fprintf(yyout,"stmt -> expr ;\n");}
-     | ifstmt
-     | whilestmt
-     | forstmt
-     | returnstmt
-     | BREAK SEMICOLON
-     | CONTINUE SEMICOLON
-     | block
-     | funcdef
-     | SEMICOLON
+     | ifstmt {fprintf(yyout,"stmt -> ifstmt\n");}
+     | whilestmt {fprintf(yyout,"stmt -> whilestmt\n");}
+     | forstmt {fprintf(yyout,"stmt forstmt\n");}
+     | returnstmt {fprintf(yyout,"stmt returnstmt\n");}
+     | BREAK SEMICOLON {fprintf(yyout,"stmt -> break;\n");}
+     | CONTINUE SEMICOLON {fprintf(yyout,"stmt -> continue;\n");}
+     | block {fprintf(yyout,"stmt -> block\n");}
+     | funcdef {fprintf(yyout,"stmt -> funcdef\n");}
+     | SEMICOLON {fprintf(yyout,"stmt -> ;\n");}
      ;
 
 expr : assignexpr {fprintf(yyout,"expr -> assignexpr\n");}
-     | expr op expr
+     | expr op expr {fprintf(yyout,"expr -> expr op expr\n");}
      | term {fprintf(yyout,"expr -> term\n");}
      ;
 
-op : PLUS
-   | MINUS
-   | MULT
-   | DIV
-   | MOD
-   | GREATER
-   | GREATER_EQUAL
-   | LESS
-   | LESS_EQUAL
-   | EQUAL
-   | NOT_EQUAL
-   | AND
-   | OR
+op : PLUS {fprintf(yyout,"op -> +\n");}
+   | MINUS {fprintf(yyout,"op -> -\n");}
+   | MULT {fprintf(yyout,"op -> *\n");}
+   | DIV {fprintf(yyout,"op -> /\n");}
+   | MOD {fprintf(yyout,"op -> %\n");}
+   | GREATER {fprintf(yyout,"op -> >\n");}
+   | GREATER_EQUAL {fprintf(yyout,"op -> >=\n");}
+   | LESS {fprintf(yyout,"op -> <\n");}
+   | LESS_EQUAL {fprintf(yyout,"op -> <=\n");}
+   | EQUAL {fprintf(yyout,"op -> ==\n");}
+   | NOT_EQUAL {fprintf(yyout,"op -> !=\n");}
+   | AND {fprintf(yyout,"op -> and\n");}
+   | OR {fprintf(yyout,"op -> or\n");}
    ;
 
-term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
-     | MINUS expr
-     | NOT expr
-     | PLUS_PLUS lvalue
-     | lvalue PLUS_PLUS
-     | MINUS_MINUS lvalue
-     | lvalue MINUS_MINUS
-     | primary
+term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {fprintf(yyout,"term -> ( expr )\n");}
+     | MINUS expr {fprintf(yyout,"term -> - expr\n");}
+     | NOT expr {fprintf(yyout,"term -> ! expr\n");}
+     | PLUS_PLUS lvalue {fprintf(yyout,"term -> ++ lvalue\n");}
+     | lvalue PLUS_PLUS {fprintf(yyout,"term -> lvalue ++\n");}
+     | MINUS_MINUS lvalue {fprintf(yyout,"term -- lvalue\n");}
+     | lvalue MINUS_MINUS {fprintf(yyout,"lavlue --\n");}
+     | primary {fprintf(yyout,"term -> primary\n");}
      ;
 
 assignexpr : lvalue EQUAL expr {fprintf(yyout,"assignexpr -> lvalue = expr\n");}
 
 primary : lvalue {fprintf(yyout,"primary -> lvalue\n");}
-        | call
-        | objectdef
-        | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
-        | const
+        | call {fprintf(yyout,"primary -> call\n");}
+        | objectdef {fprintf(yyout,"primary -> objectdef\n");}
+        | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {fprintf(yyout,"primary -> ( funcdef )\n");}
+        | const {fprintf(yyout,"primary -> const\n");}
         ;
 
 lvalue : ID {fprintf(yyout,"lvalue -> ID\n");}
-       | LOCAL ID
-       | DOUBLE_COLON ID
-       | member
+       | LOCAL ID {fprintf(yyout,"lvalue -> local ID\n");}
+       | DOUBLE_COLON ID {fprintf(yyout,"lvalue -> :: ID\n");}
+       | member {fprintf(yyout,"lvalue -> member\n");}
        ;
 
-member : lvalue DOT ID
-       | lvalue LEFT_BRACKET expr RIGHT_BRACKET
-       | call DOT ID
-       | call LEFT_BRACKET expr RIGHT_BRACKET
+member : lvalue DOT ID {fprintf(yyout,"member -> lvalue . ID\n");}
+       | lvalue LEFT_BRACKET expr RIGHT_BRACKET {fprintf(yyout,"member -> lvalue [ expr ]\n");}
+       | call DOT ID {fprintf(yyout,"member -> call . ID\n");}
+       | call LEFT_BRACKET expr RIGHT_BRACKET {fprintf(yyout,"member -> call [ expr ]\n");}
        ;
 
-call : call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
-     | lvalue callsuffix
-     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+call : call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {fprintf(yyout,"call -> call ( elist )\n");}
+     | lvalue callsuffix {fprintf(yyout,"call -> lvalue callsuffix\n");}
+     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {fprintf(yyout,"call -> ( funcdef ) ( elist )\n");}
      ;
 
-callsuffix : normcall
-           | methodcall
+callsuffix : normcall {fprintf(yyout,"callsuffix -> normcall\n");}
+           | methodcall {fprintf(yyout,"callsuffix -> methodcall\n");}
            ;
 
-normcall : LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+normcall : LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {fprintf(yyout,"normcall -> ( elist )\n");}
          ;
 
-methodcall : DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+methodcall : DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {fprintf(yyout,"methodcall -> .. ID ( elist )\n");}
            ;
 
-elist : expr comaexpr
-      |
+elist : expr comaexpr {fprintf(yyout,"elist -> expr comaexpr\n");}
       ;
 
-comaexpr : COMA expr comaexpr
-         |
+comaexpr : COMA expr comaexpr {fprintf(yyout,"comaexpr -> , expr comaexpr\n");}
+         | {fprintf(yyout,"comaexpr -> empty\n");}
          ;
 
-objectdef : LEFT_BRACKET elist RIGHT_BRACKET
-          | LEFT_BRACKET indexed RIGHT_BRACKET
-          | LEFT_BRACKET RIGHT_BRACKET
+objectdef : LEFT_BRACKET elist RIGHT_BRACKET {fprintf(yyout,"objectdef -> [ elist ]\n");}
+          | LEFT_BRACKET indexed RIGHT_BRACKET {fprintf(yyout,"objectdef [ indexed ]\n");}
+          | LEFT_BRACKET RIGHT_BRACKET {fprintf(yyout,"objectdef -> [ ]\n");}
           ;
 
-indexed : indexedelem comaindexedelem
-        |
+indexed : indexedelem comaindexedelem {fprintf(yyout,"indexed -> indexedelem comaindexedelem\n");}
         ;
 
-comaindexedelem : COMA indexedelem comaindexedelem
-                 |
+comaindexedelem : COMA indexedelem comaindexedelem {fprintf(yyout,"comaindexedelem -> , indexedelem comaindexedelem\n");}
+                 | {fprintf(yyout,"comaindexedelem -> empty\n");}
                  ;
 
-indexedelem : LEFT_BRACE expr COLON expr RIGHT_BRACE
+indexedelem : LEFT_BRACE expr COLON expr RIGHT_BRACE {fprintf(yyout,"indexedelem -> { expr : expr }\n");}
             ;
 
-block : LEFT_BRACE stmts RIGHT_BRACE
-      | LEFT_BRACE RIGHT_BRACE
+block : LEFT_BRACE stmts RIGHT_BRACE {fprintf(yyout,"block -> { stmts }\n");}
+      | LEFT_BRACE RIGHT_BRACE {fprintf(yyout,"block -> { }\n");}
       ;
 
-funcdef : FUNCTION ID LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block
-        | FUNCTION LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block
+funcdef : FUNCTION ID LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {fprintf(yyout,"funcdef -> function ID ( idlist ) block\n");}
+        | FUNCTION LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {fprintf(yyout,"funcdef -> function ( idlist ) block\n");}
         ;
 
-const : REALCONST 
-      | INTCONST
-      | STRING
-      | NIL
-      | TRUE
-      | FALSE
+const : REALCONST {fprintf(yyout,"const -> REALCONST\n");}
+      | INTCONST {fprintf(yyout,"const -> INTCONST\n");}
+      | STRING {fprintf(yyout,"const -> STRING\n");}
+      | NIL {fprintf(yyout,"const -> NIL\n");}
+      | TRUE {fprintf(yyout,"const -> TRUE\n");}
+      | FALSE {fprintf(yyout,"const -> FALSE\n");}
       ;
  
 idlist : ID comaid {fprintf(yyout,"idlist -> ID\n");}
-       |
        ;
 
-comaid : COMA ID comaid
-       |
+comaid : COMA ID comaid {fprintf(yyout,"comaid -> , ID comaid\n");}
+       | {fprintf(yyout,"comaid -> empty\n");}
        ;
 
-ifstmt : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ElSE stmt
-       | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
+ifstmt : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ElSE stmt {fprintf(yyout,"ifstmt -> IF ( expr ) stmt ELSE stmt\n");}
+       | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {fprintf(yyout,"ifstmt -> IF ( expr ) stmt\n");}
        ;
 
-whilestmt : WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt
+whilestmt : WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {fprintf(yyout,"whilestmt -> WHILE ( expr ) stmt\n");}
           ;
 
-forstmt : FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt
+forstmt : FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt {fprintf(yyout,"forstmt -> FOR ( elist ; expr ; elist ) stmt\n");}
         ;
 
-returnstmt : RETURN expr SEMICOLON
-           | RETURN SEMICOLON
+returnstmt : RETURN expr SEMICOLON {fprintf(yyout,"returnstmt -> return expr ;\n");}
+           | RETURN SEMICOLON {fprintf(yyout,"returnstmt -> return ;\n");}
            ;
 
 %%
