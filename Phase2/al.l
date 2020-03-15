@@ -143,53 +143,53 @@ UNDEFINED .
 %option noyywrap
 %option yylineno
 %%
-{IF} {insert_token(yylineno,token++,"IF", "KEYWORD", "enumerated", "if");}
-{ELSE} {insert_token(yylineno,token++,"ELSE", "KEYWORD", "enumerated", "else");}
-{WHILE} {insert_token(yylineno,token++,"WHILE", "KEYWORD", "enumerated", "while");}
-{FOR} {insert_token(yylineno,token++,"FOR", "KEYWORD", "enumerated", "for");}
-{FUNCTION} {insert_token(yylineno,token++,"FUNCTION", "KEYWORD", "enumerated", "function");}
-{RETURN} {insert_token(yylineno,token++,"RETURN", "KEYWORD", "enumerated", "return");}
-{BREAK} {insert_token(yylineno,token++,"BREAK", "KEYWORD", "enumerated", "break");}
-{CONTINUE} {insert_token(yylineno,token++,"CONTINUE", "KEYWORD", "enumerated", "continue");}
-{AND} {insert_token(yylineno,token++,"AND", "KEYWORD", "enumerated", "and");}
-{NOT} {insert_token(yylineno,token++,"NOT", "KEYWORD", "enumerated", "not");}
-{OR} {insert_token(yylineno,token++,"OR", "KEYWORD", "enumerated", "or");}
-{LOCAL} {insert_token(yylineno,token++,"LOCAL", "KEYWORD", "enumerated", "local");}
-{TRUE} {insert_token(yylineno,token++,"TRUE", "KEYWORD", "enumerated", "true");}
-{FALSE} {insert_token(yylineno,token++,"FALSE", "KEYWORD", "enumerated", "false");}
-{NIL} {insert_token(yylineno,token++,"NIL", "KEYWORD", "enumerated", "nil");}
+{IF} {insert_token(yylineno,token++,"IF", "KEYWORD", "enumerated", "if"); return IF;}
+{ELSE} {insert_token(yylineno,token++,"ELSE", "KEYWORD", "enumerated", "else"); return ELSE;}
+{WHILE} {insert_token(yylineno,token++,"WHILE", "KEYWORD", "enumerated", "while"); return WHILE;}
+{FOR} {insert_token(yylineno,token++,"FOR", "KEYWORD", "enumerated", "for"); return FOR;}
+{FUNCTION} {insert_token(yylineno,token++,"FUNCTION", "KEYWORD", "enumerated", "function"); return FUNCTION;}
+{RETURN} {insert_token(yylineno,token++,"RETURN", "KEYWORD", "enumerated", "return"); return RETURN;}
+{BREAK} {insert_token(yylineno,token++,"BREAK", "KEYWORD", "enumerated", "break"); return BREAK;}
+{CONTINUE} {insert_token(yylineno,token++,"CONTINUE", "KEYWORD", "enumerated", "continue"); return CONTINUE;}
+{AND} {insert_token(yylineno,token++,"AND", "KEYWORD", "enumerated", "and"); return AND;}
+{NOT} {insert_token(yylineno,token++,"NOT", "KEYWORD", "enumerated", "not"); return NOT;}
+{OR} {insert_token(yylineno,token++,"OR", "KEYWORD", "enumerated", "or"); return OR;}
+{LOCAL} {insert_token(yylineno,token++,"LOCAL", "KEYWORD", "enumerated", "local"); return LOCAL;}
+{TRUE} {insert_token(yylineno,token++,"TRUE", "KEYWORD", "enumerated", "true"); return TRUE;}
+{FALSE} {insert_token(yylineno,token++,"FALSE", "KEYWORD", "enumerated", "false"); return false;}
+{NIL} {insert_token(yylineno,token++,"NIL", "KEYWORD", "enumerated", "nil"); return NIL;}
 
-{ASSIGN} {insert_token(yylineno,token++,"ASSIGN", "OPERATOR", "enumerated", "=");}
-{PLUS} {insert_token(yylineno,token++,"PLUS", "OPERATOR", "enumerated", "+");}
-{MINUS} {insert_token(yylineno,token++,"MINUS", "OPERATOR", "enumerated", "-");}
-{MULT} {insert_token(yylineno,token++,"MULT", "OPERATOR", "enumerated", "*");}
-{DIV} {insert_token(yylineno,token++,"DIV", "OPERATOR", "enumerated", "/");}
-{MOD} {insert_token(yylineno,token++,"MOD", "OPERATOR", "enumerated", "%");}
-{EQUAL} {insert_token(yylineno,token++,"EQUAL", "OPERATOR", "enumerated", "==");}
-{NOT_EQUAL} {insert_token(yylineno,token++,"NOT_EQUAL", "OPERATOR", "enumerated", "!=");}
-{PLUS_PLUS} {insert_token(yylineno,token++,"PLUS_PLUS", "OPERATOR", "enumerated", "++");}
-{MINUS_MINUS} {insert_token(yylineno,token++,"MINUS_MINUS", "OPERATOR", "enumerated", "--");}
-{GREATER} {insert_token(yylineno,token++,"GREATER", "OPERATOR", "enumerated", ">");}
-{LESS} {insert_token(yylineno,token++,"LESS", "OPERATOR", "enumerated", "<");}
-{GREATER_EQUAL} {insert_token(yylineno,token++,"GREATER_EQUAL", "OPERATOR", "enumerated", ">=");}
-{LESS_EQUAL} {insert_token(yylineno,token++,"LESS_EQUAL", "OPERATOR", "enumerated", "<=");}
+{ASSIGN} {insert_token(yylineno,token++,"ASSIGN", "OPERATOR", "enumerated", "="); return ASSIGN;}
+{PLUS} {insert_token(yylineno,token++,"PLUS", "OPERATOR", "enumerated", "+"); return PLUS;}
+{MINUS} {insert_token(yylineno,token++,"MINUS", "OPERATOR", "enumerated", "-"); return MINUS;}
+{MULT} {insert_token(yylineno,token++,"MULT", "OPERATOR", "enumerated", "*"); return MULT;}
+{DIV} {insert_token(yylineno,token++,"DIV", "OPERATOR", "enumerated", "/"); return DIV;}
+{MOD} {insert_token(yylineno,token++,"MOD", "OPERATOR", "enumerated", "%"); return MOD;}
+{EQUAL} {insert_token(yylineno,token++,"EQUAL", "OPERATOR", "enumerated", "=="); return EQUAL;}
+{NOT_EQUAL} {insert_token(yylineno,token++,"NOT_EQUAL", "OPERATOR", "enumerated", "!="); return NOT_EQUAL;}
+{PLUS_PLUS} {insert_token(yylineno,token++,"PLUS_PLUS", "OPERATOR", "enumerated", "++"); return PLUS_PLUS;}
+{MINUS_MINUS} {insert_token(yylineno,token++,"MINUS_MINUS", "OPERATOR", "enumerated", "--"); return MINUS_MINUS;}
+{GREATER} {insert_token(yylineno,token++,"GREATER", "OPERATOR", "enumerated", ">"); return GREATER;}
+{LESS} {insert_token(yylineno,token++,"LESS", "OPERATOR", "enumerated", "<"); return LESS;}
+{GREATER_EQUAL} {insert_token(yylineno,token++,"GREATER_EQUAL", "OPERATOR", "enumerated", ">="); return GREATER_EQUAL;}
+{LESS_EQUAL} {insert_token(yylineno,token++,"LESS_EQUAL", "OPERATOR", "enumerated", "<="); return LESS_EQUAL;}
 
-{LEFT_BRACE} {insert_token(yylineno,token++,"LEFT_BRACE", "PUNCUATION", "enumerated", "{");}
-{RIGHT_BRACE} {insert_token(yylineno,token++,"RIGHT_BRACE", "PUNCUATION", "enumerated", "}");}
-{LEFT_BRACKET} {insert_token(yylineno,token++,"LEFT_BRACKET", "PUNCUATION", "enumerated", "[");}
-{RIGHT_BRACKET} {insert_token(yylineno,token++,"RIGHT_BRACKET", "PUNCUATION", "enumerated", "]");}
-{LEFT_PARENTHESIS} {insert_token(yylineno,token++,"LEFT_PARENTHESIS", "PUNCUATION", "enumerated", "(");}
-{RIGHT_PARENTHESIS} {insert_token(yylineno,token++,"RIGHT_PARENTHESIS", "PUNCUATION", "enumerated", ")");}
-{COMA} {insert_token(yylineno,token++,"COMA", "PUNCUATION", "enumerated", ",");}
-{SEMICOLON} {insert_token(yylineno,token++,"SEMICOLON", "PUNCUATION", "enumerated", ";");}
-{COLON} {insert_token(yylineno,token++,"COLON", "PUNCUATION", "enumerated", ":");}
-{DOUBLE_COLON} {insert_token(yylineno,token++,"DOUBLE_COLON", "PUNCUATION", "enumerated", "::");}
-{DOT} {insert_token(yylineno,token++,"DOT", "PUNCUATION", "enumerated", ".");}
-{DOUBLE_DOT} {insert_token(yylineno,token++,"DOUBLE_DOT", "PUNCUATION", "enumerated", "..");}
+{LEFT_BRACE} {insert_token(yylineno,token++,"LEFT_BRACE", "PUNCUATION", "enumerated", "{"); return LEFT_BRACE;}
+{RIGHT_BRACE} {insert_token(yylineno,token++,"RIGHT_BRACE", "PUNCUATION", "enumerated", "}"); return RIGHT_BRACE;}
+{LEFT_BRACKET} {insert_token(yylineno,token++,"LEFT_BRACKET", "PUNCUATION", "enumerated", "["); return LEFT_BRACKET;}
+{RIGHT_BRACKET} {insert_token(yylineno,token++,"RIGHT_BRACKET", "PUNCUATION", "enumerated", "]"); return RIGHT_BRACKET;}
+{LEFT_PARENTHESIS} {insert_token(yylineno,token++,"LEFT_PARENTHESIS", "PUNCUATION", "enumerated", "("); return LEFT_PARENTHESIS;}
+{RIGHT_PARENTHESIS} {insert_token(yylineno,token++,"RIGHT_PARENTHESIS", "PUNCUATION", "enumerated", ")"); return RIGHT_PARENTHESIS;}
+{COMA} {insert_token(yylineno,token++,"COMA", "PUNCUATION", "enumerated", ","); return COMA;}
+{SEMICOLON} {insert_token(yylineno,token++,"SEMICOLON", "PUNCUATION", "enumerated", ";"); return SEMICOLON;}
+{COLON} {insert_token(yylineno,token++,"COLON", "PUNCUATION", "enumerated", ":"); return COLON;}
+{DOUBLE_COLON} {insert_token(yylineno,token++,"DOUBLE_COLON", "PUNCUATION", "enumerated", "::"); return DOUBLE_COLON;}
+{DOT} {insert_token(yylineno,token++,"DOT", "PUNCUATION", "enumerated", "."); return DOT;}
+{DOUBLE_DOT} {insert_token(yylineno,token++,"DOUBLE_DOT", "PUNCUATION", "enumerated", ".."); return DOUBLE_DOT;}
 
-{REALCONST} {insert_token(yylineno,token++, yytext, "CONST_REAL", "real", yytext);}
-{INTCONST} {insert_token(yylineno,token++, yytext, "CONST_INT", "integer", yytext);}
-{ID} {insert_token(yylineno,token++, yytext, "ID", "char*", yytext);}
+{REALCONST} {insert_token(yylineno,token++, yytext, "CONST_REAL", "real", yytext); yylval.real = atof(yytext) return REALCONST;}
+{INTCONST} {insert_token(yylineno,token++, yytext, "CONST_INT", "integer", yytext); yylval.integer = atoi(yytext); return INTCONST;}
+{ID} {insert_token(yylineno,token++, yytext, "ID", "char*", yytext); yylval.id = strdup(yytext);  return ID;}
 
 {STRING} {
     char curr;
@@ -239,6 +239,7 @@ UNDEFINED .
     }
     
     insert_token(startline, token++, string, "STRING", "char *", string);
+    return STRING;
 }
 
 {LINE_COMMENT} {insert_token(yylineno,token++,"LINE_COMMENT","COMMENT","enumerated","");}

@@ -91,15 +91,15 @@
 %left LEFT_BRACKET RIGHT_BRACKET
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 
-%union {int num; char* id; double real;}
+%union {int integer; char* id; double real;}
 
 %%
 
 program : stmts  {fprintf(yyout, "program -> stmts\n");}
         ;
 
-stmts : stmt stmts {fprintf(yyout,"stmts -> stmt stmts\n");}
-      | {fprintf(yyout,"stmts -> empty\n");}
+stmts : /*empty*/ {fprintf(yyout,"stmts -> empty\n");}
+      | stmt stmts {fprintf(yyout,"stmts -> stmt stmts\n");}
       ;
 
 stmt : expr SEMICOLON {fprintf(yyout,"stmt -> expr ;\n");}
@@ -153,7 +153,7 @@ primary : lvalue {fprintf(yyout,"primary -> lvalue\n");}
         | const {fprintf(yyout,"primary -> const\n");}
         ;
 
-lvalue : ID {fprintf(yyout,"lvalue %s -> ID\n");}
+lvalue : ID {fprintf(yyout,"lvalue -> ID\n");}
        | LOCAL ID {fprintf(yyout,"lvalue -> local ID\n");}
        | DOUBLE_COLON ID {fprintf(yyout,"lvalue -> :: ID\n");}
        | member {fprintf(yyout,"lvalue -> member\n");}
@@ -183,8 +183,8 @@ methodcall : DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {fprintf(yyo
 elist : expr comaexpr {fprintf(yyout,"elist -> expr comaexpr\n");}
       ;
 
-comaexpr : COMA expr comaexpr {fprintf(yyout,"comaexpr -> , expr comaexpr\n");}
-         | {fprintf(yyout,"comaexpr -> empty\n");}
+comaexpr : /*empty*/ {fprintf(yyout,"comaexpr -> empty\n");}
+         | COMA expr comaexpr {fprintf(yyout,"comaexpr -> , expr comaexpr\n");}
          ;
 
 objectdef : LEFT_BRACKET elist RIGHT_BRACKET {fprintf(yyout,"objectdef -> [ elist ]\n");}
@@ -195,9 +195,9 @@ objectdef : LEFT_BRACKET elist RIGHT_BRACKET {fprintf(yyout,"objectdef -> [ elis
 indexed : indexedelem comaindexedelem {fprintf(yyout,"indexed -> indexedelem comaindexedelem\n");}
         ;
 
-comaindexedelem : COMA indexedelem comaindexedelem {fprintf(yyout,"comaindexedelem -> , indexedelem comaindexedelem\n");}
-                 | {fprintf(yyout,"comaindexedelem -> empty\n");}
-                 ;
+comaindexedelem : /*empty*/ {fprintf(yyout,"comaindexedelem -> empty\n");}
+                | COMA indexedelem comaindexedelem {fprintf(yyout,"comaindexedelem -> , indexedelem comaindexedelem\n");}
+                ;
 
 indexedelem : LEFT_BRACE expr COLON expr RIGHT_BRACE {fprintf(yyout,"indexedelem -> { expr : expr }\n");}
             ;
