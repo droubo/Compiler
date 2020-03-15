@@ -20,7 +20,7 @@
 
 %start program
 %token IF
-%token ElSE
+%token ELSE
 %token WHILE
 %token FOR
 %token FUNCTION
@@ -225,7 +225,7 @@ comaid : COMA ID comaid {fprintf(yyout,"comaid -> , ID comaid\n");}
        | {fprintf(yyout,"comaid -> empty\n");}
        ;
 
-ifstmt : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ElSE stmt {fprintf(yyout,"ifstmt -> IF ( expr ) stmt ELSE stmt\n");}
+ifstmt : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt {fprintf(yyout,"ifstmt -> IF ( expr ) stmt ELSE stmt\n");}
        | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {fprintf(yyout,"ifstmt -> IF ( expr ) stmt\n");}
        ;
 
@@ -241,7 +241,6 @@ returnstmt : RETURN expr SEMICOLON {fprintf(yyout,"returnstmt -> return expr ;\n
 
 
 %%
-
 
 int yyerror (char* yaccProvidedMessage)
 {

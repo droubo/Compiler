@@ -156,7 +156,7 @@ UNDEFINED .
 {OR} {insert_token(yylineno,token++,"OR", "KEYWORD", "enumerated", "or"); return OR;}
 {LOCAL} {insert_token(yylineno,token++,"LOCAL", "KEYWORD", "enumerated", "local"); return LOCAL;}
 {TRUE} {insert_token(yylineno,token++,"TRUE", "KEYWORD", "enumerated", "true"); return TRUE;}
-{FALSE} {insert_token(yylineno,token++,"FALSE", "KEYWORD", "enumerated", "false"); return false;}
+{FALSE} {insert_token(yylineno,token++,"FALSE", "KEYWORD", "enumerated", "false"); return FALSE;}
 {NIL} {insert_token(yylineno,token++,"NIL", "KEYWORD", "enumerated", "nil"); return NIL;}
 
 {ASSIGN} {insert_token(yylineno,token++,"ASSIGN", "OPERATOR", "enumerated", "="); return ASSIGN;}
@@ -187,7 +187,7 @@ UNDEFINED .
 {DOT} {insert_token(yylineno,token++,"DOT", "PUNCUATION", "enumerated", "."); return DOT;}
 {DOUBLE_DOT} {insert_token(yylineno,token++,"DOUBLE_DOT", "PUNCUATION", "enumerated", ".."); return DOUBLE_DOT;}
 
-{REALCONST} {insert_token(yylineno,token++, yytext, "CONST_REAL", "real", yytext); yylval.real = atof(yytext) return REALCONST;}
+{REALCONST} {insert_token(yylineno,token++, yytext, "CONST_REAL", "real", yytext); yylval.real = atof(yytext); return REALCONST;}
 {INTCONST} {insert_token(yylineno,token++, yytext, "CONST_INT", "integer", yytext); yylval.integer = atoi(yytext); return INTCONST;}
 {ID} {insert_token(yylineno,token++, yytext, "ID", "char*", yytext); yylval.id = strdup(yytext);  return ID;}
 
