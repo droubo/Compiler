@@ -2,10 +2,10 @@
 #include <stdio.h>
 #include "symtable.h"
 
-SymTable new_SymTable(SymTabEntry ** table, int size){
+SymTable new_SymTable(SymTabEntry ** table){
     SymTable s;
     s.table = table;
-    s.size = size;
+    s.size = TABLE_SIZE;
 
     return s;
 }
@@ -13,7 +13,7 @@ SymTable new_SymTable(SymTabEntry ** table, int size){
 SymTable * init_SymTable(){
     SymTable * s;
     s = (SymTable *) malloc(sizeof(SymTable));
-    *s = new_SymTable((SymTabEntry **) malloc(sizeof(SymTabEntry *) * TABLE_SIZE), TABLE_SIZE);
+    *s = new_SymTable((SymTabEntry **) malloc(sizeof(SymTabEntry *) * TABLE_SIZE));
     return s;
 }
 
@@ -68,7 +68,7 @@ void print_SymTable(SymTable * table){
     }
 }
 
-SymTabEntry lookup_SymTable(SymTable * table, const char * name){
+SymTabEntry * lookup_SymTable(SymTable * table, const char * name){
     SymTabEntry a;
     return a;
 }

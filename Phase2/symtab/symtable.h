@@ -11,12 +11,12 @@ typedef struct SymTable {
 } SymTable;
 
 
-SymTable new_SymTable(SymTabEntry ** table, int size);
+SymTable new_SymTable(SymTabEntry ** table);
 
 SymTable * init_SymTable();
 
 int insert_SymTable(SymTable * table, ScopeList * list, SymTabEntry sym);
 
-SymTabEntry lookup_SymTable(SymTable * table, const char * name);
+SymTabEntry * lookup_SymTable(SymTable * table, const char * name);
 
 #endif

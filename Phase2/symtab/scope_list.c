@@ -65,7 +65,8 @@ SymTabEntry * lookup_ScopeListExclusive(ScopeList * list, int scope, const char 
 	
 	while(currEntry != NULL) {
 		if(!strcmp(currEntry->name, name))
-			return currEntry;
+			if(currEntry->isActive)
+				return currEntry;
 		currEntry = currEntry->nextInScope;
 	}
 
@@ -73,16 +74,19 @@ SymTabEntry * lookup_ScopeListExclusive(ScopeList * list, int scope, const char 
 }
 
 SymTabEntry * lookup_ScopeList(ScopeList * list, int scope, const char * name){
-	
-	int i;
+
 	SymTabEntry * currEntry;
 
 	currEntry = NULL;
-	for(i = scope; i >= 0; i--) {
-		currEntry = lookup_ScopeListExclusive(list, i, name);
-		if(currEntry != NULL)
-			return currEntry;
-	}
+	currEntry = lookup_ScopeListExclusive(list, scope, name);
+	
+	if(currEntry != NULL)
+		return currEntry;
+
+	currEntry = lookup_ScopeListExclusive(list, 0, name);
+
+	if(currEntry != NULL)
+		return currEntry;
 
 	return NULL;
 }
