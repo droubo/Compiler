@@ -45,6 +45,6 @@ SymTabEntry * lookup_ScopeList(ScopeList * list, int scope, const char * name);
 
 void print_ScopeList(ScopeList * list);
 
-int insert_ScopeList(ScopeList * list, SymTabEntry * node);
+void insert_ScopeList(ScopeList * list, SymTabEntry * node);
 
 #endif

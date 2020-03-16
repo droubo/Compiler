@@ -38,8 +38,8 @@ Function * new_Function(void * args);
 SymTabEntry new_SymTabEntry(const char * name, unsigned int line, int isActive, Variable * varVal,
 							Function * funcVal, unsigned int scope, SymbolType type);
 
-void print_SymTabEntry(SymTabEntry entry);
-
 const char * SymbolTypeToString(SymbolType type);
+
+void print_SymTabEntry(SymTabEntry entry);
 
 #endif

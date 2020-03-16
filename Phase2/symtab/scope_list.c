@@ -57,7 +57,7 @@ ScopeListEntry * get_ScopeList(ScopeList * list, int scope) {
 }
 
 
-SymTabEntry * lookup_ScopeListExclusive(ScopeList * list, int scope, const char * name){
+SymTabEntry * lookup_ScopeList(ScopeList * list, int scope, const char * name){
 	ScopeListEntry * currScope;
 	SymTabEntry * currEntry;
 	currScope = get_ScopeList(list, scope);
@@ -69,39 +69,6 @@ SymTabEntry * lookup_ScopeListExclusive(ScopeList * list, int scope, const char 
 				return currEntry;
 		currEntry = currEntry->nextInScope;
 	}
-
-	return NULL;
-}
-
-SymTabEntry * lookup_ScopeListDeclare(ScopeList * list, int scope, const char * name){
-	
-	int i;
-	SymTabEntry * currEntry;
-
-	currEntry = NULL;
-	for(i = scope; i >= 0; i--) {
-		currEntry = lookup_ScopeListExclusive(list, i, name);
-		if(currEntry != NULL)
-			return currEntry;
-	}
-
-	return NULL;
-}
-
-SymTabEntry * lookup_ScopeListAccess(ScopeList * list, int scope, const char * name){
-	
-	int i;
-	SymTabEntry * currEntry;
-
-	currEntry = NULL;
-	currEntry = lookup_ScopeListExclusive(list, 0, name);
-	if(currEntry != NULL)
-		return currEntry;
-
-	currEntry = lookup_ScopeListExclusive(list, i, name);
-	if(currEntry != NULL)
-		return currEntry;
-	
 
 	return NULL;
 }
@@ -126,14 +93,11 @@ void print_ScopeList(ScopeList * list){
 	printf(">>> End\n");
 }
 
-int insert_ScopeList(ScopeList * list, SymTabEntry * node) {
+void insert_ScopeList(ScopeList * list, SymTabEntry * node) {
 	ScopeListEntry * currScope;
 	SymTabEntry * currEntry, * temp;
 	int i;
 	int createdScopeNodes;
-
-	if(lookup_ScopeList(list, list->maxScope, node->name) != NULL)
-		return 1;
 
 	/* List already has the correct size */
 	if(list->maxScope >= node->scope) {
@@ -142,13 +106,15 @@ int insert_ScopeList(ScopeList * list, SymTabEntry * node) {
 		/* Base case where there are no entries */
 		if(currScope->firstSymEntry == NULL){
 			currScope->firstSymEntry = node;
-			return 0;
+			printf(">> In if if, Inserted %s\n", node->name);
+			return;
 		}
-
+		
 		temp = currScope->firstSymEntry;
 		currScope->firstSymEntry = node;
 		currScope->firstSymEntry->nextInScope = temp;
-		return 0;
+		printf(">> In if, Inserted %s\n", node->name);
+		return;
 	/* List does not have the correct size and we need to make room */
 	} else {
 		/* We need to create maxScope - node->scope nodes*/
@@ -167,7 +133,7 @@ int insert_ScopeList(ScopeList * list, SymTabEntry * node) {
 		}
 		list->maxScope = node->scope;
 		currScope->firstSymEntry = node;
-		return 0;
+		printf(">> In else, Inserted %s\n", node->name);
+		return;
 	}
-	return 1;
 }
