@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "symtable.h"
 
 SymTable new_SymTable(SymTabEntry ** table, ScopeList * list){
@@ -66,6 +67,17 @@ void print_SymTable(SymTable * table){
 }
 
 SymTabEntry * lookup_SymTable(SymTable * table, const char * name){
+    int index;
+    SymTabEntry * currEntry;
+
+    index = hash(name);
+
+    currEntry = table->table[index];
+    while(currEntry != NULL){
+        if(!strcmp(currEntry->name, name))
+            return currEntry;
+    }
+    
     return NULL;
 }
 

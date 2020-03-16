@@ -46,5 +46,5 @@ const char * SymbolTypeToString(SymbolType type) {
 }
 
 void print_SymTabEntry(SymTabEntry entry){
-	printf("%s @%d | active: %d type: %s\n", entry.name, entry.line, entry.isActive, SymbolTypeToString(entry.type));
+	printf("%s '%s' @line %d scope = %d\n", SymbolTypeToString(entry.type), entry.name, entry.line, entry.scope);
 }

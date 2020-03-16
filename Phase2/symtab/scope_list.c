@@ -106,14 +106,12 @@ void insert_ScopeList(ScopeList * list, SymTabEntry * node) {
 		/* Base case where there are no entries */
 		if(currScope->firstSymEntry == NULL){
 			currScope->firstSymEntry = node;
-			printf(">> In if if, Inserted %s\n", node->name);
 			return;
 		}
 		
 		temp = currScope->firstSymEntry;
 		currScope->firstSymEntry = node;
 		currScope->firstSymEntry->nextInScope = temp;
-		printf(">> In if, Inserted %s\n", node->name);
 		return;
 	/* List does not have the correct size and we need to make room */
 	} else {
@@ -133,7 +131,6 @@ void insert_ScopeList(ScopeList * list, SymTabEntry * node) {
 		}
 		list->maxScope = node->scope;
 		currScope->firstSymEntry = node;
-		printf(">> In else, Inserted %s\n", node->name);
 		return;
 	}
 }
