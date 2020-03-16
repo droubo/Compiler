@@ -17,7 +17,8 @@
   extern FILE * yyout;
 
 SymTable *table;
-  
+unsigned int currscope=0;
+unsigned int currfunc=0;
 
 %}
 
@@ -160,13 +161,13 @@ primary : lvalue {fprintf(yyout,"primary -> lvalue\n");}
 
 lvalue : ID {
 			fprintf(yyout,"lvalue -> ID\n");
-
-			insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), 0, GLOBAL));
+			fprintf(yyout,"\nscope: %d\n\n", currscope);
+			insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, GLOBAL));
 			
 		}
        | local ID {
 			fprintf(yyout,"lvalue -> local ID\n");
-			insert_SymTable(table, new_SymTabEntry("TEST2", yylineno, 1, new_Variable(NULL), new_Function(NULL), 0, GLOBAL));
+			insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, GLOBAL));
 		
 		}
        | DOUBLE_COLON ID {fprintf(yyout,"lvalue -> :: ID\n");}
@@ -216,11 +217,19 @@ comaindexedelem : /*empty*/ {fprintf(yyout,"comaindexedelem -> empty\n");}
 indexedelem : LEFT_BRACE expr COLON expr RIGHT_BRACE {fprintf(yyout,"indexedelem -> { expr : expr }\n");}
             ;
 
-block : LEFT_BRACE stmts RIGHT_BRACE {fprintf(yyout,"block -> { stmts }\n");}
+block : LEFT_BRACE {currscope++;} stmts RIGHT_BRACE {fprintf(yyout,"block -> { stmts }\n"); currscope--;}
       | LEFT_BRACE RIGHT_BRACE {fprintf(yyout,"block -> { }\n");}
       ;
 
-funcdef : FUNCTION ID LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {fprintf(yyout,"funcdef -> function ID ( idlist ) block\n");}
+funcdef : FUNCTION ID LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {currfunc++;} block {
+
+			fprintf(yyout,"funcdef -> function ID ( idlist ) block\n");
+
+			if(lookup_SymTableScope(table, currscope, $2) != NULL) fprintf(yyout, "ERROR: %s already declared\n", $2);
+			else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, USERFUNC));
+
+			currfunc--;
+		}
         | FUNCTION LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {fprintf(yyout,"funcdef -> function ( idlist ) block\n");}
         ;
 
@@ -232,8 +241,12 @@ const : REALCONST {fprintf(yyout,"const -> REALCONST\n");}
       | FALSE {fprintf(yyout,"const -> FALSE\n");}
       ;
  
-idlist : /* empty */ {fprintf(yyout,"idlist -> empty\n");}
-       | ID comaid {fprintf(yyout,"idlist -> ID\n");}
+idlist : /* empty */ {fprintf(yyout,"idlist -> empty\n"); currscope++;}
+       | ID comaid {
+			fprintf(yyout,"idlist -> ID\n");
+			fprintf(yyout,"\nscope: %d\n\n", currscope);
+			insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, FORMAL));
+		}
        ;
 
 comaid : COMA ID comaid {fprintf(yyout,"comaid -> , ID comaid\n");}
