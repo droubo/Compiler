@@ -73,20 +73,35 @@ SymTabEntry * lookup_ScopeListExclusive(ScopeList * list, int scope, const char 
 	return NULL;
 }
 
-SymTabEntry * lookup_ScopeList(ScopeList * list, int scope, const char * name){
-
+SymTabEntry * lookup_ScopeListDeclare(ScopeList * list, int scope, const char * name){
+	
+	int i;
 	SymTabEntry * currEntry;
 
 	currEntry = NULL;
-	currEntry = lookup_ScopeListExclusive(list, scope, name);
+	for(i = scope; i >= 0; i--) {
+		currEntry = lookup_ScopeListExclusive(list, i, name);
+		if(currEntry != NULL)
+			return currEntry;
+	}
+
+	return NULL;
+}
+
+SymTabEntry * lookup_ScopeListAccess(ScopeList * list, int scope, const char * name){
 	
-	if(currEntry != NULL)
-		return currEntry;
+	int i;
+	SymTabEntry * currEntry;
 
+	currEntry = NULL;
 	currEntry = lookup_ScopeListExclusive(list, 0, name);
-
 	if(currEntry != NULL)
 		return currEntry;
+
+	currEntry = lookup_ScopeListExclusive(list, i, name);
+	if(currEntry != NULL)
+		return currEntry;
+	
 
 	return NULL;
 }
