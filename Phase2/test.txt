@@ -1,5 +1,9 @@
-b = 2;
-function a(){
- b = 3;
- function b(){}
+h = 4;
+
+function a(c){
+c = 2;
+function b(){
+ c = 3;
+}
+
 }
