@@ -48,4 +48,6 @@ SymTabEntry * lookup_SymTable(SymTable * table, const char * name);
  */
 SymTabEntry * lookup_SymTableScope(SymTable * table, int scope, const char * name);
 
+void print_SymTable(SymTable * table);
+
 #endif
