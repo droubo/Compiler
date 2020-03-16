@@ -61,6 +61,9 @@ SymTabEntry * lookup_ScopeList(ScopeList * list, int scope, const char * name){
 	ScopeListEntry * currScope;
 	SymTabEntry * currEntry;
 	currScope = get_ScopeList(list, scope);
+	if(currScope == NULL)
+		return NULL;
+	
 	currEntry = currScope->firstSymEntry;
 	
 	while(currEntry != NULL) {
