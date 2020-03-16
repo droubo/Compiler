@@ -218,7 +218,8 @@ const : REALCONST {fprintf(yyout,"const -> REALCONST\n");}
       | FALSE {fprintf(yyout,"const -> FALSE\n");}
       ;
  
-idlist : ID comaid {fprintf(yyout,"idlist -> ID\n");}
+idlist : /* empty */ {fprintf(yyout,"idlist -> empty\n");}
+       | ID comaid {fprintf(yyout,"idlist -> ID\n");}
        ;
 
 comaid : COMA ID comaid {fprintf(yyout,"comaid -> , ID comaid\n");}
