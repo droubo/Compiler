@@ -15,6 +15,8 @@
   extern char * yytext;
   extern FILE * yyin;
   extern FILE * yyout;
+
+SymTable *table;
   
 
 %}
@@ -35,7 +37,7 @@
 %token OR
 %token NOT
 
-%token LOCAL
+%token local
 %token TRUE
 %token FALSE
 %token NIL
@@ -156,8 +158,17 @@ primary : lvalue {fprintf(yyout,"primary -> lvalue\n");}
         | const {fprintf(yyout,"primary -> const\n");}
         ;
 
-lvalue : ID {fprintf(yyout,"lvalue -> ID\n");}
-       | LOCAL ID {fprintf(yyout,"lvalue -> local ID\n");}
+lvalue : ID {
+			fprintf(yyout,"lvalue -> ID\n");
+
+			insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), 0, GLOBAL));
+			
+		}
+       | local ID {
+			fprintf(yyout,"lvalue -> local ID\n");
+			insert_SymTable(table, new_SymTabEntry("TEST2", yylineno, 1, new_Variable(NULL), new_Function(NULL), 0, GLOBAL));
+		
+		}
        | DOUBLE_COLON ID {fprintf(yyout,"lvalue -> :: ID\n");}
        | member {fprintf(yyout,"lvalue -> member\n");}
        ;
@@ -250,17 +261,9 @@ int yyerror (char* yaccProvidedMessage)
 {
 	fprintf(stderr, "%s: at line %d, before token: '%s'\n", yaccProvidedMessage, yylineno, yytext);
 }
-
-Symtable * table;
-ScopeList * list;
-
 int main(int argc, char** argv)
 {
-        list = init_ScopeList();
         table = init_SymTable();
-
-        insert_SymTable(table, list, new_SymTabEntry("entry1", 0, 1, new_Function(NULL), NULL, currscope, GLOBAL));
-        
 
 
 	if (argc == 3){
