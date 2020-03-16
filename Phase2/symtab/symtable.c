@@ -69,8 +69,7 @@ void print_SymTable(SymTable * table){
 }
 
 SymTabEntry * lookup_SymTable(SymTable * table, const char * name){
-    SymTabEntry a;
-    return a;
+    return NULL;
 }
 
 int main() {
@@ -81,12 +80,12 @@ int main() {
     t = init_SymTable();
     l = init_ScopeList();
     
-    entry1 = new_SymTabEntry("entry1", 1, 1, NULL, NULL, 6, GLOBAL, NULL, NULL);
-    entry2 = new_SymTabEntry("entry2", 1, 1, NULL, NULL, 1, GLOBAL, NULL, NULL);
-    entry3 = new_SymTabEntry("entry3", 1, 1, NULL, NULL, 2, GLOBAL, NULL, NULL);
-    entry4 = new_SymTabEntry("entry4", 1, 1, NULL, NULL, 0, GLOBAL, NULL, NULL);
-    entry5 = new_SymTabEntry("entry5", 1, 1, NULL, NULL, 1, GLOBAL, NULL, NULL);
-    entry6 = new_SymTabEntry("entry6", 1, 1, NULL, NULL, 2, GLOBAL, NULL, NULL);
+    entry1 = new_SymTabEntry("entry1", 1, 1, NULL, NULL, 6, GLOBAL);
+    entry2 = new_SymTabEntry("entry2", 1, 1, NULL, NULL, 1, GLOBAL);
+    entry3 = new_SymTabEntry("entry3", 1, 1, NULL, NULL, 2, GLOBAL);
+    entry4 = new_SymTabEntry("entry4", 1, 1, NULL, NULL, 0, GLOBAL);
+    entry5 = new_SymTabEntry("entry5", 1, 1, NULL, NULL, 1, GLOBAL);
+    entry6 = new_SymTabEntry("entry6", 1, 1, NULL, NULL, 2, GLOBAL);
     insert_SymTable(t, l, entry1);
     insert_SymTable(t, l, entry2);
     insert_SymTable(t, l, entry3);

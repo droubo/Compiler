@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <unistd.h> 
 #include <fcntl.h>
+#include "symtab/scope_list.h"
+#include "symtab/symtable.h"
+#include "symtab/symtable_types.h"
 
 #define YY_DECL int alpha_yylex (void* yylval)
   
@@ -248,8 +251,17 @@ int yyerror (char* yaccProvidedMessage)
 	fprintf(stderr, "%s: at line %d, before token: '%s'\n", yaccProvidedMessage, yylineno, yytext);
 }
 
+Symtable * table;
+ScopeList * list;
+
 int main(int argc, char** argv)
 {
+        list = init_ScopeList();
+        table = init_SymTable();
+
+        insert_SymTable(table, list, new_SymTabEntry("entry1", 0, 1, new_Function(NULL), NULL, currscope, GLOBAL));
+        
+
 
 	if (argc == 3){
 		if( !(yyin = fopen(argv[1], "r")) ) {

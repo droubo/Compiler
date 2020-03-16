@@ -31,13 +31,12 @@ typedef struct SymTabEntry {
 	struct SymTabEntry * nextInHash;
 } SymTabEntry;
 
-Variable new_Variable(void * value);
+Variable * new_Variable(void * value);
 
-Function new_Function(void * args);
+Function * new_Function(void * args);
 
 SymTabEntry new_SymTabEntry(const char * name, unsigned int line, int isActive, Variable * varVal,
-							Function * funcVal, unsigned int scope, SymbolType type, 
-							SymTabEntry * nextInScope, SymTabEntry * nextInHash);
+							Function * funcVal, unsigned int scope, SymbolType type);
 
 void print_SymTabEntry(SymTabEntry entry);
 
