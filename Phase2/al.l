@@ -87,7 +87,7 @@ CONTINUE "continue"
 AND "and"
 NOT "not"
 OR "or"
-LOCAL "local"
+local "local"
 TRUE "true"
 FALSE "false"
 NIL "nil"
@@ -154,7 +154,7 @@ UNDEFINED .
 {AND} {insert_token(yylineno,token++,"AND", "KEYWORD", "enumerated", "and"); return AND;}
 {NOT} {insert_token(yylineno,token++,"NOT", "KEYWORD", "enumerated", "not"); return NOT;}
 {OR} {insert_token(yylineno,token++,"OR", "KEYWORD", "enumerated", "or"); return OR;}
-{LOCAL} {insert_token(yylineno,token++,"LOCAL", "KEYWORD", "enumerated", "local"); return LOCAL;}
+{local} {insert_token(yylineno,token++,"local", "KEYWORD", "enumerated", "local"); return local;}
 {TRUE} {insert_token(yylineno,token++,"TRUE", "KEYWORD", "enumerated", "true"); return TRUE;}
 {FALSE} {insert_token(yylineno,token++,"FALSE", "KEYWORD", "enumerated", "false"); return FALSE;}
 {NIL} {insert_token(yylineno,token++,"NIL", "KEYWORD", "enumerated", "nil"); return NIL;}
