@@ -38,7 +38,7 @@ void insert_SymTable(SymTable * table, SymTabEntry sym);
 SymTabEntry * lookup_SymTable(SymTable * table, const char * name);
 
 /**
- * @brief Lookup in a specific scop
+ * @brief Lookup in a specific scOp
  * 
  * @param table pointer to table to lookup in
  * @param scope scope to lookup in
@@ -47,6 +47,14 @@ SymTabEntry * lookup_SymTable(SymTable * table, const char * name);
  * @return pointer to entry item
  */
 SymTabEntry * lookup_SymTableScope(SymTable * table, int scope, const char * name);
+
+/**
+ * @brief table Symtable
+ * 
+ * @param table Symtable
+ * @param scope scope to hide
+ */
+void hide_Scope(SymTable * table, int scope);
 
 /**
  * @brief Print symtable
