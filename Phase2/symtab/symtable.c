@@ -85,6 +85,19 @@ SymTabEntry * lookup_SymTableScope(SymTable * table, int scope, const char * nam
     return lookup_ScopeList(table->list, scope, name);
 }
 
+void hide_Scope(SymTable * table, int scope){
+    ScopeList * list;
+    SymTabEntry * currEntry;
+
+    list = get_ScopeList(table->list, scope);
+
+    currEntry = list->firstScopeEntry;
+    while(currEntry != NULL){
+        currEntry->isActive = 0;
+        currEntry = currEntry->nextInScope;
+    }    
+}
+
 int test() {
     SymTable * t;
     SymTabEntry entry1, entry2, entry3, entry4, entry5, entry6;
