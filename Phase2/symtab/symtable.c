@@ -85,7 +85,7 @@ SymTabEntry * lookup_SymTableScope(SymTable * table, int scope, const char * nam
     return lookup_ScopeList(table->list, scope, name);
 }
 
-int main() {
+int test() {
     SymTable * t;
     SymTabEntry entry1, entry2, entry3, entry4, entry5, entry6;
     
