@@ -86,12 +86,12 @@ SymTabEntry * lookup_SymTableScope(SymTable * table, int scope, const char * nam
 }
 
 void hide_Scope(SymTable * table, int scope){
-    ScopeList * list;
+    ScopeListEntry * list;
     SymTabEntry * currEntry;
 
     list = get_ScopeList(table->list, scope);
 
-    currEntry = list->firstScopeEntry;
+    currEntry = list->firstSymEntry;
     while(currEntry != NULL){
         currEntry->isActive = 0;
         currEntry = currEntry->nextInScope;

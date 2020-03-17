@@ -1,0 +1,27 @@
+data1 = 1;
+data2 = 4;
+data3 = 5;
+data4 = 8;
+numOfData = 4;
+
+
+function mean(d1, d2, d3, d4){
+    return (d1 + d2 + d3 + d4)/(numOfData);
+}
+
+function max_custom(d1, d2){
+    if(d1 > d2){ resmax = d1; } else { resmax = d2; }
+    return resmax;
+}
+
+function see_results(d1, d2, d3, d4){
+
+    function combine_results(d1, d2, d3, d4) { 
+        meanvar = mean(d1, d2, d3, d4);
+        maximum = max_custom(max_custom(d1, d2), max_custom(d3, d4));
+
+        return meanvar + maximum;
+    }
+    
+    print(combine_results(data1, data2, data3, data4));
+}

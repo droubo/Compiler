@@ -4,9 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h> 
 #include <fcntl.h>
-#include "symtab/scope_list.h"
 #include "symtab/symtable.h"
-#include "symtab/symtable_types.h"
 
 #define YY_DECL int alpha_yylex (void* yylval)
   
@@ -325,34 +323,54 @@ int yyerror (char* yaccProvidedMessage)
 {
 	fprintf(stderr, "%s: at line %d, before token: '%s'\n", yaccProvidedMessage, yylineno, yytext);
 }
+
+void printusage(){
+        fprintf(stderr, "Invalid arguments provided.\nUsage: [programname] <inputfilename> <outputfilename> <args>\n");
+        fprintf(stderr, "Ommiting input file or output file will send I/O to stdin and stdout.\n");
+        fprintf(stderr, "<args> can be -s to print symtable sorted by scopes, -t to print symtable as a hash table, or -st for both.\n");
+}
+
 int main(int argc, char** argv)
 {
         table = init_SymTable();
+        char * args;
 
-
-	if (argc == 3){
+	if (argc == 4){
 		if( !(yyin = fopen(argv[1], "r")) ) {
-			fprintf(stderr, "Cannot Open File: %s\n", argv[1]);
-			yyin = stdin;
+			fprintf(stderr, "Cannot Open Input File: %s\nAccepting input from stdin...\n", argv[1]);
+                        yyin = stdin;
 		}
 		if(!(yyout = fopen(argv[2], "w")) )
 		{
-			fprintf(stderr, "Cannot Open File: %s\n", argv[2]);
+			fprintf(stderr, "Cannot Open Output File: %s\nOutput in stdout...\n", argv[2]);
 			yyout = stdout;
 		}
+                args = argv[3];
 	}
-	else if (argc == 2){
+	else if (argc == 3){
 		if( !(yyin = fopen(argv[1], "r")) ) {
-			fprintf(stderr, "Cannot Open File: %s\n", argv[1]);
+			fprintf(stderr, "Cannot Open Input File: %s\nAccepting input from stdin...\n", argv[1]);
 			yyin = stdin;
 		}
+                args = argv[2];
 	}
 	else{
-		fprintf(stderr, "ERROR : no arguments..\n");
+		printusage();
 		return 0;
 	}
         
 	yyparse();
-	print_ScopeList(table->list);
+
+
+
+        if(!strcmp(args, "-s"))
+                print_Scopes(table);
+        else if(!strcmp(args, "-t"))
+                print_SymTable(table);
+        else if(!strcmp(args, "-st")){
+                print_SymTable(table);
+                print_Scopes(table);
+        } else printusage();
+
 	return 0;
 }
