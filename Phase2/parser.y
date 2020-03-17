@@ -257,11 +257,6 @@ block : LEFT_BRACE {
 				if(currscope != currfunc) insert_SymTable(table, new_SymTabEntry("$0", yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope-1, USERFUNC));
 
 		} stmts RIGHT_BRACE {fprintf(yyout,"block -> { stmts }\n"); currscope--;}
-      | LEFT_BRACE {
-		currscope++;
-		if(currscope != currfunc) insert_SymTable(table, new_SymTabEntry("$0", yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope-1, USERFUNC));
-		currscope--;
-	  } RIGHT_BRACE {fprintf(yyout,"block -> { }\n");}
       ;
 
 funcdef : FUNCTION ID {
@@ -301,7 +296,11 @@ idlist : /* empty */ {fprintf(yyout,"idlist -> empty\n");}
 		}
        ;
 
-comaid : COMA ID comaid {fprintf(yyout,"comaid -> , ID comaid\n");}
+comaid : COMA ID comaid {fprintf(yyout,"comaid -> , ID comaid\n");
+                         fprintf(yyout,"idlist -> ID\n");
+			 fprintf(yyout,"\nscope: %d\n\n", currscope);
+			 insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, FORMAL));
+                        }
        | {fprintf(yyout,"comaid -> empty\n");}
        ;
 
