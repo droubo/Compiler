@@ -98,6 +98,10 @@ void hide_Scope(SymTable * table, int scope){
     }    
 }
 
+void print_Scopes(SymTable * table){
+    print_ScopeList(table->list);
+}
+
 int test() {
     SymTable * t;
     SymTabEntry entry1, entry2, entry3, entry4, entry5, entry6;

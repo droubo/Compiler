@@ -84,7 +84,7 @@ void print_ScopeList(ScopeList * list){
 	currScope = list->firstScopeEntry;
 	printf(">>> Symbols by scope\n");
 	for(i = 0; i < list->maxScope + 1; i++) {
-		printf(">> Scope %d :\n", i);
+		printf("---------- Scope %d ----------\n", i);
 		currEntry = currScope->firstSymEntry;
 		while(currEntry != NULL){
 			print_SymTabEntry(*currEntry);

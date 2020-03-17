@@ -63,4 +63,12 @@ void hide_Scope(SymTable * table, int scope);
  */
 void print_SymTable(SymTable * table);
 
+
+/**
+ * @brief Print scopes
+ * 
+ * @param table table to prin
+ */
+void print_Scopes(SymTable * table);
+
 #endif
