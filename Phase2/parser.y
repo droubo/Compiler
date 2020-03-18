@@ -162,13 +162,13 @@ lvalue : ID {
 			fprintf(yyout,"\nscope: %d\n\n", currscope);
 			SymTabEntry *tmp = lookup_SymTable(table, $1);
 			if(tmp != NULL){
-				if(strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
+				if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
 					fprintf(yyout, "ERROR @ line %d: %s is a library function\n", yylineno, $1);
 				}
-				else if(!strcmp(SymbolTypeToString(tmp->type),"GLOBAL") && tmp->scope != currfunc){
+				else if(tmp->scope != 0 && tmp->scope != currfunc){
 					fprintf(yyout, "ERROR @ line %d: %s cannot be accessed\n",yylineno, $1);
 				}
-				else if(strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
+				else if(!strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
 					fprintf(yyout, "ERROR @ line %d: %s is already declared as function\n",yylineno, $1);
 				}
 			}
@@ -183,7 +183,7 @@ lvalue : ID {
 
 			SymTabEntry *tmp = lookup_SymTable(table, $2);
 			if(tmp != NULL){
-				if(strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
+				if(1strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
 					fprintf(yyout, "ERROR @ line %d: %s is a library function\n",yylineno, $2);
 				}
 				else if(tmp->scope == currscope){
@@ -200,7 +200,7 @@ lvalue : ID {
 				fprintf(yyout,"lvalue -> :: ID\n");
 				SymTabEntry *tmp = lookup_SymTable(table, $2);
 				if(tmp != NULL){
-					if(!strcmp(SymbolTypeToString(tmp->type), "GLOBAL")) fprintf(yyout, "ERROR @ line %d: %s is not global variable\n",yylineno, $2);
+					if(tmp->scope != 0) fprintf(yyout, "ERROR @ line %d: %s is not global variable\n",yylineno, $2);
 				}
 				else fprintf(yyout, "ERROR @ line %d: %s is not global variable\n",yylineno, $2);
 	    }
@@ -260,18 +260,17 @@ block : LEFT_BRACE {
 funcdef : FUNCTION ID {
 
 		currfunc++;
-		currscope++;
 		fprintf(yyout,"funcdef -> function ID ( idlist ) block\n");
 		SymTabEntry *tmp = lookup_SymTableScope(table, currscope-1, $2);
-		if(tmp != NULL && strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
-			if(SymbolTypeToString(tmp->type) ==  "LIBFUNC"){
+		if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
+			if(!strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
 				fprintf(yyout, "ERROR @ line %d: %s is library function\n",yylineno, $2);
 			}
 			fprintf(yyout, "ERROR @ line %d: %s already declared\n",yylineno, $2);
 		}
 		else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, USERFUNC));
 		
-		} LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {
+		} LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {currscope++;} block {
 
 			currfunc--;
 			currscope--;
