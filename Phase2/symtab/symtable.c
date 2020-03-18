@@ -76,6 +76,7 @@ SymTabEntry * lookup_SymTable(SymTable * table, const char * name){
     while(currEntry != NULL){
         if(!strcmp(currEntry->name, name))
             return currEntry;
+        currEntry = currEntry->nextInHash;
     }
     
     return NULL;
