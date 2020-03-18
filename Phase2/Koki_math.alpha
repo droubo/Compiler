@@ -22,6 +22,4 @@ function see_results(d1, d2, d3, d4){
 
         return meanvar + maximum;
     }
-    
-    print(combine_results(data1, data2, data3, data4));
 }
