@@ -162,13 +162,13 @@ lvalue : ID {
 			fprintf(yyout,"\nscope: %d\n\n", currscope);
 			SymTabEntry *tmp = lookup_SymTable(table, $1);
 			if(tmp != NULL){
-				if(strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
+				if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
 					fprintf(yyout, "ERROR @ line %d: %s is a library function\n", yylineno, $1);
 				}
 				else if(!strcmp(SymbolTypeToString(tmp->type),"GLOBAL") && tmp->scope != currfunc){
 					fprintf(yyout, "ERROR @ line %d: %s cannot be accessed\n",yylineno, $1);
 				}
-				else if(strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
+				else if(!strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
 					fprintf(yyout, "ERROR @ line %d: %s is already declared as function\n",yylineno, $1);
 				}
 			}
