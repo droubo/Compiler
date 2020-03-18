@@ -183,7 +183,7 @@ lvalue : ID {
 
 			SymTabEntry *tmp = lookup_SymTable(table, $2);
 			if(tmp != NULL){
-				if(1strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
+				if(strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
 					fprintf(yyout, "ERROR @ line %d: %s is a library function\n",yylineno, $2);
 				}
 				else if(tmp->scope == currscope){

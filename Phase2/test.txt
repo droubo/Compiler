@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 data1 = 1;
 data2 = 4;
 data3 = 5;
@@ -20,12 +19,11 @@ function see_results(d1, d2, d3, d4){
     function combine_results(d1, d2, d3, d4) { 
         meanvar = mean(d1, d2, d3, d4);
         maximum = max_custom(max_custom(d1, d2), max_custom(d3, d4));
+	/* vgazei 3 fores error oti i max_custom exei dilw8ei ksana*/
 
         return meanvar + maximum;
     }
     
     //print(combine_results(data1, data2, data3, data4));
 }
-=======
 k = bs(a);
->>>>>>> 9827ed4a35b6d7d9ab8d1718927f7568bf1d8519
