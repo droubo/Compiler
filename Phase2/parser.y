@@ -251,15 +251,16 @@ indexedelem : LEFT_BRACE expr COLON expr RIGHT_BRACE {fprintf(yyout,"indexedelem
             ;
 
 block : LEFT_BRACE {
-				currscope++;
+				
 				if(currscope != currfunc) insert_SymTable(table, new_SymTabEntry("$0", yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope-1, USERFUNC));
 
-		} stmts RIGHT_BRACE {fprintf(yyout,"block -> { stmts }\n"); currscope--;}
+		} stmts RIGHT_BRACE {fprintf(yyout,"block -> { stmts }\n");}
       ;
 
 funcdef : FUNCTION ID {
 
 		currfunc++;
+		currscope++;
 		fprintf(yyout,"funcdef -> function ID ( idlist ) block\n");
 		SymTabEntry *tmp = lookup_SymTableScope(table, currscope-1, $2);
 		if(tmp != NULL && strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
@@ -273,9 +274,10 @@ funcdef : FUNCTION ID {
 		} LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {
 
 			currfunc--;
+			currscope--;
 
 		}
-        | FUNCTION LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {fprintf(yyout,"funcdef -> function ( idlist ) block\n");}
+        | FUNCTION {currscope++;} LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {fprintf(yyout,"funcdef -> function ( idlist ) block\n");  currscope--;}
         ;
 
 const : REALCONST {fprintf(yyout,"const -> REALCONST\n");}
