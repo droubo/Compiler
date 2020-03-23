@@ -7,7 +7,7 @@
 #include "symtab/symtable.h"
 
 #define YY_DECL int alpha_yylex (void* yylval)
-  
+
   extern int yylineno;
   extern char * yyval;
   extern char * yytext;
@@ -17,6 +17,7 @@
 SymTable *table;
 unsigned int currscope=0;
 unsigned int currfunc=0;
+unsigned int anonym_func_count = 0;
 
 %}
 
@@ -250,12 +251,7 @@ comaindexedelem : /*empty*/ {fprintf(yyout,"comaindexedelem -> empty\n");}
 indexedelem : LEFT_BRACE expr COLON expr RIGHT_BRACE {fprintf(yyout,"indexedelem -> { expr : expr }\n");}
             ;
 
-block : LEFT_BRACE { currscope++;
-		     if(currscope != currfunc) insert_SymTable(table, new_SymTabEntry("$0", yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope-1, USERFUNC));
-
-		   } stmts RIGHT_BRACE { currscope--;
-                                         fprintf(yyout,"block -> { stmts }\n");
-                                       }
+block : LEFT_BRACE { currscope++; } stmts RIGHT_BRACE { currscope--; fprintf(yyout,"block -> { stmts }\n");}
       ;
 
 funcdef : FUNCTION ID {
@@ -276,7 +272,11 @@ funcdef : FUNCTION ID {
 			currfunc--;
 
 		}
-        | FUNCTION  LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS  block {fprintf(yyout,"funcdef -> function ( idlist ) block\n");}
+        | FUNCTION {currfunc++;
+                    char* anonym = (char *)malloc(sizeof(char)*2);
+                    sprintf(anonym,"$%d",anonym_func_count++);
+                    insert_SymTable(table, new_SymTabEntry(anonym, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, USERFUNC));
+                   }  LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS  block {fprintf(yyout,"funcdef -> function ( idlist ) block\n");}
         ;
 
 const : REALCONST {fprintf(yyout,"const -> REALCONST\n");}

@@ -1,0 +1,43 @@
+// test 1 - failed
+function oof() {}
+{x = oof();} 	//error 1 : leei oti i oof sto line 2 einai already declared , omws kanoume call
+
+// test 2 - failed
+f;
+function f(a,b) // error 1 : den petaei error oti i f yparxei
+{		// error 2 : dhlwnei kai f variable kai f function (tis vazei sto symtable)
+
+}
+
+// test 3 - failed
+{
+ {
+  function x1(){}
+  function y1(){ x1();} // error 1 : petaei error oti h x1() den einai accessible
+			// enw einai
+ }
+} 
+
+// test 4 - pass
+{ 
+ y2 = 1;
+ function ex (a) {
+  y2 = 3; // correct : variable y2 is not accessible in function ex
+ }
+}
+
+// test 5 - fail
+{ 
+ y3 = 1;
+  function ex (a) {
+   local y3 = 3; // error 1 : y3 leei oti einai library function kai den tin vazei sto symtable
+ }
+}
+
+// test 6 - pass
+{ 
+ y4 = 1;
+ function ex (a) {
+  ::y4 = 3; // correct : undefined global variable y4
+ }
+} 
