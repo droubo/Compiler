@@ -1,15 +1,15 @@
-// test 1 - failed
+// test 1 - pass
 function oof() {}
 {x = oof();} 	//error 1 : leei oti i oof sto line 2 einai already declared , omws kanoume call
 
-// test 2 - failed
+// test 2 - pass
 f;
 function f(a,b) // error 1 : den petaei error oti i f yparxei
 {		// error 2 : dhlwnei kai f variable kai f function (tis vazei sto symtable)
 
 }
 
-// test 3 - failed
+// test 3 - pass
 {
  {
   function x1(){}
@@ -26,7 +26,7 @@ function f(a,b) // error 1 : den petaei error oti i f yparxei
  }
 }
 
-// test 5 - fail
+// test 5 - pass
 { 
  y3 = 1;
   function ex (a) {

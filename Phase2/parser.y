@@ -163,15 +163,19 @@ lvalue : ID {
 			fprintf(yyout,"\nscope: %d\n\n", currscope);
 			SymTabEntry *tmp = lookup_SymTable(table, $1);
 			if(tmp != NULL){
+			/*
 				if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
 					fprintf(yyout, "ERROR @ line %d: %s is a library function\n", yylineno, $1);
 				}
-				else if(tmp->scope != 0 && tmp->scope != currscope){
+				*/
+				if(tmp->scope != 0 && tmp->scope != currscope && !strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") && !strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
 					fprintf(yyout, "ERROR @ line %d: %s cannot be accessed\n",yylineno, $1);
 				}
+				/*
 				else if(!strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
 					fprintf(yyout, "ERROR @ line %d: %s is already declared as function\n",yylineno, $1);
 				}
+				*/
 			}
 			else {
 				if(currscope == 0) insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, GLOBAL));
@@ -184,7 +188,7 @@ lvalue : ID {
 
 			SymTabEntry *tmp = lookup_SymTable(table, $2);
 			if(tmp != NULL){
-				if(strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
+				if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
 					fprintf(yyout, "ERROR @ line %d: %s is a library function\n",yylineno, $2);
 				}
 				else if(tmp->scope == currscope){
@@ -259,7 +263,7 @@ funcdef : FUNCTION ID {
 		currfunc++;
 		fprintf(yyout,"funcdef -> function ID ( idlist ) block\n");
 		SymTabEntry *tmp = lookup_SymTableScope(table, currscope-1, $2);
-		if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
+		if(tmp != NULL){
 			if(!strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
 				fprintf(yyout, "ERROR @ line %d: %s is library function\n",yylineno, $2);
 			}
