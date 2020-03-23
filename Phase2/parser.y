@@ -165,7 +165,7 @@ lvalue : ID {
 				if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
 					fprintf(yyout, "ERROR @ line %d: %s is a library function\n", yylineno, $1);
 				}
-				else if(tmp->scope != 0 && tmp->scope != currfunc){
+				else if(tmp->scope != 0 && tmp->scope != currscope){
 					fprintf(yyout, "ERROR @ line %d: %s cannot be accessed\n",yylineno, $1);
 				}
 				else if(!strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
@@ -228,7 +228,8 @@ normcall : LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {fprintf(yyout,"normcall -> 
 methodcall : DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {fprintf(yyout,"methodcall -> .. ID ( elist )\n");}
            ;
 
-elist : expr comaexpr {fprintf(yyout,"elist -> expr comaexpr\n");}
+elist : /* empty */   {fprintf(yyout,"elist -> empty\n");}
+      | expr comaexpr {fprintf(yyout,"elist -> expr comaexpr\n");}
       ;
 
 comaexpr : /*empty*/ {fprintf(yyout,"comaexpr -> empty\n");}
@@ -237,7 +238,6 @@ comaexpr : /*empty*/ {fprintf(yyout,"comaexpr -> empty\n");}
 
 objectdef : LEFT_BRACKET elist RIGHT_BRACKET {fprintf(yyout,"objectdef -> [ elist ]\n");}
           | LEFT_BRACKET indexed RIGHT_BRACKET {fprintf(yyout,"objectdef [ indexed ]\n");}
-          | LEFT_BRACKET RIGHT_BRACKET {fprintf(yyout,"objectdef -> [ ]\n");}
           ;
 
 indexed : indexedelem comaindexedelem {fprintf(yyout,"indexed -> indexedelem comaindexedelem\n");}
@@ -250,11 +250,12 @@ comaindexedelem : /*empty*/ {fprintf(yyout,"comaindexedelem -> empty\n");}
 indexedelem : LEFT_BRACE expr COLON expr RIGHT_BRACE {fprintf(yyout,"indexedelem -> { expr : expr }\n");}
             ;
 
-block : LEFT_BRACE {
-				
-				if(currscope != currfunc) insert_SymTable(table, new_SymTabEntry("$0", yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope-1, USERFUNC));
+block : LEFT_BRACE { currscope++;
+		     if(currscope != currfunc) insert_SymTable(table, new_SymTabEntry("$0", yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope-1, USERFUNC));
 
-		} stmts RIGHT_BRACE {fprintf(yyout,"block -> { stmts }\n");}
+		   } stmts RIGHT_BRACE { currscope--;
+                                         fprintf(yyout,"block -> { stmts }\n");
+                                       }
       ;
 
 funcdef : FUNCTION ID {
@@ -270,13 +271,12 @@ funcdef : FUNCTION ID {
 		}
 		else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, USERFUNC));
 		
-		} LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS {currscope++;} block {
+		} LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {
 
 			currfunc--;
-			currscope--;
 
 		}
-        | FUNCTION {currscope++;} LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {fprintf(yyout,"funcdef -> function ( idlist ) block\n");  currscope--;}
+        | FUNCTION  LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS  block {fprintf(yyout,"funcdef -> function ( idlist ) block\n");}
         ;
 
 const : REALCONST {fprintf(yyout,"const -> REALCONST\n");}
@@ -360,7 +360,20 @@ int main(int argc, char** argv)
 		return 0;
 	}
         
-	yyparse();
+        /* add library functions */
+        insert_SymTable(table,new_SymTabEntry("print",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("input",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
+	insert_SymTable(table,new_SymTabEntry("objectmemberkeys",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("objecttotalmembers",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("objectcopy",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("totalarguments",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("argument",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("typeof",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("strtonum",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("sqrt",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("cos",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("sin",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
+        yyparse();
 
 
 
