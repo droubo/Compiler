@@ -1,10 +1,10 @@
 // test 1 - pass
 function oof() {}
-{x = oof();} 	// kaleitai kanonika h oof
+{x = oof();} 	// correct : kaleitai kanonika h oof
 
 // test 2 - pass
 f;
-function f(a,b) // petaei error oti h f yparxei
+function f(a,b) // correct : petaei error oti h f yparxei
 {		
 }
 
@@ -12,16 +12,17 @@ function f(a,b) // petaei error oti h f yparxei
 {
  {
   function x1(){}
-  function y1(){ x1();} // kaleitai kanonika h x1
+  function y1(){ x1();} // correct : kaleitai kanonika h x1
 			
  }
 } 
 
-// test 4 - pass
+// test 4 - failed
 { 
  y2 = 1;
  function ex (a) {
-  y2 = 3; // correct : variable y2 is not accessible in function ex
+  y2 = 3; // correct : variable y2 is not in symtable
+	  // error 1 : no error message y2 is not accessible
  }
 }
 
@@ -29,7 +30,7 @@ function f(a,b) // petaei error oti h f yparxei
 { 
  y3 = 1;
   function ex (a) {
-   local y3 = 3; // // h y3 orizetai kanonika kai mpainei sto symtable
+   local y3 = 3; // correct : h y3 orizetai kanonika kai mpainei sto symtable
  }
 }
 
@@ -40,3 +41,32 @@ function f(a,b) // petaei error oti h f yparxei
   ::y4 = 3; // correct : undefined global variable y4
  }
 } 
+
+// test 7 - failed
+function input(){}; // correct : input already declared
+		    // error 1 : message must say input is a library function
+
+// test 8 - failed
+function plus(){};
+plus++; // error 1 : plus is a function , plus++ is not allowed
+plus--; // error 2 : plus i a funciton , plus-- is not allowed
+++plus; // error 3 : plus is a function , ++plus is not allowed
+--plus; // error 4 : plus is a function , --plus is not allowed
+plus = 1; // error 5 : plus is a function , we cant assign a value
+
+// test 9 - failed
+function same_args(x9,x9){} // error 1 : arguments must be different
+
+// test 10 - failed
+function lib_arg(x10,cos){} // error 1 : cos is a library func , it cant be an argument
+
+// test 11 - failed
+function fok(){} // error : gia kapoio logo leei oti i fok einai library function
+function fok(){} // correct : fok already declared
+
+// test 11 - pass
+function recursion()
+{
+ recursion(); // correct : mpainei sto symtable kai den petaei kanena error
+}
+
