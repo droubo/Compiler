@@ -1,20 +1,19 @@
 // test 1 - pass
 function oof() {}
-{x = oof();} 	//error 1 : leei oti i oof sto line 2 einai already declared , omws kanoume call
+{x = oof();} 	// kaleitai kanonika h oof
 
 // test 2 - pass
 f;
-function f(a,b) // error 1 : den petaei error oti i f yparxei
-{		// error 2 : dhlwnei kai f variable kai f function (tis vazei sto symtable)
-
+function f(a,b) // petaei error oti h f yparxei
+{		
 }
 
 // test 3 - pass
 {
  {
   function x1(){}
-  function y1(){ x1();} // error 1 : petaei error oti h x1() den einai accessible
-			// enw einai
+  function y1(){ x1();} // kaleitai kanonika h x1
+			
  }
 } 
 
@@ -30,7 +29,7 @@ function f(a,b) // error 1 : den petaei error oti i f yparxei
 { 
  y3 = 1;
   function ex (a) {
-   local y3 = 3; // error 1 : y3 leei oti einai library function kai den tin vazei sto symtable
+   local y3 = 3; // // h y3 orizetai kanonika kai mpainei sto symtable
  }
 }
 
