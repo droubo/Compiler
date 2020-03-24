@@ -92,6 +92,9 @@ void hide_Scope(SymTable * table, int scope){
 
     list = get_ScopeList(table->list, scope);
 
+    if(list == NULL)
+        return;
+
     currEntry = list->firstSymEntry;
     while(currEntry != NULL){
         currEntry->isActive = 0;
