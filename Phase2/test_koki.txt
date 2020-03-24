@@ -1,0 +1,40 @@
+// test 1
+function a(){
+	poop();
+}
+
+local a = 1; //Error: Cannot change value of a
+
+function b(){
+	a = 2;
+}
+
+// test 2
+function a(){
+function b(){
+function c(){
+a();
+b();
+c();
+}
+}
+}
+
+a();
+b();
+c();
+// Just works
+
+// test 3
+local d;
+function a(){}
+
+d = 2;
+
+function b(){
+local d = 3;
+::d = 3;
+}
+// Just works
+
+// test 4
