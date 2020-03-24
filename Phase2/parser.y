@@ -320,6 +320,7 @@ comaid : COMA ID{
 			 SymTabEntry *tmp = lookup_SymTableScope(table, currscope+1, $2);
 			 if(tmp == NULL && (tmp = lookup_SymTableScope(table, 0, $2)) != NULL){
 				if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")) fprintf(yyout,"ERROR @ line %d: Cannot have a library function as argument\n", yylineno);
+				else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, FORMAL));
 			}
 			 else if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"FORMAL") && tmp->isActive == 1){
 				fprintf(yyout,"ERROR @ line %d: Cannot have the same argument names\n", yylineno);
