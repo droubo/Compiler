@@ -17,7 +17,7 @@ function f(a,b) // correct : petaei error oti h f yparxei
  }
 } 
 
-// test 4 - failed
+// test 4 - failed //pass
 { 
  y2 = 1;
  function ex (a) {
@@ -42,11 +42,11 @@ function f(a,b) // correct : petaei error oti h f yparxei
  }
 } 
 
-// test 7 - failed
+// test 7 - failed //pass
 function input(){}; // correct : input already declared
 		    // error 1 : message must say input is a library function
 
-// test 8 - failed
+// test 8 - failed //pass
 function plus(){};
 plus++; // error 1 : plus is a function , plus++ is not allowed
 plus--; // error 2 : plus i a funciton , plus-- is not allowed
@@ -60,7 +60,7 @@ function same_args(x9,x9){} // error 1 : arguments must be different
 // test 10 - failed
 function lib_arg(x10,cos){} // error 1 : cos is a library func , it cant be an argument
 
-// test 11 - failed
+// test 11 - failed //pass
 function fok(){} // error : gia kapoio logo leei oti i fok einai library function
 function fok(){} // correct : fok already declared
 
@@ -70,3 +70,18 @@ function recursion()
  recursion(); // correct : mpainei sto symtable kai den petaei kanena error
 }
 
+
+// test 12 - pass
+
+function b(){
+function ab(){};
+}
+
+function a (){
+ab = 2;
+ function b(){
+  function ab(){
+    local b;
+  }
+ }
+}

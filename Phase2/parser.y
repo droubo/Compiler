@@ -18,6 +18,8 @@ SymTable *table;
 unsigned int currscope=0;
 unsigned int currfunc=0;
 unsigned int anonym_func_count = 0;
+int flag_func = 0;
+SymTabEntry *global_tmp;
 
 %}
 
@@ -120,7 +122,7 @@ stmt : expr SEMICOLON {fprintf(yyout,"stmt -> expr ;\n");}
      ;
 
 expr : assignexpr {fprintf(yyout,"expr -> assignexpr\n");}
-     | expr op expr {fprintf(yyout,"expr -> expr op expr\n");}
+     | expr op expr { if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function", yylineno); fprintf(yyout,"expr -> expr op expr\n");}
      | term {fprintf(yyout,"expr -> term\n");}
      ;
 
@@ -140,16 +142,16 @@ op : PLUS {fprintf(yyout,"op -> +\n");}
    ;
 
 term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {fprintf(yyout,"term -> ( expr )\n");}
-     | MINUS expr {fprintf(yyout,"term -> - expr\n");}
-     | NOT expr {fprintf(yyout,"term -> ! expr\n");}
-     | PLUS_PLUS lvalue {fprintf(yyout,"term -> ++ lvalue\n");}
-     | lvalue PLUS_PLUS {fprintf(yyout,"term -> lvalue ++\n");}
-     | MINUS_MINUS lvalue {fprintf(yyout,"term -- lvalue\n");}
-     | lvalue MINUS_MINUS {fprintf(yyout,"lavlue --\n");}
+     | MINUS expr {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function", yylineno); fprintf(yyout,"term -> - expr\n");}
+     | NOT expr {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function", yylineno); fprintf(yyout,"term -> ! expr\n");}
+     | PLUS_PLUS lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function", yylineno); fprintf(yyout,"term -> ++ lvalue\n");}
+     | lvalue PLUS_PLUS {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function", yylineno); fprintf(yyout,"term -> lvalue ++\n");}
+     | MINUS_MINUS lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function", yylineno); fprintf(yyout,"term -- lvalue\n");}
+     | lvalue MINUS_MINUS {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function", yylineno); fprintf(yyout,"lavlue --\n");}
      | primary {fprintf(yyout,"term -> primary\n");}
      ;
 
-assignexpr : lvalue ASSIGN expr {fprintf(yyout,"assignexpr -> lvalue = expr\n");}
+assignexpr : lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function", yylineno);} ASSIGN expr {fprintf(yyout,"assignexpr -> lvalue = expr\n");}
 
 primary : lvalue {fprintf(yyout,"primary -> lvalue\n");}
         | call {fprintf(yyout,"primary -> call\n");}
@@ -162,13 +164,14 @@ lvalue : ID {
 			fprintf(yyout,"lvalue -> ID\n");
 			fprintf(yyout,"\nscope: %d\n\n", currscope);
 			SymTabEntry *tmp = lookup_SymTable(table, $1);
-			if(tmp != NULL){
+			if(tmp != NULL && tmp->isActive == 1){
 			/*
 				if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
 					fprintf(yyout, "ERROR @ line %d: %s is a library function\n", yylineno, $1);
 				}
 				*/
-				if(tmp->scope != 0 && tmp->scope != currscope && !strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") && !strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
+				
+				if(tmp->scope != 0 && tmp->scope != currscope && strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") && strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
 					fprintf(yyout, "ERROR @ line %d: %s cannot be accessed\n",yylineno, $1);
 				}
 				/*
@@ -176,6 +179,10 @@ lvalue : ID {
 					fprintf(yyout, "ERROR @ line %d: %s is already declared as function\n",yylineno, $1);
 				}
 				*/
+				else if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") || !strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
+					flag_func = 1;
+					global_tmp = tmp;
+				}
 			}
 			else {
 				if(currscope == 0) insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, GLOBAL));
@@ -218,9 +225,9 @@ member : lvalue DOT ID {fprintf(yyout,"member -> lvalue . ID\n");}
        | call LEFT_BRACKET expr RIGHT_BRACKET {fprintf(yyout,"member -> call [ expr ]\n");}
        ;
 
-call : call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {fprintf(yyout,"call -> call ( elist )\n");}
-     | lvalue callsuffix {fprintf(yyout,"call -> lvalue callsuffix\n");}
-     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {fprintf(yyout,"call -> ( funcdef ) ( elist )\n");}
+call : call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {flag_func = 0; fprintf(yyout,"call -> call ( elist )\n");}
+     | lvalue callsuffix {flag_func = 0;  fprintf(yyout,"call -> lvalue callsuffix\n");}
+     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {flag_func = 0; fprintf(yyout,"call -> ( funcdef ) ( elist )\n");}
      ;
 
 callsuffix : normcall {fprintf(yyout,"callsuffix -> normcall\n");}
@@ -255,19 +262,19 @@ comaindexedelem : /*empty*/ {fprintf(yyout,"comaindexedelem -> empty\n");}
 indexedelem : LEFT_BRACE expr COLON expr RIGHT_BRACE {fprintf(yyout,"indexedelem -> { expr : expr }\n");}
             ;
 
-block : LEFT_BRACE { currscope++; } stmts RIGHT_BRACE { currscope--; fprintf(yyout,"block -> { stmts }\n");}
+block : LEFT_BRACE { currscope++; } stmts RIGHT_BRACE { hide_Scope(table,currscope); currscope--; fprintf(yyout,"block -> { stmts }\n");}
       ;
 
 funcdef : FUNCTION ID {
 
 		currfunc++;
 		fprintf(yyout,"funcdef -> function ID ( idlist ) block\n");
-		SymTabEntry *tmp = lookup_SymTableScope(table, currscope-1, $2);
+		SymTabEntry *tmp = lookup_SymTableScope(table, currscope, $2);
 		if(tmp != NULL){
-			if(!strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
+			if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
 				fprintf(yyout, "ERROR @ line %d: %s is library function\n",yylineno, $2);
 			}
-			fprintf(yyout, "ERROR @ line %d: %s already declared\n",yylineno, $2);
+			else fprintf(yyout, "ERROR @ line %d: %s already declared\n",yylineno, $2);
 		}
 		else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, USERFUNC));
 		
@@ -292,17 +299,36 @@ const : REALCONST {fprintf(yyout,"const -> REALCONST\n");}
       ;
  
 idlist : /* empty */ {fprintf(yyout,"idlist -> empty\n");}
-       | ID comaid {
+       | ID {
+			 SymTabEntry *tmp = lookup_SymTableScope(table, currscope+1, $1);
+			 if(tmp == NULL && (tmp = lookup_SymTableScope(table, 0, $1)) != NULL){
+				if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")) fprintf(yyout,"ERROR @ line %d: Cannot have a library function as argument\n", yylineno);
+			}
+			 else if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"FORMAL") && tmp->isActive == 1){
+				fprintf(yyout,"ERROR @ line %d: Cannot have the same argument names\n", yylineno);
+			 }
+			 else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, FORMAL));
+	   
+		}	
+	   comaid {
 			fprintf(yyout,"idlist -> ID\n");
 			fprintf(yyout,"\nscope: %d\n\n", currscope);
-			insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, FORMAL));
 		}
        ;
 
-comaid : COMA ID comaid {fprintf(yyout,"comaid -> , ID comaid\n");
+comaid : COMA ID{
+			 SymTabEntry *tmp = lookup_SymTableScope(table, currscope+1, $2);
+			 if(tmp == NULL && (tmp = lookup_SymTableScope(table, 0, $2)) != NULL){
+				if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")) fprintf(yyout,"ERROR @ line %d: Cannot have a library function as argument\n", yylineno);
+			}
+			 else if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"FORMAL") && tmp->isActive == 1){
+				fprintf(yyout,"ERROR @ line %d: Cannot have the same argument names\n", yylineno);
+			 }
+			 else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, FORMAL));
+}
+	comaid {fprintf(yyout,"comaid -> , ID comaid\n");
                          fprintf(yyout,"idlist -> ID\n");
 			 fprintf(yyout,"\nscope: %d\n\n", currscope);
-			 insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, FORMAL));
                         }
        | {fprintf(yyout,"comaid -> empty\n");}
        ;
