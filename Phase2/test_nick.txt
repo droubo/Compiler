@@ -17,12 +17,12 @@ function f(a,b) // correct : petaei error oti h f yparxei
  }
 } 
 
-// test 4 - failed //pass
+// test 4 - pass
 { 
  y2 = 1;
  function ex (a) {
   y2 = 3; // correct : variable y2 is not in symtable
-	  // error 1 : no error message y2 is not accessible
+	  // correct : error message y2 is not accessible
  }
 }
 
@@ -42,36 +42,36 @@ function f(a,b) // correct : petaei error oti h f yparxei
  }
 } 
 
-// test 7 - failed //pass
-function input(){}; // correct : input already declared
-		    // error 1 : message must say input is a library function
+// test 7 - pass
+function input(){}; // correct : input already declared as library function
+		  
 
-// test 8 - failed //pass
+// test 8 - pass
 function plus(){};
-plus++; // error 1 : plus is a function , plus++ is not allowed
-plus--; // error 2 : plus i a funciton , plus-- is not allowed
-++plus; // error 3 : plus is a function , ++plus is not allowed
---plus; // error 4 : plus is a function , --plus is not allowed
-plus = 1; // error 5 : plus is a function , we cant assign a value
+plus++; // correct : plus is a function , plus++ is not allowed
+plus--; // correct : plus i a funciton , plus-- is not allowed
+++plus; // correct : plus is a function , ++plus is not allowed
+--plus; // correct : plus is a function , --plus is not allowed
+plus = 1; // correct : plus is a function , we cant assign a value
 
-// test 9 - failed
-function same_args(x9,x9){} // error 1 : arguments must be different
+// test 9 - pass
+function same_args(x9,x9){} // correct : arguments must be different
 
-// test 10 - failed
-function lib_arg(x10,cos){} // error 1 : cos is a library func , it cant be an argument
-
-// test 11 - failed //pass
-function fok(){} // error : gia kapoio logo leei oti i fok einai library function
-function fok(){} // correct : fok already declared
+// test 10 - pass
+function lib_arg(x10,cos){} // correct : cos is a library func , it cant be an argument
 
 // test 11 - pass
+function fok(){} 
+function fok(){} // correct : fok already declared
+
+// test 12 - pass
 function recursion()
 {
  recursion(); // correct : mpainei sto symtable kai den petaei kanena error
 }
 
 
-// test 12 - pass
+// test 13 - pass
 
 function b(){
 function ab(){};
@@ -81,7 +81,30 @@ function a (){
 ab = 2;
  function b(){
   function ab(){
-    local b;
+    local b;	// correct : local b ok ,
   }
  }
 }
+
+// test 14 - pass
+function op_test(){}
+x = -op_test;  //correct : cant use unary minus at function id
+	// x = +op_test; correct : syntax error
+	// x = *op_test; correct : syntax error
+	// x = /op_test; correct : syntax error
+
+
+// test 15 - fail
+// o online compiler ta ypostirizei ta parakatw
+x = not op_test;   // correct : perane oi telestes not, or, and xrwris error
+x = 1 and op_test; // error 1 : petaei error oti den mporeis na kaneis assign enw kanoume
+x = 0 or op_test;  // assign se metavliti
+
+// test 16 - fail
+function more_op(){}
+x > more_op; // error 1 : cant use > at function id
+x < more_op; // error 2 : cant use < at function id
+x >= more_op;// error 3 : cant use >= at funciton id
+x <= more_op; //error 4 : cant use <= at function id
+x == more_op; //correct : we can use == at function id (online compiler)
+x != more_op; //correct : we can use != at function id (online compiler) 

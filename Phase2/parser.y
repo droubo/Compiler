@@ -122,7 +122,7 @@ stmt : expr SEMICOLON {fprintf(yyout,"stmt -> expr ;\n");}
      ;
 
 expr : assignexpr {fprintf(yyout,"expr -> assignexpr\n");}
-     | expr op expr { if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function", yylineno); fprintf(yyout,"expr -> expr op expr\n");}
+     | expr op expr {fprintf(yyout,"expr -> expr op expr\n");}
      | term {fprintf(yyout,"expr -> term\n");}
      ;
 
@@ -142,16 +142,16 @@ op : PLUS {fprintf(yyout,"op -> +\n");}
    ;
 
 term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {fprintf(yyout,"term -> ( expr )\n");}
-     | MINUS expr {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function", yylineno); fprintf(yyout,"term -> - expr\n");}
-     | NOT expr {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function", yylineno); fprintf(yyout,"term -> ! expr\n");}
-     | PLUS_PLUS lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function", yylineno); fprintf(yyout,"term -> ++ lvalue\n");}
-     | lvalue PLUS_PLUS {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function", yylineno); fprintf(yyout,"term -> lvalue ++\n");}
-     | MINUS_MINUS lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function", yylineno); fprintf(yyout,"term -- lvalue\n");}
-     | lvalue MINUS_MINUS {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function", yylineno); fprintf(yyout,"lavlue --\n");}
+     | MINUS expr {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function :", yylineno); fprintf(yyout,"term -> - expr\n");}
+     | NOT expr {fprintf(yyout,"term -> not expr\n");}
+     | PLUS_PLUS lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function :", yylineno); fprintf(yyout,"term -> ++ lvalue\n");}
+     | lvalue PLUS_PLUS {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function :", yylineno); fprintf(yyout,"term -> lvalue ++\n");}
+     | MINUS_MINUS lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function :", yylineno); fprintf(yyout,"term -- lvalue\n");}
+     | lvalue MINUS_MINUS {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function :", yylineno); fprintf(yyout,"lavlue --\n");}
      | primary {fprintf(yyout,"term -> primary\n");}
      ;
 
-assignexpr : lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function", yylineno);} ASSIGN expr {fprintf(yyout,"assignexpr -> lvalue = expr\n");}
+assignexpr : lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function :assignexpr -> lvalue = expr\n", yylineno);} ASSIGN expr {fprintf(yyout,"assignexpr -> lvalue = expr\n");}
 
 primary : lvalue {fprintf(yyout,"primary -> lvalue\n");}
         | call {fprintf(yyout,"primary -> call\n");}
