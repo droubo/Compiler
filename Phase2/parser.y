@@ -18,7 +18,8 @@ SymTable *table;
 unsigned int currscope=0;
 unsigned int currfunc=0;
 unsigned int anonym_func_count = 0;
-int flag_func = 0;
+unsigned int flag_func = 0;
+unsigned int flag_op = 0;
 SymTabEntry *global_tmp;
 
 %}
@@ -122,7 +123,7 @@ stmt : expr SEMICOLON {fprintf(yyout,"stmt -> expr ;\n");}
      ;
 
 expr : assignexpr {fprintf(yyout,"expr -> assignexpr\n");}
-     | expr op expr {fprintf(yyout,"expr -> expr op expr\n");}
+     | expr op expr {if(flag_func == 1 && flag_op == 0) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function\n", yylineno); flag_op = 0; flag_func = 0; fprintf(yyout,"expr -> expr op expr\n");}
      | term {fprintf(yyout,"expr -> term\n");}
      ;
 
@@ -135,23 +136,23 @@ op : PLUS {fprintf(yyout,"op -> +\n");}
    | GREATER_EQUAL {fprintf(yyout,"op -> >=\n");}
    | LESS {fprintf(yyout,"op -> <\n");}
    | LESS_EQUAL {fprintf(yyout,"op -> <=\n");}
-   | EQUAL {fprintf(yyout,"op -> ==\n");}
-   | NOT_EQUAL {fprintf(yyout,"op -> !=\n");}
-   | AND {fprintf(yyout,"op -> and\n");}
-   | OR {fprintf(yyout,"op -> or\n");}
+   | EQUAL {flag_op = 1; fprintf(yyout,"op -> ==\n");}
+   | NOT_EQUAL {flag_op = 1; fprintf(yyout,"op -> !=\n");}
+   | AND {flag_op = 1; fprintf(yyout,"op -> and\n");}
+   | OR {flag_op = 1; fprintf(yyout,"op -> or\n");}
    ;
 
 term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {fprintf(yyout,"term -> ( expr )\n");}
-     | MINUS expr {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function :", yylineno); fprintf(yyout,"term -> - expr\n");}
+     | MINUS expr {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function\n", yylineno); flag_func = 0; fprintf(yyout,"term -> - expr\n");}
      | NOT expr {fprintf(yyout,"term -> not expr\n");}
-     | PLUS_PLUS lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function :", yylineno); fprintf(yyout,"term -> ++ lvalue\n");}
-     | lvalue PLUS_PLUS {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function :", yylineno); fprintf(yyout,"term -> lvalue ++\n");}
-     | MINUS_MINUS lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function :", yylineno); fprintf(yyout,"term -- lvalue\n");}
-     | lvalue MINUS_MINUS {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function :", yylineno); fprintf(yyout,"lavlue --\n");}
+     | PLUS_PLUS lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function\n", yylineno); flag_func = 0; fprintf(yyout,"term -> ++ lvalue\n");}
+     | lvalue PLUS_PLUS {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function\n", yylineno); flag_func = 0; fprintf(yyout,"term -> lvalue ++\n");}
+     | MINUS_MINUS lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function\n", yylineno); flag_func = 0; fprintf(yyout,"term -- lvalue\n");}
+     | lvalue MINUS_MINUS {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function\n", yylineno); flag_func = 0; fprintf(yyout,"lavlue --\n");}
      | primary {fprintf(yyout,"term -> primary\n");}
      ;
 
-assignexpr : lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function :assignexpr -> lvalue = expr\n", yylineno);} ASSIGN expr {fprintf(yyout,"assignexpr -> lvalue = expr\n");}
+assignexpr : lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function :assignexpr -> lvalue = expr\n", yylineno); flag_func = 0;} ASSIGN expr {fprintf(yyout,"assignexpr -> lvalue = expr\n");}
 
 primary : lvalue {fprintf(yyout,"primary -> lvalue\n");}
         | call {fprintf(yyout,"primary -> call\n");}
