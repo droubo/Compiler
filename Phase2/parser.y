@@ -144,12 +144,12 @@ op : PLUS {fprintf(yyout,"op -> +\n");}
 
 term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {fprintf(yyout,"term -> ( expr )\n");}
      | MINUS expr {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function : term -> - expr\n", yylineno); flag_func = 0; fprintf(yyout,"term -> - expr\n");}
-     | NOT expr {fprintf(yyout,"term -> not expr\n");}
+     | NOT expr {flag_op = 1; fprintf(yyout,"term -> not expr\n");}
      | PLUS_PLUS lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function : term -> ++ lvalue\n", yylineno); flag_func = 0; fprintf(yyout,"term -> ++ lvalue\n");}
      | lvalue PLUS_PLUS {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function : term -> lvalue ++\n", yylineno); flag_func = 0; fprintf(yyout,"term -> lvalue ++\n");}
      | MINUS_MINUS lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function : term -- lvalue\n", yylineno); flag_func = 0; fprintf(yyout,"term -- lvalue\n");}
      | lvalue MINUS_MINUS {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function : lavlue --\n", yylineno); flag_func = 0; fprintf(yyout,"lavlue --\n");}
-     | primary {fprintf(yyout,"term -> primary\n");}
+     | primary {flag_op = 1; fprintf(yyout,"term -> primary\n");}
      ;
 
 assignexpr : lvalue {if(flag_func == 1) fprintf(yyout,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno); flag_func = 0;} ASSIGN expr {fprintf(yyout,"assignexpr -> lvalue = expr\n");}
@@ -195,12 +195,12 @@ lvalue : ID {
 			fprintf(yyout,"lvalue -> local ID\n");
 
 			SymTabEntry *tmp = lookup_SymTable(table, $2);
-			if(tmp != NULL){
+			if(tmp != NULL && tmp->isActive == 1){
 				if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
 					fprintf(yyout, "ERROR @ line %d: %s is a library function\n",yylineno, $2);
 				}
 				else if(tmp->scope == currscope){
-					fprintf(yyout, "ERROR @ line %d: %s already declared\n",yylineno, $2);
+					fprintf(yyout, "\nERROR @ line %d: %s already declared\n",yylineno, $2);
 				}
 				else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, LOCAL));
 			}
@@ -211,7 +211,7 @@ lvalue : ID {
 		}
        | DOUBLE_COLON ID {
 				fprintf(yyout,"lvalue -> :: ID\n");
-				SymTabEntry *tmp = lookup_SymTable(table, $2);
+				SymTabEntry *tmp = lookup_SymTableScope(table, 0, $2);
 				if(tmp != NULL){
 					if(tmp->scope != 0) fprintf(yyout, "ERROR @ line %d: %s is not global variable\n",yylineno, $2);
 				}
