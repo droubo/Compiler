@@ -114,7 +114,7 @@ void insert_ScopeList(ScopeList * list, SymTabEntry * node) {
 		
 		
 		currEntry = currScope->firstSymEntry;
-		for(i = 0; i < list->maxScope; i++){
+		while(currEntry->nextInScope != NULL) {
 			currEntry = currEntry->nextInScope;
 		}
 
@@ -142,6 +142,7 @@ void insert_ScopeList(ScopeList * list, SymTabEntry * node) {
 			*(currScope->next) = new_ScopeListEntry(NULL, NULL);
 			currScope = currScope->next;
 		}
+		
 		list->maxScope = node->scope;
 		currScope->firstSymEntry = node;
 		return;
