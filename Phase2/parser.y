@@ -355,7 +355,7 @@ whilestmt : WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {fprintf(yyout,"w
 forstmt : FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt {fprintf(yyout,"forstmt -> FOR ( elist ; expr ; elist ) stmt\n");}
         ;
 
-returnstmt : RETURN expr SEMICOLON {fprintf(yyout,"returnstmt -> return expr ;\n");}
+returnstmt : RETURN expr SEMICOLON {fprintf(yyout,"returnstmt -> return expr ;\n"); flag_func = 0;}
            | RETURN SEMICOLON {fprintf(yyout,"returnstmt -> return ;\n");}
            ;
 
