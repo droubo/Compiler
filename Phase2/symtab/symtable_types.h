@@ -26,6 +26,7 @@ typedef struct SymTabEntry {
 		Function *funcVal;
 	} value;
 	unsigned int scope;
+	unsigned int func_scope;
 	enum SymbolType type;
 	struct SymTabEntry * nextInScope;
 	struct SymTabEntry * nextInHash;
@@ -36,7 +37,7 @@ Variable * new_Variable(void * value);
 Function * new_Function(void * args);
 
 SymTabEntry new_SymTabEntry(const char * name, unsigned int line, int isActive, Variable * varVal,
-							Function * funcVal, unsigned int scope, SymbolType type);
+							Function * funcVal, unsigned int scope, unsigned int func_scope, SymbolType type);
 
 const char * SymbolTypeToString(SymbolType type);
 

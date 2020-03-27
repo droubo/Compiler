@@ -163,7 +163,7 @@ primary : lvalue {fprintf(yyout,"primary -> lvalue\n");}
         | const {fprintf(yyout,"primary -> const\n");}
         ;
 
-lvalue : ID {
+lvalue : ID {	
 			fprintf(yyout,"lvalue -> ID\n");
 			fprintf(yyout,"\nscope: %d\n\n", currscope);
 			SymTabEntry *tmp = lookup_SymTable(table, $1);
@@ -173,7 +173,11 @@ lvalue : ID {
 					fprintf(errorFile, "ERROR @ line %d: %s is a library function\n", yylineno, $1);
 				}
 				*/
-				if(tmp->scope != 0 && tmp->scope != currfunc && strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") && strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
+				if(currscope > currfunc){
+					
+				}
+				printf("\n\n\n FUNC: %d %d\n\n\n",currfunc, currscope);
+				if(tmp->scope != 0 && tmp->func_scope != currfunc && strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") && strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
 					fprintf(errorFile, "ERROR @ line %d: %s cannot be accessed\n",yylineno, $1);
 				}
 				/*
@@ -187,8 +191,8 @@ lvalue : ID {
 				}
 			}
 			else {
-				if(currscope == 0) insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, GLOBAL));
-				else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, LOCAL));
+				if(currscope == 0) insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, GLOBAL));
+				else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, currfunc, LOCAL));
 			}
 			
 		}
@@ -207,10 +211,10 @@ lvalue : ID {
 				else if(tmp->scope == currscope){
 					fprintf(errorFile, "ERROR @ line %d: %s already declared\n",yylineno, $2);
 				}
-				else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, LOCAL));
+				else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, LOCAL));
 			}
 			else {
-				insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, LOCAL));
+				insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, LOCAL));
 			}
 		
 		}
@@ -285,7 +289,7 @@ funcdef : FUNCTION ID {
 			}
 			else fprintf(errorFile, "ERROR @ line %d: %s already declared\n",yylineno, $2);
 		}
-		else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, USERFUNC));
+		else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, USERFUNC));
 		
 		} LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {
 
@@ -295,7 +299,7 @@ funcdef : FUNCTION ID {
         | FUNCTION {currfunc++;
                     char* anonym = (char *)malloc(sizeof(char)*2);
                     sprintf(anonym,"$%d",anonym_func_count++);
-                    insert_SymTable(table, new_SymTabEntry(anonym, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, USERFUNC));
+                    insert_SymTable(table, new_SymTabEntry(anonym, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, USERFUNC));
                    }  LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS  block {fprintf(yyout,"funcdef -> function ( idlist ) block\n");}
         ;
 
@@ -312,12 +316,12 @@ idlist : /* empty */ {fprintf(yyout,"idlist -> empty\n");}
 			 SymTabEntry *tmp = lookup_SymTableScope(table, currscope+1, $1);
 			 if(tmp == NULL && (tmp = lookup_SymTableScope(table, 0, $1)) != NULL){
 				if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")) fprintf(errorFile,"ERROR @ line %d: Cannot have a library function as argument\n", yylineno);
-				else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, FORMAL));
+				else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1,currfunc, FORMAL));
 			}
 			 else if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"FORMAL") && tmp->isActive == 1){
 				fprintf(errorFile,"ERROR @ line %d: Cannot have the same argument names\n", yylineno);
 			 }
-			 else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, FORMAL));
+			 else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, currfunc,FORMAL));
 	   
 		}	
 	   comaid {
@@ -330,12 +334,12 @@ comaid : COMA ID{
 			 SymTabEntry *tmp = lookup_SymTableScope(table, currscope+1, $2);
 			 if(tmp == NULL && (tmp = lookup_SymTableScope(table, 0, $2)) != NULL){
 				if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")) fprintf(errorFile,"ERROR @ line %d: Cannot have a library function as argument\n", yylineno);
-				else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, FORMAL));
+				else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1,currfunc, FORMAL));
 			}
 			 else if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"FORMAL") && tmp->isActive == 1){
 				fprintf(errorFile,"ERROR @ line %d: Cannot have the same argument names\n", yylineno);
 			 }
-			 else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, FORMAL));
+			 else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1,currfunc, FORMAL));
 }
 	comaid {fprintf(yyout,"comaid -> , ID comaid\n");
                          fprintf(yyout,"idlist -> ID\n");
@@ -484,18 +488,18 @@ int main(int argc, char** argv)
         }
 
         /* add library functions */
-        insert_SymTable(table,new_SymTabEntry("print",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
-        insert_SymTable(table,new_SymTabEntry("input",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
-	insert_SymTable(table,new_SymTabEntry("objectmemberkeys",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
-        insert_SymTable(table,new_SymTabEntry("objecttotalmembers",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
-        insert_SymTable(table,new_SymTabEntry("objectcopy",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
-        insert_SymTable(table,new_SymTabEntry("totalarguments",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
-        insert_SymTable(table,new_SymTabEntry("argument",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
-        insert_SymTable(table,new_SymTabEntry("typeof",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
-        insert_SymTable(table,new_SymTabEntry("strtonum",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
-        insert_SymTable(table,new_SymTabEntry("sqrt",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
-        insert_SymTable(table,new_SymTabEntry("cos",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
-        insert_SymTable(table,new_SymTabEntry("sin",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("print",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("input",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
+	insert_SymTable(table,new_SymTabEntry("objectmemberkeys",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("objecttotalmembers",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("objectcopy",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("totalarguments",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("argument",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("typeof",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("strtonum",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("sqrt",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("cos",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
+        insert_SymTable(table,new_SymTabEntry("sin",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
         yyparse();
 
         if(args != NULL && strcmp(args, "-s") == 0)

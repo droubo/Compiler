@@ -19,7 +19,7 @@ Function * new_Function(void * args) {
 }
 
 SymTabEntry new_SymTabEntry(const char * name, unsigned int line, int isActive, Variable * varVal,
-							Function * funcVal, unsigned int scope, SymbolType type){
+							Function * funcVal, unsigned int scope, unsigned int func_scope, SymbolType type){
 	SymTabEntry s;
 	s.name = name;
 	s.line = line;
@@ -27,9 +27,11 @@ SymTabEntry new_SymTabEntry(const char * name, unsigned int line, int isActive, 
 	s.value.varVal = varVal;
 	s.value.funcVal = funcVal;
 	s.scope = scope;
+	s.func_scope = func_scope;
 	s.type = type;
 	s.nextInHash = NULL;
 	s.nextInScope = NULL;
+	
 
 	return s;
 }
