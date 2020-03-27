@@ -112,7 +112,7 @@ stmts : /*empty*/ {fprintf(yyout,"stmts -> empty\n");}
       | stmt stmts {fprintf(yyout,"stmts -> stmt stmts\n");}
       ;
 
-stmt : expr SEMICOLON {fprintf(yyout,"stmt -> expr ;\n");}
+stmt : expr SEMICOLON {fprintf(yyout,"stmt -> expr ;\n"); flag_func = 0;}
      | ifstmt {fprintf(yyout,"stmt -> ifstmt\n");}
      | whilestmt {fprintf(yyout,"stmt -> whilestmt\n");}
      | forstmt {fprintf(yyout,"stmt forstmt\n");}

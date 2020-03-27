@@ -94,10 +94,10 @@ x = -op_test;  //correct : cant use unary minus at function id
 	// x = /op_test; correct : syntax error
 
 
-// test 15 - failed
+// test 15 - pass
 // o online compiler ta ypostirizei ta parakatw
 x = not op_test;   // correct : perane oi telestes not, or, and xrwris error
-x = 1 and op_test; // error 1 : petaei error sto assign , an vgalw to : x = not op_test; den petaei
+x = 1 and op_test; 
 x = 0 or op_test;
 
 // test 16 - pass
