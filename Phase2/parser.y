@@ -361,27 +361,20 @@ int yyerror (char* yaccProvidedMessage)
 }
 
 void printusage(){
-        fprintf(stderr, "Invalid arguments provided.\nUsage: [programname] <inputfilename> <outputfilename> <args>\n");
+        fprintf(stderr, "Invalid arguments provided.\nUsage: [program_name] <input_file_name> <output_file_name> <args> <error_log>\n");
         fprintf(stderr, "Ommiting input file or output file will send I/O to stdin and stdout.\n");
-        fprintf(stderr, "<args> can be -s to print symtable sorted by scopes, -t to print symtable as a hash table, or -st for both.\n");
+        fprintf(stderr, "<args> can be -s to print symtable sorted by scopes, -t to print symtable as a hash table, or nothing to print both.\n");
+        fprintf(stderr, "<error_log> can be -log_err to export a txt with error logs , or nothing for errors to be printed to stderr.\n");
 }
 
 int main(int argc, char** argv)
 {
         table = init_SymTable();
-        char * args;
+        char * args = NULL;
+        char * error_output = NULL;
         char c;
- 
-        printf("Dump Errors to file? (y/n): ");
-        c = getchar();
-        if(c == 'y')
-                errorFile = fopen("error_dump.txt", "w");
-        else
-                errorFile = stderr;
-
         
-
-	if (argc == 4){
+       	if (argc == 5){
 		if( !(yyin = fopen(argv[1], "r")) ) {
 			fprintf(stderr, "Cannot Open Input File: %s\nAccepting input from stdin...\n", argv[1]);
                         yyin = stdin;
@@ -392,18 +385,97 @@ int main(int argc, char** argv)
 			yyout = stdout;
 		}
                 args = argv[3];
+                error_output = argv[4];
 	}
+        else if(argc == 4)
+        {
+                if( !(yyin = fopen(argv[1], "r")) ) {
+			fprintf(stderr, "Cannot Open Input File: %s\nAccepting input from stdin...\n", argv[1]);
+                        yyin = stdin;
+		}
+                
+                /* <args> && <error_log>*/
+                if((strcmp(argv[2],"-s") == 0 || strcmp(argv[2],"-t") == 0) && strcmp(argv[3],"-log_err") == 0)
+                { 
+                        args = argv[2];
+                        error_output = argv[3];
+
+                }
+                /* output file && ( <args> || <error_log>) */ 
+                else
+                {
+                        /* output file && <args> */
+                        if(strcmp(argv[3],"-s") == 0 || strcmp(argv[3],"-t") == 0)
+                        {
+                                args = argv[3];
+                        }
+                        /* output file && <error_log> */
+                        else if(strcmp(argv[3],"-log_err") == 0)
+                        {
+                                error_output = argv[3];
+                        }
+                        /* error invalid argument */
+                        else
+                        {
+                                printusage();
+                                return -1;
+                        }
+
+                        if(!(yyout = fopen(argv[2], "w")) )
+		        {
+			        fprintf(stderr, "Cannot Open Output File: %s\nOutput in stdout...\n", argv[2]);
+			        yyout = stdout;
+		        }
+
+                }
+
+        }
 	else if (argc == 3){
-		if( !(yyin = fopen(argv[1], "r")) ) {
+		
+                if( !(yyin = fopen(argv[1], "r")) ) {
 			fprintf(stderr, "Cannot Open Input File: %s\nAccepting input from stdin...\n", argv[1]);
 			yyin = stdin;
 		}
-                args = argv[2];
+
+                /* <args> */
+                if(strcmp(argv[2],"-s") == 0 || strcmp(argv[2],"-t") == 0)
+                {
+                        args = argv[2];
+                }
+                /* <error_log>*/
+                else if(strcmp(argv[2],"-log_err") == 0)
+                {
+                        error_output = argv[2];
+                }
+                /* output */
+                else
+                {
+                         if(!(yyout = fopen(argv[2], "w")) )
+		        {
+			        fprintf(stderr, "Cannot Open Output File: %s\nOutput in stdout...\n", argv[2]);
+			        yyout = stdout;
+		        }
+                }
 	}
+        else if(argc == 2)
+        {
+                if( !(yyin = fopen(argv[1], "r")) ) {
+			fprintf(stderr, "Cannot Open Input File: %s\nAccepting input from stdin...\n", argv[1]);
+                        yyin = stdin;
+		}
+        }
 	else{
 		printusage();
-		return 0;
+		return -1;
 	}
+
+        if(error_output != NULL && strcmp(error_output,"-log_err") == 0) errorFile = fopen("error_log.txt", "w");
+        else if(error_output == NULL) errorFile = stderr;
+        else
+        {
+                 printusage();
+                 return -1;
+        }
 
         /* add library functions */
         insert_SymTable(table,new_SymTabEntry("print",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
@@ -420,11 +492,11 @@ int main(int argc, char** argv)
         insert_SymTable(table,new_SymTabEntry("sin",0,1,new_Variable(NULL),new_Function(NULL),0,LIBFUNC));
         yyparse();
 
-        if(!strcmp(args, "-s"))
+        if(args != NULL && strcmp(args, "-s") == 0)
                 print_Scopes(table);
-        else if(!strcmp(args, "-t"))
+        else if(args != NULL && strcmp(args, "-t") == 0)
                 print_SymTable(table);
-        else if(!strcmp(args, "-st")){
+        else if(args == NULL){
                 print_SymTable(table);
                 print_Scopes(table);
         } else printusage();
