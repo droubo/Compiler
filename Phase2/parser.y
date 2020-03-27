@@ -201,6 +201,10 @@ lvalue : ID {
 				if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
 					fprintf(errorFile, "ERROR @ line %d: %s is a library function\n",yylineno, $2);
 				}
+                                else if(tmp->scope == currscope && strcmp(SymbolTypeToString(tmp->type),"FORMAL") == 0)
+                                {
+                                        /* do nothing , refer to arguments as local*/
+                                }
 				else if(tmp->scope == currscope){
 					fprintf(errorFile, "ERROR @ line %d: %s already declared\n",yylineno, $2);
 				}
@@ -215,9 +219,12 @@ lvalue : ID {
 				fprintf(yyout,"lvalue -> :: ID\n");
 				SymTabEntry *tmp = lookup_SymTableScope(table, 0, $2);
 				if(tmp != NULL){
-					if(tmp->scope != 0) fprintf(errorFile, "ERROR @ line %d: %s is not global variable\n",yylineno, $2);
+					if(tmp->scope != 0) fprintf(errorFile, "ERROR @ line %d: %s is not a global variable nor a global function\n",yylineno, $2);
+                                        
+                                        /* found global function */
+                                        if(strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") == 0 || strcmp(SymbolTypeToString(tmp->type),"USERFUNC") == 0 ) flag_func = 1;
 				}
-				else fprintf(errorFile, "ERROR @ line %d: %s is not global variable\n",yylineno, $2);
+				else fprintf(errorFile, "ERROR @ line %d: %s is not a global variable nor a global function\n",yylineno, $2);
 	    }
        | member {fprintf(yyout,"lvalue -> member\n");}
        ;
@@ -228,9 +235,9 @@ member : lvalue DOT ID {fprintf(yyout,"member -> lvalue . ID\n");}
        | call LEFT_BRACKET expr RIGHT_BRACKET {fprintf(yyout,"member -> call [ expr ]\n");}
        ;
 
-call : call LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {flag_func = 0; fprintf(yyout,"call -> call ( elist )\n");}
-     | lvalue callsuffix {flag_func = 0;  fprintf(yyout,"call -> lvalue callsuffix\n");}
-     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {flag_func = 0; fprintf(yyout,"call -> ( funcdef ) ( elist )\n");}
+call : call {flag_func = 0;} LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {fprintf(yyout,"call -> call ( elist )\n");}
+     | lvalue {flag_func = 0;} callsuffix {fprintf(yyout,"call -> lvalue callsuffix\n");}
+     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {flag_func = 0;} LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {fprintf(yyout,"call -> ( funcdef ) ( elist )\n");}
      ;
 
 callsuffix : normcall {fprintf(yyout,"callsuffix -> normcall\n");}
@@ -244,7 +251,7 @@ methodcall : DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {fprintf(yyo
            ;
 
 elist : /* empty */   {fprintf(yyout,"elist -> empty\n");}
-      | expr comaexpr {fprintf(yyout,"elist -> expr comaexpr\n");}
+      | expr {flag_func = 0;} comaexpr {fprintf(yyout,"elist -> expr comaexpr\n");}
       ;
 
 comaexpr : /*empty*/ {fprintf(yyout,"comaexpr -> empty\n");}
