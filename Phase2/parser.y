@@ -173,8 +173,7 @@ lvalue : ID {
 					fprintf(errorFile, "ERROR @ line %d: %s is a library function\n", yylineno, $1);
 				}
 				*/
-				
-				if(tmp->scope != 0 && tmp->scope != currscope && strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") && strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
+				if(tmp->scope != 0 && tmp->scope != currfunc && strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") && strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
 					fprintf(errorFile, "ERROR @ line %d: %s cannot be accessed\n",yylineno, $1);
 				}
 				/*
