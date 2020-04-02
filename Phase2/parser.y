@@ -57,10 +57,10 @@ FILE * errorFile;
 %token NOT_EQUAL
 %token PLUS_PLUS
 %token MINUS_MINUS
-%token GREATER
-%token LESS
 %token GREATER_EQUAL
+%token GREATER
 %token LESS_EQUAL
+%token LESS
 
 %token<real> REALCONST
 %token<num> INTCONST
@@ -105,67 +105,62 @@ FILE * errorFile;
 
 %%
 
-program : stmts  {fprintf(yyout, "program -> stmts\n");}
+program : statements
         ;
 
-stmts : /*empty*/ {fprintf(yyout,"stmts -> empty\n");}
-      | stmt stmts {fprintf(yyout,"stmts -> stmt stmts\n");}
-      ;
-
-stmt : expr SEMICOLON {fprintf(yyout,"stmt -> expr ;\n"); flag_func = 0;}
-     | ifstmt {fprintf(yyout,"stmt -> ifstmt\n");}
-     | whilestmt {fprintf(yyout,"stmt -> whilestmt\n");}
-     | forstmt {fprintf(yyout,"stmt forstmt\n");}
-     | returnstmt {fprintf(yyout,"stmt returnstmt\n");}
-     | BREAK SEMICOLON {fprintf(yyout,"stmt -> break;\n");}
-     | CONTINUE SEMICOLON {fprintf(yyout,"stmt -> continue;\n");}
-     | block {fprintf(yyout,"stmt -> block\n");}
-     | funcdef {fprintf(yyout,"stmt -> funcdef\n");}
-     | SEMICOLON {fprintf(yyout,"stmt -> ;\n");}
+statements :
+	 | expr SEMICOLON statements
+     | ifstmt statements
+     | whilestmt statements
+     | forstmt statements
+     | returnstmt statements
+     | BREAK SEMICOLON statements
+     | CONTINUE SEMICOLON statements
+     | block statements
+     | funcdef statements
+     | SEMICOLON statements
      ;
 
-expr : assignexpr {fprintf(yyout,"expr -> assignexpr\n");}
-     | expr op expr {if(flag_func == 1 && flag_op == 0) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); flag_op = 0; flag_func = 0; fprintf(yyout,"expr -> expr op expr\n");}
-     | term {fprintf(yyout,"expr -> term\n");}
+expr : assignexpr
+     | expr op expr {if(flag_func == 1 && flag_op == 0) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); flag_op = 0; flag_func = 0;}
+     | term
      ;
 
-op : PLUS {fprintf(yyout,"op -> +\n");}
-   | MINUS {fprintf(yyout,"op -> -\n");}
-   | MULT {fprintf(yyout,"op -> *\n");}
-   | DIV {fprintf(yyout,"op -> /\n");}
-   | MOD {fprintf(yyout,"op -> %\n");}
-   | GREATER {fprintf(yyout,"op -> >\n");}
-   | GREATER_EQUAL {fprintf(yyout,"op -> >=\n");}
-   | LESS {fprintf(yyout,"op -> <\n");}
-   | LESS_EQUAL {fprintf(yyout,"op -> <=\n");}
-   | EQUAL {flag_op = 1; flag_func = 0; fprintf(yyout,"op -> ==\n");}
-   | NOT_EQUAL {flag_op = 1; flag_func = 0; fprintf(yyout,"op -> !=\n");}
-   | AND {flag_op = 1; flag_func = 0; fprintf(yyout,"op -> and\n");}
-   | OR {flag_op = 1; flag_func = 0; fprintf(yyout,"op -> or\n");}
+op : PLUS
+   | MINUS
+   | MULT
+   | DIV
+   | MOD
+   | GREATER_EQUAL
+   | GREATER
+   | LESS_EQUAL
+   | LESS
+   | EQUAL {flag_op = 1; flag_func = 0;}
+   | NOT_EQUAL {flag_op = 1; flag_func = 0;}
+   | AND {flag_op = 1; flag_func = 0;}
+   | OR {flag_op = 1; flag_func = 0;}
    ;
 
-term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {fprintf(yyout,"term -> ( expr )\n");}
-     | MINUS expr {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> - expr\n", yylineno); flag_func = 0; fprintf(yyout,"term -> - expr\n");}
+term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
+     | MINUS expr {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> - expr\n", yylineno); flag_func = 0;}
      | NOT expr {flag_op = 1; flag_func = 0; fprintf(yyout,"term -> not expr\n");}
-     | PLUS_PLUS lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> ++ lvalue\n", yylineno); flag_func = 0; fprintf(yyout,"term -> ++ lvalue\n");}
-     | lvalue PLUS_PLUS {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> lvalue ++\n", yylineno); flag_func = 0; fprintf(yyout,"term -> lvalue ++\n");}
-     | MINUS_MINUS lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -- lvalue\n", yylineno); flag_func = 0; fprintf(yyout,"term -- lvalue\n");}
-     | lvalue MINUS_MINUS {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : lavlue --\n", yylineno); flag_func = 0; fprintf(yyout,"lavlue --\n");}
-     | primary {fprintf(yyout,"term -> primary\n");}
+     | PLUS_PLUS lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> ++ lvalue\n", yylineno); flag_func = 0;}
+     | lvalue PLUS_PLUS {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> lvalue ++\n", yylineno); flag_func = 0;}
+     | MINUS_MINUS lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -- lvalue\n", yylineno); flag_func = 0;}
+     | lvalue MINUS_MINUS {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : lavlue --\n", yylineno); flag_func = 0;}
+     | primary
      ;
 
-assignexpr : lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno); flag_func = 0;} ASSIGN expr {fprintf(yyout,"assignexpr -> lvalue = expr\n");}
+assignexpr : lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno); flag_func = 0;} ASSIGN expr
 
-primary : lvalue {fprintf(yyout,"primary -> lvalue\n");}
-        | call {fprintf(yyout,"primary -> call\n");}
-        | objectdef {fprintf(yyout,"primary -> objectdef\n");}
-        | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {fprintf(yyout,"primary -> ( funcdef )\n");}
-        | const {fprintf(yyout,"primary -> const\n");}
+primary : lvalue
+        | call
+        | objectdef
+        | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
+        | const
         ;
 
 lvalue : ID {	
-			fprintf(yyout,"lvalue -> ID\n");
-			fprintf(yyout,"\nscope: %d\n\n", currscope);
 			SymTabEntry *tmp = lookup_SymTable(table, $1);
 			if(tmp != NULL && tmp->isActive == 1){
 			/*
@@ -173,6 +168,9 @@ lvalue : ID {
 					fprintf(errorFile, "ERROR @ line %d: %s is a library function\n", yylineno, $1);
 				}
 				*/
+				if(currscope > currfunc){
+					
+				}
 				if(tmp->scope != 0 && tmp->func_scope != currfunc && strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") && strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
 					fprintf(errorFile, "ERROR @ line %d: %s cannot be accessed\n",yylineno, $1);
 				}
@@ -193,7 +191,6 @@ lvalue : ID {
 			
 		}
        | local ID {
-			fprintf(yyout,"lvalue -> local ID\n");
 
 			SymTabEntry *tmp = lookup_SymTable(table, $2);
 			if(tmp != NULL && tmp->isActive == 1){
@@ -215,7 +212,6 @@ lvalue : ID {
 		
 		}
        | DOUBLE_COLON ID {
-				fprintf(yyout,"lvalue -> :: ID\n");
 				SymTabEntry *tmp = lookup_SymTableScope(table, 0, $2);
 				if(tmp != NULL){
 					if(tmp->scope != 0) fprintf(errorFile, "ERROR @ line %d: %s is not a global variable nor a global function\n",yylineno, $2);
@@ -228,56 +224,52 @@ lvalue : ID {
        | member {fprintf(yyout,"lvalue -> member\n");}
        ;
 
-member : lvalue DOT ID {fprintf(yyout,"member -> lvalue . ID\n");}
-       | lvalue LEFT_BRACKET expr RIGHT_BRACKET {fprintf(yyout,"member -> lvalue [ expr ]\n");}
-       | call DOT ID {fprintf(yyout,"member -> call . ID\n");}
-       | call LEFT_BRACKET expr RIGHT_BRACKET {fprintf(yyout,"member -> call [ expr ]\n");}
+member : lvalue DOT ID
+       | lvalue LEFT_BRACKET expr RIGHT_BRACKET
+       | call DOT ID
+       | call LEFT_BRACKET expr RIGHT_BRACKET
        ;
 
-call : call {flag_func = 0;} LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {fprintf(yyout,"call -> call ( elist )\n");}
-     | lvalue {flag_func = 0;} callsuffix {fprintf(yyout,"call -> lvalue callsuffix\n");}
-     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {flag_func = 0;} LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {fprintf(yyout,"call -> ( funcdef ) ( elist )\n");}
+call : call {flag_func = 0;} LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+     | lvalue {flag_func = 0;} callsuffix
+     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {flag_func = 0;} LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
      ;
 
-callsuffix : normcall {fprintf(yyout,"callsuffix -> normcall\n");}
-           | methodcall {fprintf(yyout,"callsuffix -> methodcall\n");}
+callsuffix : normcall
+           | methodcall
            ;
 
-normcall : LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {fprintf(yyout,"normcall -> ( elist )\n");}
+normcall : LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
          ;
 
-methodcall : DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {fprintf(yyout,"methodcall -> .. ID ( elist )\n");}
+methodcall : DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
            ;
 
-elist : /* empty */   {fprintf(yyout,"elist -> empty\n");}
-      | expr {flag_func = 0;} comaexpr {fprintf(yyout,"elist -> expr comaexpr\n");}
+elist :
+      | expr {flag_func = 0;} COMA elist
+	  | expr {flag_func = 0;}
       ;
 
-comaexpr : /*empty*/ {fprintf(yyout,"comaexpr -> empty\n");}
-         | COMA expr comaexpr {fprintf(yyout,"comaexpr -> , expr comaexpr\n");}
-         ;
-
-objectdef : LEFT_BRACKET elist RIGHT_BRACKET {fprintf(yyout,"objectdef -> [ elist ]\n");}
-          | LEFT_BRACKET indexed RIGHT_BRACKET {fprintf(yyout,"objectdef [ indexed ]\n");}
+objectdef : LEFT_BRACKET elist RIGHT_BRACKET
+          | LEFT_BRACKET indexed RIGHT_BRACKET
           ;
 
-indexed : indexedelem comaindexedelem {fprintf(yyout,"indexed -> indexedelem comaindexedelem\n");}
+indexed : indexedelem comaindexedelem
         ;
 
-comaindexedelem : /*empty*/ {fprintf(yyout,"comaindexedelem -> empty\n");}
-                | COMA indexedelem comaindexedelem {fprintf(yyout,"comaindexedelem -> , indexedelem comaindexedelem\n");}
+comaindexedelem : /* */
+                | COMA indexedelem comaindexedelem
                 ;
 
-indexedelem : LEFT_BRACE expr COLON expr RIGHT_BRACE {fprintf(yyout,"indexedelem -> { expr : expr }\n");}
+indexedelem : LEFT_BRACE expr COLON expr RIGHT_BRACE
             ;
 
-block : LEFT_BRACE { currscope++; } stmts RIGHT_BRACE { hide_Scope(table,currscope); currscope--; fprintf(yyout,"block -> { stmts }\n");}
+block : LEFT_BRACE { currscope++; } statements RIGHT_BRACE { hide_Scope(table,currscope); currscope--;}
       ;
 
 funcdef : FUNCTION ID {
 
 		currfunc++;
-		fprintf(yyout,"funcdef -> function ID ( idlist ) block\n");
 		SymTabEntry *tmp = lookup_SymTableScope(table, currscope, $2);
 		if(tmp != NULL){
 			if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
@@ -296,18 +288,18 @@ funcdef : FUNCTION ID {
                     char* anonym = (char *)malloc(sizeof(char)*2);
                     sprintf(anonym,"$%d",anonym_func_count++);
                     insert_SymTable(table, new_SymTabEntry(anonym, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, USERFUNC));
-                   }  LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS  block {fprintf(yyout,"funcdef -> function ( idlist ) block\n");}
+                   }  LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS  block
         ;
 
-const : REALCONST {fprintf(yyout,"const -> REALCONST\n");}
-      | INTCONST {fprintf(yyout,"const -> INTCONST\n");}
-      | STRING {fprintf(yyout,"const -> STRING\n");}
-      | NIL {fprintf(yyout,"const -> NIL\n");}
-      | TRUE {fprintf(yyout,"const -> TRUE\n");}
-      | FALSE {fprintf(yyout,"const -> FALSE\n");}
+const : REALCONST
+      | INTCONST
+      | STRING
+      | NIL
+      | TRUE
+      | FALSE
       ;
  
-idlist : /* empty */ {fprintf(yyout,"idlist -> empty\n");}
+idlist : /*   */
        | ID {
 			 SymTabEntry *tmp = lookup_SymTableScope(table, currscope+1, $1);
 			 if(tmp == NULL && (tmp = lookup_SymTableScope(table, 0, $1)) != NULL){
@@ -320,46 +312,38 @@ idlist : /* empty */ {fprintf(yyout,"idlist -> empty\n");}
 			 else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, currfunc,FORMAL));
 	   
 		}	
-	   comaid {
-			fprintf(yyout,"idlist -> ID\n");
-			fprintf(yyout,"\nscope: %d\n\n", currscope);
-		}
-       ;
-
-comaid : COMA ID{
-			 SymTabEntry *tmp = lookup_SymTableScope(table, currscope+1, $2);
-			 if(tmp == NULL && (tmp = lookup_SymTableScope(table, 0, $2)) != NULL){
+	   COMA idlist
+	   | ID {
+			 SymTabEntry *tmp = lookup_SymTableScope(table, currscope+1, $1);
+			 if(tmp == NULL && (tmp = lookup_SymTableScope(table, 0, $1)) != NULL){
 				if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")) fprintf(errorFile,"ERROR @ line %d: Cannot have a library function as argument\n", yylineno);
-				else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1,currfunc, FORMAL));
+				else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1,currfunc, FORMAL));
 			}
 			 else if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"FORMAL") && tmp->isActive == 1){
 				fprintf(errorFile,"ERROR @ line %d: Cannot have the same argument names\n", yylineno);
 			 }
-			 else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1,currfunc, FORMAL));
-}
-	comaid {fprintf(yyout,"comaid -> , ID comaid\n");
-                         fprintf(yyout,"idlist -> ID\n");
-			 fprintf(yyout,"\nscope: %d\n\n", currscope);
-                        }
-       | {fprintf(yyout,"comaid -> empty\n");}
+			 else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, currfunc,FORMAL));
+	   
+		}	
        ;
 
-ifstmt : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt ELSE stmt {fprintf(yyout,"ifstmt -> IF ( expr ) stmt ELSE stmt\n");}
-       | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {fprintf(yyout,"ifstmt -> IF ( expr ) stmt\n");}
+ifstmt : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS statements ELSE statements
+       | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS statements
        ;
 
-whilestmt : WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS stmt {fprintf(yyout,"whilestmt -> WHILE ( expr ) stmt\n");}
+whilestmt : WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS statements
           ;
 
-forstmt : FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS stmt {fprintf(yyout,"forstmt -> FOR ( elist ; expr ; elist ) stmt\n");}
+forstmt : FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS statements
         ;
 
-returnstmt : RETURN expr SEMICOLON {fprintf(yyout,"returnstmt -> return expr ;\n"); flag_func = 0;}
-           | RETURN SEMICOLON {fprintf(yyout,"returnstmt -> return ;\n");}
+returnstmt : RETURN expr SEMICOLON {flag_func = 0;}
+           | RETURN SEMICOLON
            ;
 
 
 %%
+
 
 int yyerror (char* yaccProvidedMessage)
 {
