@@ -103,22 +103,26 @@ FILE * errorFile;
 
 %union {int integer; char* id; double real;}
 
+%expect 14
+
 %%
 
 program : statements
         ;
 
-statements :
-	 | expr SEMICOLON statements
-     | ifstmt statements
-     | whilestmt statements
-     | forstmt statements
-     | returnstmt statements
-     | BREAK SEMICOLON statements
-     | CONTINUE SEMICOLON statements
-     | block statements
-     | funcdef statements
-     | SEMICOLON statements
+statements : | statement statements;
+
+statement :
+    expr SEMICOLON
+     | ifstmt
+     |  whilestmt
+     | forstmt
+     |  returnstmt
+     |  BREAK SEMICOLON
+     |  CONTINUE SEMICOLON
+     |  block
+     |  funcdef
+     | SEMICOLON
      ;
 
 expr : assignexpr
@@ -142,7 +146,7 @@ op : PLUS
    ;
 
 term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
-     | MINUS expr {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> - expr\n", yylineno); flag_func = 0;}
+     | MINUS expr {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> - expr\n", yylineno); flag_func = 0;} %prec UMINUS
      | NOT expr {flag_op = 1; flag_func = 0; fprintf(yyout,"term -> not expr\n");}
      | PLUS_PLUS lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> ++ lvalue\n", yylineno); flag_func = 0;}
      | lvalue PLUS_PLUS {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> lvalue ++\n", yylineno); flag_func = 0;}
@@ -327,14 +331,14 @@ idlist : /*   */
 		}	
        ;
 
-ifstmt : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS statements ELSE statements
-       | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS statements
+ifstmt : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS statement 
+       | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS statement ELSE statement
        ;
 
-whilestmt : WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS statements
+whilestmt : WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS statement
           ;
 
-forstmt : FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS statements
+forstmt : FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS statement
         ;
 
 returnstmt : RETURN expr SEMICOLON {flag_func = 0;}
