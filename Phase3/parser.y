@@ -5,7 +5,7 @@
 #include <unistd.h> 
 #include <fcntl.h>
 #include "symtab/symtable.h"
-#include "quads/quads.c"
+//#include "quads/quads.c"
 
 #define YY_DECL int alpha_yylex (void* yylval)
 
@@ -30,6 +30,10 @@ FILE * errorFile;
 /* Yacc Definitions */
 
 %start program
+
+%type <id> lvalue
+
+
 %token IF
 %token ELSE
 %token WHILE
@@ -134,15 +138,20 @@ statement :
 
 expr : assignexpr
      | expr op expr {if(flag_func == 1 && flag_op == 0) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); flag_op = 0; flag_func = 0;}
-     | term
+	 | term
      ;
 
-op : PLUS
+op : arthop
+	| compop
+	;
+
+arthop : PLUS
    | MINUS
    | MULT
    | DIV
    | MOD
-   | GREATER_EQUAL
+   ;
+compop : GREATER_EQUAL
    | GREATER
    | LESS_EQUAL
    | LESS
@@ -163,6 +172,10 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
      ;
 
 assignexpr : lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno); flag_func = 0;} ASSIGN expr
+		{
+			emit(assign, expr * arg1, NULL, expr * result, unsigned label, unsigned line)
+
+		}
 
 primary : lvalue
         | call
