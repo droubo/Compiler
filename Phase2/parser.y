@@ -103,17 +103,23 @@ FILE * errorFile;
 
 %union {int integer; char* id; double real;}
 
-%expect 14
+/* %expect 14 */
 
 %%
 
 program : statements
         ;
 
-statements : | statement statements;
+statements : 
+           | statement statements /* correct statement ,  continue */
+           | error_statement statements /* wrong statement , continue */
+           ;
+
+error_statement : error statement /* consume the stack until you find a statement */
+                ;
 
 statement :
-    expr SEMICOLON
+       expr SEMICOLON
      | ifstmt
      |  whilestmt
      | forstmt
