@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#include "symtable.h"
+#include "../symtab/symtable.h"
 
 #define EXPAND_SIZE 1024
 #define CURR_SIZE (total*sizeof(quad))

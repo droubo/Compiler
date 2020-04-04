@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#include "symtable.h"
+#include "../symtab/symtable.h"
 
 #define INT_MIN -2147483647
 #define INT_MAX 2147483647
