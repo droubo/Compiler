@@ -5,6 +5,7 @@
 #include <unistd.h> 
 #include <fcntl.h>
 #include "symtab/symtable.h"
+#include "quads/quads.c"
 
 #define YY_DECL int alpha_yylex (void* yylval)
 
