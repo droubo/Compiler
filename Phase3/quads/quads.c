@@ -70,6 +70,10 @@ void expand (void){
     total += EXPAND_SIZE;
 }
 
+expr newexpr(){
+    
+}
+
 void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned label, unsigned line) {
     if(currQuad == total)
         expand();
