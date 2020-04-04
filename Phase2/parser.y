@@ -103,7 +103,7 @@ FILE * errorFile;
 
 %union {int integer; char* id; double real;}
 
-/* %expect 14 */
+%expect 14
 
 %%
 
