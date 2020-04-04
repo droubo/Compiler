@@ -194,7 +194,7 @@ lvalue : ID {
 					global_tmp = tmp;
 				}
 			}
-			else {
+			else if(tmp == NULL) {
 				if(currscope == 0) insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, GLOBAL));
 				else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, currfunc, LOCAL));
 			}
