@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "symtable_types.h": "c",
+        "symtable.h": "c"
+    }
+}
