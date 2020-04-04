@@ -1,6 +1,10 @@
 /* Some code Taken from lecture 9, Slides 37, 38 
    Frontisthrio 4 Slide 15 */
-#include "symtab/symtable.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
+#include <string.h>
+#include "symtable.h"
 
 #define EXPAND_SIZE 1024
 #define CURR_SIZE (total*sizeof(quad))
@@ -27,7 +31,7 @@ typedef enum expr_t {
 
 typedef enum iopcode {
     assign, add, sub, 
-    mul, div, mod, 
+    mul, diva, mod, 
     uminus, and, or, 
     not, if_eq, if_noteq, 
     if_lesseq, if_greatereq, if_less, 
@@ -70,7 +74,7 @@ void expand (void){
     total += EXPAND_SIZE;
 }
 
-expr newexpr(){
+expr newexpr(expr_t type, SymTabEntry sym){
     
 }
 
@@ -84,4 +88,8 @@ void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned label, 
     p->result = result;
     p->label = label;
     p->line = line;
+}
+
+int main(){
+    printf("poop\n");
 }
