@@ -75,7 +75,9 @@ void expand (void){
 }
 
 expr newexpr(expr_t type, SymTabEntry sym){
-    
+    expr temp;
+    temp.type = type;
+    return temp;
 }
 
 void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned label, unsigned line) {
