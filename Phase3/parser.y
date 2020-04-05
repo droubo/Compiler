@@ -86,6 +86,10 @@ FILE * errorFile;
 
 /*  expr types */
 %type<express> lvalue
+%type<express> primary
+%type<express> term
+%type<express> expr
+%type<express> assignexpr
 
 /* priority */
 
@@ -140,43 +144,47 @@ statement :
      ;
 
 expr : assignexpr
-     | expr op expr {if(flag_func == 1 && flag_op == 0) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); flag_op = 0; flag_func = 0;}
-	 | term
+     | expr PLUS expr {if(flag_func == 1 && flag_op == 0) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); flag_op = 0; flag_func = 0;
+	 
+		printf("%s op %s\n" , $1->sym->name, $3->sym->name);
+		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
+		$$ = newexpr(arithexpr_e,tmp);
+		}
+     | expr MINUS expr {if(flag_func == 1 && flag_op == 0) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); flag_op = 0; flag_func = 0;
+	 
+		printf("%s op %s\n" , $1->sym->name, $3->sym->name);
+		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
+		$$ = newexpr(arithexpr_e,tmp);
+		}
+     | expr MULT expr {if(flag_func == 1 && flag_op == 0) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); flag_op = 0; flag_func = 0;
+	 
+		printf("%s op %s\n" , $1->sym->name, $3->sym->name);
+		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
+		$$ = newexpr(arithexpr_e,tmp);
+		}
+     | expr DIV expr {if(flag_func == 1 && flag_op == 0) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); flag_op = 0; flag_func = 0;
+	 
+		printf("%s op %s\n" , $1->sym->name, $3->sym->name);
+		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
+		$$ = newexpr(arithexpr_e,tmp);
+		}
+	 | term { $$ = $1; }
      ;
 
-op : arthop
-	| compop
-	;
-
-arthop : PLUS
-   | MINUS
-   | MULT
-   | DIV
-   | MOD
-   ;
-compop : GREATER_EQUAL
-   | GREATER
-   | LESS_EQUAL
-   | LESS
-   | EQUAL {flag_op = 1; flag_func = 0;}
-   | NOT_EQUAL {flag_op = 1; flag_func = 0;}
-   | AND {flag_op = 1; flag_func = 0;}
-   | OR {flag_op = 1; flag_func = 0;}
-   ;
-
-term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
+term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
      | MINUS expr {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> - expr\n", yylineno); flag_func = 0;} %prec UMINUS
      | NOT expr {flag_op = 1; flag_func = 0; fprintf(yyout,"term -> not expr\n");}
      | PLUS_PLUS lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> ++ lvalue\n", yylineno); flag_func = 0;}
      | lvalue PLUS_PLUS {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> lvalue ++\n", yylineno); flag_func = 0;}
      | MINUS_MINUS lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -- lvalue\n", yylineno); flag_func = 0;}
      | lvalue MINUS_MINUS {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : lavlue --\n", yylineno); flag_func = 0;}
-     | primary
+     | primary { $$ = $1; }
      ;
 
 assignexpr : lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno); flag_func = 0;} ASSIGN expr
 		{
 			/*emit(assign, expr * arg1, NULL, expr * result, unsigned label, unsigned line)*/
+			printf("%s op %s\n" , $1->sym->name, $4->sym->name);
 
 		}
 
@@ -211,15 +219,12 @@ lvalue : ID {
 					global_tmp = tmp;
 				}
 			}
-			else if(tmp == NULL) {
-
-                                /* test */
-                                $$ = newexpr(var_e,tmp);
-                                /* test */
 				
-                                if(currscope == 0) insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, GLOBAL));
-				else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, currfunc, LOCAL));
-			}
+            if(currscope == 0) insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, GLOBAL));
+			else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, currfunc, LOCAL));
+
+			tmp = lookup_SymTable(table, $1);
+			$$ = newexpr(var_e,tmp);
                         
 			
 		}
