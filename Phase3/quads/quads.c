@@ -2,6 +2,10 @@
    Frontisthrio 4 Slide 15 */
 #include "quads.h"
 
+quad * quads = (quad *) 0;
+unsigned total = 0;
+unsigned int currQuad = 0;
+
 void expand (void){
     assert(total == currQuad);
     quad * p = (quad *) malloc(NEW_SIZE);

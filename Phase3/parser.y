@@ -109,7 +109,7 @@ FILE * errorFile;
 /* expr is a struct , we need to include the code */
 %code requires { #include "quads/quads.h" }
 
-%union {int integer; char* id; double real; expr express;}
+%union {int integer; char* id; double real; expr *express;}
 
 /* %expect 14 */
 

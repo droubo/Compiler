@@ -62,10 +62,6 @@ typedef struct quad {
     unsigned line;
 } quad;
 
-quad * quads = (quad *) 0;
-unsigned total = 0;
-unsigned int currQuad = 0;
-
 void expand (void);
 
 expr * newexpr(expr_t type, SymTabEntry* sym);
