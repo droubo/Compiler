@@ -25,7 +25,7 @@ SymTable * init_SymTable();
  * @param table pointer to table to insert sym to
  * @param sym entry item
  */
-void insert_SymTable(SymTable * table, SymTabEntry sym);
+SymTabEntry *  insert_SymTable(SymTable * table, SymTabEntry sym);
 
 /**
  * @brief Lookup in all of symtable

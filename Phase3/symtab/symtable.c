@@ -29,7 +29,7 @@ unsigned long hash(const char *str) {
     return hash % TABLE_SIZE;
 }
 
-void insert_SymTable(SymTable * table, SymTabEntry sym){
+SymTabEntry *  insert_SymTable(SymTable * table, SymTabEntry sym){
     SymTabEntry * node, *temp;
     int index;
     node = malloc(sizeof(SymTabEntry));
@@ -47,6 +47,7 @@ void insert_SymTable(SymTable * table, SymTabEntry sym){
         table->table[index]->nextInHash = temp;
     }
     printf("Inserted %s\n", sym.name);
+    return node;
 }
 
 void print_SymTable(SymTable * table){
