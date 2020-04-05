@@ -13,10 +13,11 @@ void expand (void){
     total += EXPAND_SIZE;
 }
 
-expr newexpr(expr_t type, SymTabEntry* sym){
-    expr temp;
-    temp.type = type;
-    temp.sym = sym;
+expr * newexpr(expr_t type, SymTabEntry* sym){
+    expr * temp;
+    temp = (expr*) malloc(sizeof(expr));
+    temp->type = type;
+    temp->sym = sym;
     return temp;
 }
 
