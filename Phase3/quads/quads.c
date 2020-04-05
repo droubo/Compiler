@@ -37,6 +37,21 @@ void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned label, 
     p->line = line;
 }
 
-void print_expr(expr * exp){
-    //printf("EXPRESSION @%p\ntype = %s\n");
+void print_expr(expr * exp, int indent){
+    int i;
+    printf("EXPRESSION @%p {\n", exp);
+
+    printf("type = %p\nindex (pointer) = %p\n", exp->type, exp->index);
+    printf("sym = \n");
+    print_SymTabEntry(*(exp->sym));
+    printf("numConst = %d\n", exp->numConst);
+
+    if(exp->strConst != NULL){
+        printf("strConst = %s", exp->strConst);
+    } else
+        printf("strConst = (nil)\n");
+    
+    printf("boolConst = %d\n", exp->boolConst);
+    printf("next (pointer) = %p\n", exp->next);
+
 }
