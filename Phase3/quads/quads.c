@@ -30,6 +30,7 @@ void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned label, 
         expand();
     
     quad * p = quads + currQuad++;
+    p->op = op;
     p->arg1 = arg1;
     p->arg2 = arg2;
     p->result = result;
@@ -54,4 +55,54 @@ void print_expr(expr * exp, int indent){
     printf("boolConst = %d\n", exp->boolConst);
     printf("next (pointer) = %p\n", exp->next);
 
+}
+
+void print_quads(FILE * file){
+    int i;
+    quad * curr_quad;
+    for(i = 0; i < currQuad; i++){
+        curr_quad = quads + i;
+        
+        switch(curr_quad->op){
+            case assign:    { fprintf(file, "ASSIGN"); break;}
+            case add:       { fprintf(file, "ADD"); break; }
+            case sub:       { fprintf(file, "SUB"); break; }
+
+            case mul:       { fprintf(file, "MUL"); break; }
+            case diva:      { fprintf(file, "DIV"); break; }
+            case mod:       { fprintf(file, "MOD"); break; }
+
+            case uminus:    { fprintf(file, "ASSIGN"); break; }
+            case and:    	{ fprintf(file, "ASSIGN"); break; }
+            case or:    	{ fprintf(file, "ASSIGN"); break; }
+
+			case not:    { fprintf(file, "ASSIGN"); break; }
+            case if_eq:    	{ fprintf(file, "ASSIGN"); break; }
+            case if_noteq:    	{ fprintf(file, "ASSIGN"); break; }
+			
+			case if_lesseq:    { fprintf(file, "ASSIGN"); break; }
+            case if_greatereq:    	{ fprintf(file, "ASSIGN"); break; }
+            case :    	{ fprintf(file, "ASSIGN"); break; }
+			
+			case uminus:    { fprintf(file, "ASSIGN"); break; }
+            case and:    	{ fprintf(file, "ASSIGN"); break; }
+            case or:    	{ fprintf(file, "ASSIGN"); break; }
+			
+			case uminus:    { fprintf(file, "ASSIGN"); break; }
+            case and:    	{ fprintf(file, "ASSIGN"); break; }
+            case or:    	{ fprintf(file, "ASSIGN"); break; }
+
+        
+        }
+
+
+    }
+}
+
+int main(){
+    emit(assign, NULL, NULL, NULL, 1, 1);
+    emit(add, NULL, NULL, NULL, 2, 1);
+    emit(assign, NULL, NULL, NULL, 3, 1);
+    emit(assign, NULL, NULL, NULL, 4, 1);
+    print_quads(stdout);
 }

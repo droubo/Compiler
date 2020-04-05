@@ -71,6 +71,6 @@ void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned label, 
 /* Always call with indent = 0 */
 void print_expr(expr * exp, int indent);
 
-void print_quads();
+void print_quads(FILE * file);
 
 #endif
