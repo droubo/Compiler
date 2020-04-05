@@ -38,9 +38,9 @@ typedef enum iopcode {
     uminus, and, or, 
     not, if_eq, if_noteq, 
     if_lesseq, if_greatereq, if_less, 
-    if_greater, call, param, ret, 
-    getretval, funcstart, funcend, 
-    tablecreate, tablegetelem, tablesetelem
+    if_greater, call, param,
+    ret, getretval, funcstart,
+    funcend, tablecreate, tablegetelem, tablesetelem
 } iopcode;
 
 typedef struct expr {

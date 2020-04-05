@@ -64,37 +64,48 @@ void print_quads(FILE * file){
         curr_quad = quads + i;
         
         switch(curr_quad->op){
-            case assign:    { fprintf(file, "ASSIGN"); break;}
-            case add:       { fprintf(file, "ADD"); break; }
-            case sub:       { fprintf(file, "SUB"); break; }
+            case assign:    	{ fprintf(file, "ASSIGN"); break;}
+            case add:       	{ fprintf(file, "ADD"); break; }
+            case sub:       	{ fprintf(file, "SUB"); break; }
 
-            case mul:       { fprintf(file, "MUL"); break; }
-            case diva:      { fprintf(file, "DIV"); break; }
-            case mod:       { fprintf(file, "MOD"); break; }
+            case mul:       	{ fprintf(file, "MUL"); break; }
+            case diva:      	{ fprintf(file, "DIV"); break; }
+            case mod:       	{ fprintf(file, "MOD"); break; }
 
-            case uminus:    { fprintf(file, "ASSIGN"); break; }
-            case and:    	{ fprintf(file, "ASSIGN"); break; }
-            case or:    	{ fprintf(file, "ASSIGN"); break; }
+            case uminus:    	{ fprintf(file, "UMINUS"); break; }
+            case and:    		{ fprintf(file, "AND"); break; }
+            case or:    		{ fprintf(file, "OR"); break; }
 
-			case not:    { fprintf(file, "ASSIGN"); break; }
-            case if_eq:    	{ fprintf(file, "ASSIGN"); break; }
-            case if_noteq:    	{ fprintf(file, "ASSIGN"); break; }
+			case not:    		{ fprintf(file, "NOT"); break; }
+            case if_eq:    		{ fprintf(file, "IF_EQ"); break; }
+            case if_noteq:  	{ fprintf(file, "IF_NOTEQ"); break; }
+
+			case if_lesseq: 	{ fprintf(file, "IF_LESSEQ"); break; }
+            case if_greatereq:	{ fprintf(file, "IF_GREATEREQ"); break; }
+            case if_less:    	{ fprintf(file, "IF_LESS"); break; }
 			
-			case if_lesseq:    { fprintf(file, "ASSIGN"); break; }
-            case if_greatereq:    	{ fprintf(file, "ASSIGN"); break; }
-            case :    	{ fprintf(file, "ASSIGN"); break; }
+			case if_greater:    { fprintf(file, "IF_GREATER"); break; }
+            case call:    		{ fprintf(file, "CALL"); break; }
+            case param:    		{ fprintf(file, "PARAM"); break; }
 			
-			case uminus:    { fprintf(file, "ASSIGN"); break; }
-            case and:    	{ fprintf(file, "ASSIGN"); break; }
-            case or:    	{ fprintf(file, "ASSIGN"); break; }
-			
-			case uminus:    { fprintf(file, "ASSIGN"); break; }
-            case and:    	{ fprintf(file, "ASSIGN"); break; }
-            case or:    	{ fprintf(file, "ASSIGN"); break; }
+			case ret:    		{ fprintf(file, "RET"); break; }
+            case getretval:    	{ fprintf(file, "GETRETVAL"); break; }
+            case funcstart:    	{ fprintf(file, "FUNCSTART"); break; }
 
+			case funcend:    	{ fprintf(file, "FUNCEND"); break; }
+            case tablecreate:   { fprintf(file, "TABLECREATE"); break; }
+            case tablegetelem:  { fprintf(file, "TABLEGETELEM"); break; }
+			case tablesetelem:  { fprintf(file, "TABLESETELEM"); break; }
         
         }
+		if(curr_quad->result != NULL)
+			fprintf(file, "%s", curr_quad->result->sym->name);
+		
+		if(curr_quad->arg1 != NULL)
+			fprintf(file, "%s", curr_quad->arg1->sym->name);
 
+		if(curr_quad->arg2 != NULL)
+			fprintf(file, "%s", curr_quad->arg2->sym->name);
 
     }
 }
