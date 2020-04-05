@@ -36,3 +36,7 @@ void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned label, 
     p->label = label;
     p->line = line;
 }
+
+void print_expr(expr * exp){
+    //printf("EXPRESSION @%p\ntype = %s\n");
+}

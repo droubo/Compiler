@@ -12,7 +12,7 @@
 int tempcounter = 0;
 char * newtempname() {
     char * name = malloc(sizeof(char) * (numPlaces(tempcounter) + 2));
-    sprintf("_t%d", name);
+    sprintf(name, "_t%d", tempcounter);
     return name;
 }
 
@@ -30,5 +30,4 @@ SymTabEntry * newtemp(SymTable * table, int currScope, int func_scope, int curr)
     }
     else
         return sym;
-    
 }

@@ -68,4 +68,8 @@ expr * newexpr(expr_t type, SymTabEntry* sym);
 
 void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned label, unsigned line);
 
+void print_expr(expr * exp);
+
+void print_quads();
+
 #endif
