@@ -149,24 +149,28 @@ expr : assignexpr
 		printf("%s op %s\n" , $1->sym->name, $3->sym->name);
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
+                emit(add, $1, $3, $$, 1, 1);
 		}
      | expr MINUS expr {if(flag_func == 1 && flag_op == 0) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); flag_op = 0; flag_func = 0;
 	 
 		printf("%s op %s\n" , $1->sym->name, $3->sym->name);
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
+                emit(sub, $1, $3, $$, 1, 1);
 		}
      | expr MULT expr {if(flag_func == 1 && flag_op == 0) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); flag_op = 0; flag_func = 0;
 	 
 		printf("%s op %s\n" , $1->sym->name, $3->sym->name);
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
+                emit(mul, $1, $3, $$, 1, 1);
 		}
      | expr DIV expr {if(flag_func == 1 && flag_op == 0) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); flag_op = 0; flag_func = 0;
 	 
 		printf("%s op %s\n" , $1->sym->name, $3->sym->name);
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
+                emit(diva, $1, $3, $$, 1, 1);
 		}
 	 | term { $$ = $1; }
      ;
@@ -183,7 +187,7 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
 
 assignexpr : lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno); flag_func = 0;} ASSIGN expr
 		{
-			/*emit(assign, expr * arg1, NULL, expr * result, unsigned label, unsigned line)*/
+			emit(assign, $4, NULL, $1, 1, 1);
 			printf("%s op %s\n" , $1->sym->name, $4->sym->name);
 
 		}

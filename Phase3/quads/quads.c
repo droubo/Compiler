@@ -98,14 +98,19 @@ void print_quads(FILE * file){
 			case tablesetelem:  { fprintf(file, "TABLESETELEM"); break; }
         
         }
+
+		fprintf(file, " ");
+
 		if(curr_quad->result != NULL)
-			fprintf(file, "%s", curr_quad->result->sym->name);
+			fprintf(file, "%s ", curr_quad->result->sym->name);
 		
 		if(curr_quad->arg1 != NULL)
-			fprintf(file, "%s", curr_quad->arg1->sym->name);
+			fprintf(file, "%s ", curr_quad->arg1->sym->name);
 
 		if(curr_quad->arg2 != NULL)
-			fprintf(file, "%s", curr_quad->arg2->sym->name);
+			fprintf(file, "%s ", curr_quad->arg2->sym->name);
+
+		fprintf(file, "\n");
 
     }
 }
