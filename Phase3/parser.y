@@ -529,5 +529,7 @@ int main(int argc, char** argv)
                 print_Scopes(table);
         } else printusage();
 
+        print_quads(stdout);
+
 	return 0;
 }

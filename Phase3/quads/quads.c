@@ -109,11 +109,3 @@ void print_quads(FILE * file){
 
     }
 }
-
-int main(){
-    emit(assign, NULL, NULL, NULL, 1, 1);
-    emit(add, NULL, NULL, NULL, 2, 1);
-    emit(assign, NULL, NULL, NULL, 3, 1);
-    emit(assign, NULL, NULL, NULL, 4, 1);
-    print_quads(stdout);
-}
