@@ -5,7 +5,7 @@
 #include <unistd.h> 
 #include <fcntl.h>
 #include "symtab/symtable.h"
-//#include "quads/quads.c"
+
 
 #define YY_DECL int alpha_yylex (void* yylval)
 
@@ -30,9 +30,6 @@ FILE * errorFile;
 /* Yacc Definitions */
 
 %start program
-
-%type <id> lvalue
-
 
 %token IF
 %token ELSE
@@ -87,6 +84,9 @@ FILE * errorFile;
 
 %token<id> ID
 
+/*  expr types */
+%type<express> lvalue
+
 /* priority */
 
 %right ASSIGN
@@ -106,9 +106,12 @@ FILE * errorFile;
 %left LEFT_BRACKET RIGHT_BRACKET
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 
-%union {int integer; char* id; double real;}
+/* expr is a struct , we need to include the code */
+%code requires { #include "quads/quads.h" }
 
-%expect 14
+%union {int integer; char* id; double real; expr express;}
+
+/* %expect 14 */
 
 %%
 
@@ -173,7 +176,7 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
 
 assignexpr : lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno); flag_func = 0;} ASSIGN expr
 		{
-			emit(assign, expr * arg1, NULL, expr * result, unsigned label, unsigned line)
+			/*emit(assign, expr * arg1, NULL, expr * result, unsigned label, unsigned line)*/
 
 		}
 
@@ -209,9 +212,15 @@ lvalue : ID {
 				}
 			}
 			else if(tmp == NULL) {
-				if(currscope == 0) insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, GLOBAL));
+
+                                /* test */
+                                $$ = newexpr(var_e,tmp);
+                                /* test */
+				
+                                if(currscope == 0) insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, GLOBAL));
 				else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, currfunc, LOCAL));
 			}
+                        
 			
 		}
        | local ID {
