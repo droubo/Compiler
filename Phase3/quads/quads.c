@@ -116,6 +116,22 @@ void print_quad_arg(expr * arg, FILE * file){
         }
 }
 
+void edit_quad(int index, expr * arg1, expr * arg2, expr * result){
+    quad * curr_quad;
+    
+    curr_quad = quads + index;
+
+    if(arg1 != NULL)
+        curr_quad->arg1 = arg1;
+    
+    if(arg2 != NULL)
+        curr_quad->arg2 = arg2;
+    
+    if(result != NULL)
+        curr_quad->result = result;
+
+}
+
 void print_quads(FILE * file){
     int i;
     quad * curr_quad;
