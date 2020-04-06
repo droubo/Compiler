@@ -1,5 +1,5 @@
-#ifndef SYMTABLE_H
-#define SYMTABLE_H
+#ifndef _SYMTABLE_H
+#define _SYMTABLE_H
 
 #include "scope_list.h"
 #include "symtable_types.h"

@@ -1,5 +1,5 @@
-#ifndef SYMTABLE_TYPES_H
-#define SYMTABLE_TYPES_H
+#ifndef _SYMTABLE_TYPES_H
+#define _SYMTABLE_TYPES_H
 
 typedef struct Variable {
 	void * value;
