@@ -46,9 +46,9 @@ FILE * errorFile;
 %token NOT
 
 %token local
-%token TRUE
-%token FALSE
-%token NIL
+%token<bool> TRUE
+%token<bool> FALSE
+%token<real> NIL
 
 %token ASSIGN
 %token PLUS
@@ -66,8 +66,8 @@ FILE * errorFile;
 %token LESS
 
 %token<real> REALCONST
-%token<num> INTCONST
-%token STRING
+%token<real> INTCONST
+%token<id> STRING
 
 %token LEFT_BRACE /* { */
 %token RIGHT_BRACE 
@@ -91,6 +91,7 @@ FILE * errorFile;
 %type<express> term
 %type<express> expr
 %type<express> assignexpr
+%type<express> const
 
 /* priority */
 
@@ -114,7 +115,7 @@ FILE * errorFile;
 /* expr is a struct , we need to include the code */
 %code requires { #include "quads/quads.h" }
 
-%union {int integer; char* id; double real; expr *express;}
+%union {int integer; char* id; double real; expr *express; unsigned char bool;}
 
 /* %expect 14 */
 
@@ -152,8 +153,8 @@ expr : assignexpr
                 }
                 flag_op = 0; flag_func = 0;
 	 
-		printf("%s op %s\n" , $1->sym->name, $3->sym->name);
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
+		printf("%s op %d\n" , $1->sym->name, $3->numConst);
 		$$ = newexpr(arithexpr_e,tmp);
                 emit(add, $1, $3, $$, 1, 1);
 		}
@@ -162,7 +163,6 @@ expr : assignexpr
                         fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); 
                         fail_icode = 1;
                 }
-		printf("%s op %s\n" , $1->sym->name, $3->sym->name);
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
                 emit(sub, $1, $3, $$, 1, 1);
@@ -172,7 +172,6 @@ expr : assignexpr
                         fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); 
                         fail_icode = 1; 
                 }
-		printf("%s op %s\n" , $1->sym->name, $3->sym->name);
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
                 emit(mul, $1, $3, $$, 1, 1);
@@ -182,7 +181,6 @@ expr : assignexpr
                         fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); 
                         fail_icode = 1; 
                 }
-		printf("%s op %s\n" , $1->sym->name, $3->sym->name);
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
                 emit(diva, $1, $3, $$, 1, 1);
@@ -204,14 +202,13 @@ assignexpr : lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unab
 		{
 			emit(assign, $4, NULL, $1, 1, 1);
 			printf("%s op %s\n" , $1->sym->name, $4->sym->name);
-
 		}
 
 primary : lvalue
         | call
         | objectdef
         | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
-        | const
+        | const {$$ = $1;}
         ;
 
 lvalue : ID {	
@@ -281,7 +278,7 @@ lvalue : ID {
        | member {fprintf(yyout,"lvalue -> member\n");}
        ;
 
-member : lvalue DOT ID
+member : lvalue DOT ID {printf("DOT: %s", $3);}
        | lvalue LEFT_BRACKET expr RIGHT_BRACKET
        | call DOT ID
        | call LEFT_BRACKET expr RIGHT_BRACKET
@@ -348,12 +345,12 @@ funcdef : FUNCTION ID {
                    }  LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS  block
         ;
 
-const : REALCONST
-      | INTCONST
-      | STRING
-      | NIL
-      | TRUE
-      | FALSE
+const : REALCONST { $$ = newexpr(costnum_e,NULL); $$->numConst = $1; $$->const_type = 0;}
+      | INTCONST { $$ = newexpr(costnum_e,NULL); $$->numConst = $1; $$->const_type = 0;}
+      | STRING { $$ = newexpr(conststring_e,NULL); $$->strConst = $1; $$->const_type = 1;}
+      | NIL { $$ = newexpr(costnum_e,NULL); $$->numConst = $1; $$->const_type = 0;}
+      | TRUE { $$ = newexpr(constbool_e,NULL); $$->boolConst = $1; $$->const_type = 2;}
+      | FALSE { $$ = newexpr(constbool_e,NULL); $$->boolConst = $1; $$->const_type = 2;}
       ;
  
 idlist : /*   */

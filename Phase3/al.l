@@ -239,6 +239,7 @@ UNDEFINED .
     }
     
     insert_token(startline, token++, string, "STRING", "char *", string);
+	yylval.id = strdup(string);
     return STRING;
 }
 
