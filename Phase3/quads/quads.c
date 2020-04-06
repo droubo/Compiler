@@ -63,6 +63,11 @@ void print_quads(FILE * file){
     for(i = 0; i < currQuad; i++){
         curr_quad = quads + i;
         
+        if(curr_quad == NULL){
+            printf("Hit null quad\n");
+            return;
+        }
+
         switch(curr_quad->op){
             case assign:    	{ fprintf(file, "ASSIGN"); break;}
             case add:       	{ fprintf(file, "ADD"); break; }
