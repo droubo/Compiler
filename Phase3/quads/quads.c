@@ -4,9 +4,6 @@
 #include "temp.h"
 #include <math.h>
 
-#define VAR_TRUE 1
-#define VAR_FALSE 0
-
 quad * quads = (quad *) 0;
 unsigned total = 0;
 unsigned int currQuad = 0;

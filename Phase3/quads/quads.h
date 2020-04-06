@@ -9,6 +9,9 @@
 #include <string.h>
 #include "../symtab/symtable.h"
 
+#define VAR_TRUE 1
+#define VAR_FALSE 0
+
 #define EXPAND_SIZE 1024
 #define CURR_SIZE (total*sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)

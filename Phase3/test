@@ -1,3 +1,9 @@
-x  = s + a * 1 + ++u;
-x = TRUE;
-x = FALSE;
+function x(a,b){
+b = 3;
+t.a = 4;
+}
+
+j = 4;
+if(j + 4){
+l = 3;
+}
