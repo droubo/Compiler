@@ -135,8 +135,8 @@ void print_quad_arg(expr * arg, FILE * file){
     if(arg != NULL)
         switch(arg->type){
             case constnum_e:    { print_double(arg->numConst, file); break; }
-            case constbool_e:   { fprintf(file, "%s ", arg->strConst); break; }
-            case conststring_e: { fprintf(file, "%s ", arg->boolConst); break; }
+            case constbool_e:   { fprintf(file, "%s ", arg->boolConst); break; }
+            case conststring_e: { fprintf(file, "%s ", arg->strConst); break; }
             default:            { fprintf(file, "%s ", arg->sym->name); break; }
         }
 }
