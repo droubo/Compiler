@@ -24,7 +24,6 @@ unsigned int flag_op = 0;
 unsigned int fail_icode = 0;
 SymTabEntry *global_tmp;
 int table_flag = 0;
-int label = 0;
 int jump_label = 0;
 FILE * errorFile;
 
@@ -342,7 +341,7 @@ block : LEFT_BRACE { currscope++; } statements RIGHT_BRACE { hide_Scope(table,cu
 
 funcdef : FUNCTION ID {
 		expr *tmp_expr = newexpr(constnum_e,NULL);
-		jump_label = label;
+		jump_label = currQuad;
 		tmp_expr->const_type = 0;
 		emit(jump, NULL, NULL, tmp_expr, yylineno);
 		
@@ -362,7 +361,7 @@ funcdef : FUNCTION ID {
 			
 			SymTabEntry *tmp = lookup_SymTableScope(table, currscope, $2);
 			emit(funcend, NULL, NULL, newexpr(programfunc_e, tmp), yylineno);
-			quads[jump_label].result->numConst = label;
+			edit_quad(jump_label, NULL, NULL, newconstnumexpr((double)currQuad+1));
 			currfunc--;
 
 		}
@@ -409,9 +408,19 @@ idlist : /*   */
 		}	
        ;
 
-ifstmt : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS statement 
-       | IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS statement ELSE statement
+ifstmt : ifexpr statement { edit_quad(jump_label, NULL, NULL, newconstnumexpr((double)currQuad+1));} elseexpr
        ;
+
+ifexpr : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
+		printf("HELLO\n\n\n");
+		emit(if_eq, newconstboolexpr(1),newconstnumexpr(currQuad+3), $3, yylineno);
+		emit(jump, NULL, NULL, 0, yylineno);
+		jump_label = currQuad;
+		}
+		;
+elseexpr : 
+		| ELSE statement
+		;
 
 whilestmt : WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS statement
           ;
