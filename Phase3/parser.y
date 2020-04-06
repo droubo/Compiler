@@ -118,7 +118,7 @@ FILE * errorFile;
 /* expr is a struct , we need to include the code */
 %code requires { #include "quads/quads.h" }
 
-%union {int integer; char* id; double real; expr *express; unsigned char bool;}
+%union {double integer; char* id; double real; expr *express; unsigned char bool;}
 
 /* %expect 14 */
 
@@ -373,10 +373,10 @@ funcdef : FUNCTION ID {
                    }  LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS  block
         ;
 
-const : REALCONST { $$ = newconstnumexpr($1); }
-      | INTCONST { $$ = newconstnumexpr($1); }
+const : REALCONST { $$ = newconstnumexpr((double) $1); }
+      | INTCONST { $$ = newconstnumexpr((double) $1); }
       | STRING { $$ = newconststringexpr($1); }
-      | NIL { $$ = newconstnumexpr($1); }
+      | NIL { $$ = newconstnumexpr((double) $1); }
       | TRUE { $$ = newconstboolexpr(1); }
       | FALSE { $$ = newconstboolexpr(0); }
       ;

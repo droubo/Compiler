@@ -27,6 +27,7 @@ typedef struct SymTabEntry {
 	} value;
 	unsigned int scope;
 	unsigned int func_scope;
+	unsigned int offset;
 	enum SymbolType type;
 	struct SymTabEntry * nextInScope;
 	struct SymTabEntry * nextInHash;

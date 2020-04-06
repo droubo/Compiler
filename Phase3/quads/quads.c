@@ -2,6 +2,8 @@
    Frontisthrio 4 Slide 15 */
 #include "quads.h"
 #include "temp.h"
+#include <math.h>
+
 quad * quads = (quad *) 0;
 unsigned total = 0;
 unsigned int currQuad = 0;
@@ -29,7 +31,7 @@ expr * newexpr(expr_t type, SymTabEntry* sym){
     return temp;
 }
 
-expr * newconstnumexpr(double num){
+expr * newconstnumexpr(double num) {
     expr * temp;
     temp = (expr*) malloc(sizeof(expr));
     temp->type = constnum_e;
@@ -106,16 +108,6 @@ void print_expr(expr * exp, int indent){
 
 }
 
-void print_quad_arg(expr * arg, FILE * file){
-    if(arg != NULL)
-        switch(arg->type){
-            case constnum_e:    { fprintf(file, "%f ", arg->numConst); break; }
-            case constbool_e:   { fprintf(file, "%s ", arg->strConst); break; }
-            case conststring_e: { fprintf(file, "%d ", arg->boolConst); break; }
-            default:            { fprintf(file, "%s ", arg->sym->name); break; }
-        }
-}
-
 void edit_quad(int index, expr * arg1, expr * arg2, expr * result){
     quad * curr_quad;
     
@@ -130,6 +122,23 @@ void edit_quad(int index, expr * arg1, expr * arg2, expr * result){
     if(result != NULL)
         curr_quad->result = result;
 
+}
+
+void print_double(double d, FILE * file){
+    if((ceilf(d) == d && floor(d) == d) || d == 0.0)
+        fprintf(file, "%.0f ", d);
+    else
+        fprintf(file, "%f ", (double) d);
+}
+
+void print_quad_arg(expr * arg, FILE * file){
+    if(arg != NULL)
+        switch(arg->type){
+            case constnum_e:    { print_double(arg->numConst, file); break; }
+            case constbool_e:   { fprintf(file, "%s ", arg->strConst); break; }
+            case conststring_e: { fprintf(file, "%s ", arg->boolConst); break; }
+            default:            { fprintf(file, "%s ", arg->sym->name); break; }
+        }
 }
 
 void print_quads(FILE * file){
