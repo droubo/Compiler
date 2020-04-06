@@ -152,6 +152,9 @@ void print_quads(FILE * file){
             return;
         }
 
+        if(file == stdout)
+            fprintf(file, "%d ", curr_quad->label);
+
         switch(curr_quad->op){
             case assign:    	{ fprintf(file, "ASSIGN"); break;}
             case add:       	{ fprintf(file, "ADD"); break; }
