@@ -25,13 +25,47 @@ expr * newexpr(expr_t type, SymTabEntry* sym){
     temp->numConst = 0;
     temp->strConst = NULL;
     temp->boolConst = (unsigned char) 0;
-    temp->const_type = -1;
     temp->index = NULL;
+    return temp;
+}
+
+expr * newconstnumexpr(double num){
+    expr * temp;
+    temp = (expr*) malloc(sizeof(expr));
+    temp->type = constnum_e;
+    temp->sym = NULL;
+    temp->numConst = num;
+    temp->strConst = NULL;
+    temp->boolConst = (unsigned char) 0;
     
     return temp;
 }
 
-void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned label, unsigned line) {
+expr * newconstboolexpr(unsigned char bool){
+    expr * temp;
+    temp = (expr*) malloc(sizeof(expr));
+    temp->type = constbool_e;
+    temp->sym = NULL;
+    temp->numConst = 0;
+    temp->strConst = NULL;
+    temp->boolConst = bool;
+    
+    return temp;
+}
+
+expr * newconststringexpr(char * str){
+    expr * temp;
+    temp = (expr*) malloc(sizeof(expr));
+    temp->type = constbool_e;
+    temp->sym = NULL;
+    temp->numConst = 0;
+    temp->strConst = str;
+    temp->boolConst = (unsigned char) 0;
+    
+    return temp;
+}
+
+void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned line) {
     if(currQuad == total)
         expand();
     
@@ -40,17 +74,19 @@ void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned label, 
     p->arg1 = arg1;
     p->arg2 = arg2;
     p->result = result;
-    p->label = label;
+    p->label = currQuad;
     p->line = line;
 }
-struct expr *emit_iftableitem(expr* e, SymTable * table, int currScope, int func_scope, int curr, unsigned label, unsigned line){
+
+struct expr *emit_iftableitem(expr* e, SymTable * table, int currScope, int func_scope, int curr, unsigned line){
     if(e->type != tableitem_e) return e;
     else{
         expr* result = newexpr(var_e, newtemp(table,currScope,func_scope,curr));
-        emit(tablegetelem, e, e->index, result, label, line);
+        emit(tablegetelem, e, e->index, result, line);
         return result;
     }
 }
+
 void print_expr(expr * exp, int indent){
     int i;
     printf("EXPRESSION @%p {\n", exp);
@@ -72,12 +108,11 @@ void print_expr(expr * exp, int indent){
 
 void print_quad_arg(expr * arg, FILE * file){
     if(arg != NULL)
-        switch(arg->const_type){
-            case -1: { fprintf(file, "%s ", arg->sym->name); break; }
-            case 0:  { fprintf(file, "%d ", arg->numConst); break; }
-            case 1:  { fprintf(file, "%s ", arg->strConst); break; }
-            case 2:  { fprintf(file, "%d ", arg->boolConst); break; }
-            default: { fprintf(file, "*ERROR* "); break; }
+        switch(arg->type){
+            case constnum_e:    { fprintf(file, "%f ", arg->numConst); break; }
+            case constbool_e:   { fprintf(file, "%s ", arg->strConst); break; }
+            case conststring_e: { fprintf(file, "%d ", arg->boolConst); break; }
+            default:            { fprintf(file, "%s ", arg->sym->name); break; }
         }
 }
 

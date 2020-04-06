@@ -25,7 +25,7 @@ typedef enum expr_t {
     assignexpr_e,
     newtable_e,
 
-    costnum_e, 
+    constnum_e, 
     constbool_e,
     conststring_e,
 
@@ -67,9 +67,16 @@ void expand (void);
 
 expr * newexpr(expr_t type, SymTabEntry* sym);
 
-void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned label, unsigned line);
-struct expr *emit_iftableitem(expr* e, SymTable * table, int currScope, int func_scope, int curr, unsigned label, unsigned line);
-/* Always call with indent = 0 */
+expr * newconstnumexpr(double num);
+
+expr * newconstboolexpr(unsigned char bool);
+
+expr * newconststringexpr(char * str);
+
+void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned line);
+
+struct expr *emit_iftableitem(expr* e, SymTable * table, int currScope, int func_scope, int curr, unsigned line);
+
 void print_expr(expr * exp, int indent);
 
 void print_quads(FILE * file);
