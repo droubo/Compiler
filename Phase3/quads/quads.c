@@ -22,6 +22,11 @@ expr * newexpr(expr_t type, SymTabEntry* sym){
     temp = (expr*) malloc(sizeof(expr));
     temp->type = type;
     temp->sym = sym;
+    temp->numConst = 0;
+    temp->strConst = NULL;
+    temp->boolConst = (unsigned char) 0;
+    temp->const_type = -1;
+    
     return temp;
 }
 
@@ -55,6 +60,17 @@ void print_expr(expr * exp, int indent){
     printf("boolConst = %d\n", exp->boolConst);
     printf("next (pointer) = %p\n", exp->next);
 
+}
+
+void print_quad_arg(expr * arg, FILE * file){
+    if(arg != NULL)
+        switch(arg->const_type){
+            case -1: { fprintf(file, "%s ", arg->sym->name); break; }
+            case 0:  { fprintf(file, "%d ", arg->numConst); break; }
+            case 1:  { fprintf(file, "%s ", arg->strConst); break; }
+            case 2:  { fprintf(file, "%d ", arg->boolConst); break; }
+            default: { fprintf(file, "*ERROR* "); break; }
+        }
 }
 
 void print_quads(FILE * file){
@@ -101,19 +117,15 @@ void print_quads(FILE * file){
             case tablecreate:   { fprintf(file, "TABLECREATE"); break; }
             case tablegetelem:  { fprintf(file, "TABLEGETELEM"); break; }
 			case tablesetelem:  { fprintf(file, "TABLESETELEM"); break; }
-        
+
+            default: { fprintf(file, "*ERROR* "); break; }
         }
 
 		fprintf(file, " ");
 
-		if(curr_quad->result != NULL)
-			fprintf(file, "%s ", curr_quad->result->sym->name);
-		
-		if(curr_quad->arg1 != NULL)
-			fprintf(file, "%s ", curr_quad->arg1->sym->name);
-
-		if(curr_quad->arg2 != NULL)
-			fprintf(file, "%s ", curr_quad->arg2->sym->name);
+        print_quad_arg(curr_quad->result, file);
+		print_quad_arg(curr_quad->arg1, file);
+        print_quad_arg(curr_quad->arg2, file);
 
 		fprintf(file, "\n");
 

@@ -50,6 +50,7 @@ typedef struct expr {
     double numConst;
     char * strConst;
     unsigned char boolConst;
+    int const_type; /* -1 = symtab 0 = num 1 = str 2 = bool */
     struct expr * next;
 } expr;
 
