@@ -21,6 +21,7 @@ unsigned int currfunc=0;
 unsigned int anonym_func_count = 0;
 unsigned int flag_func = 0;
 unsigned int flag_op = 0;
+unsigned int fail_icode = 0;
 SymTabEntry *global_tmp;
 
 FILE * errorFile;
@@ -144,29 +145,43 @@ statement :
      ;
 
 expr : assignexpr
-     | expr PLUS expr {if(flag_func == 1 && flag_op == 0) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); flag_op = 0; flag_func = 0;
+     | expr PLUS expr {
+                if(flag_func == 1 && flag_op == 0) {
+                        fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); 
+                        fail_icode = 1; 
+                }
+                flag_op = 0; flag_func = 0;
 	 
 		printf("%s op %s\n" , $1->sym->name, $3->sym->name);
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
                 emit(add, $1, $3, $$, 1, 1);
 		}
-     | expr MINUS expr {if(flag_func == 1 && flag_op == 0) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); flag_op = 0; flag_func = 0;
-	 
+     | expr MINUS expr {
+                if(flag_func == 1 && flag_op == 0) {
+                        fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); 
+                        fail_icode = 1;
+                }
 		printf("%s op %s\n" , $1->sym->name, $3->sym->name);
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
                 emit(sub, $1, $3, $$, 1, 1);
 		}
-     | expr MULT expr {if(flag_func == 1 && flag_op == 0) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); flag_op = 0; flag_func = 0;
-	 
+     | expr MULT expr {
+                if(flag_func == 1 && flag_op == 0) {
+                        fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); 
+                        fail_icode = 1; 
+                }
 		printf("%s op %s\n" , $1->sym->name, $3->sym->name);
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
                 emit(mul, $1, $3, $$, 1, 1);
 		}
-     | expr DIV expr {if(flag_func == 1 && flag_op == 0) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); flag_op = 0; flag_func = 0;
-	 
+     | expr DIV expr {
+                if(flag_func == 1 && flag_op == 0) {
+                        fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); 
+                        fail_icode = 1; 
+                }
 		printf("%s op %s\n" , $1->sym->name, $3->sym->name);
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
