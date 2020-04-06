@@ -376,8 +376,8 @@ const : REALCONST { $$ = newconstnumexpr((double) $1); }
       | INTCONST { $$ = newconstnumexpr((double) $1); }
       | STRING { $$ = newconststringexpr($1); }
       | NIL { $$ = newconstnumexpr((double) $1); }
-      | TRUE { $$ = newconstboolexpr(1); }
-      | FALSE { $$ = newconstboolexpr(0); }
+      | TRUE { $$ = newconstboolexpr(VAR_TRUE); }
+      | FALSE { $$ = newconstboolexpr(VAR_FALSE); }
       ;
  
 idlist : /*   */
@@ -412,7 +412,7 @@ ifstmt : ifexpr statement { edit_quad(jump_label, NULL, NULL, newconstnumexpr((d
        ;
 
 ifexpr : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
-		emit(if_eq, newconstboolexpr(1),newconstnumexpr(currQuad+3), $3, yylineno);
+		emit(if_eq, newconstboolexpr(VAR_TRUE),newconstnumexpr(currQuad+3), $3, yylineno);
 		jump_label = currQuad;
 		emit(jump, NULL, NULL, 0, yylineno);
 		}

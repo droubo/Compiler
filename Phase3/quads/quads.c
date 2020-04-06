@@ -4,6 +4,9 @@
 #include "temp.h"
 #include <math.h>
 
+#define VAR_TRUE 1
+#define VAR_FALSE 0
+
 quad * quads = (quad *) 0;
 unsigned total = 0;
 unsigned int currQuad = 0;
@@ -135,7 +138,7 @@ void print_quad_arg(expr * arg, FILE * file){
     if(arg != NULL)
         switch(arg->type){
             case constnum_e:    { print_double(arg->numConst, file); break; }
-            case constbool_e:   { if(arg->boolConst == 1) fprintf(file, "\'true\' "); else fprintf(file, "\'false\' "); break; }
+            case constbool_e:   { if(arg->boolConst == VAR_TRUE) fprintf(file, "TRUE "); else fprintf(file, "FALSE "); break; }
             case conststring_e: { fprintf(file, "%s ", arg->strConst); break; }
             default:            { fprintf(file, "%s ", arg->sym->name); break; }
         }
