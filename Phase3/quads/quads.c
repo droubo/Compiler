@@ -1,7 +1,7 @@
 /* Some code Taken from lecture 9, Slides 37, 38 
    Frontisthrio 4 Slide 15 */
 #include "quads.h"
-
+#include "temp.h"
 quad * quads = (quad *) 0;
 unsigned total = 0;
 unsigned int currQuad = 0;
@@ -26,6 +26,7 @@ expr * newexpr(expr_t type, SymTabEntry* sym){
     temp->strConst = NULL;
     temp->boolConst = (unsigned char) 0;
     temp->const_type = -1;
+    temp->index = NULL;
     
     return temp;
 }
@@ -42,7 +43,14 @@ void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned label, 
     p->label = label;
     p->line = line;
 }
-
+struct expr *emit_iftableitem(expr* e, SymTable * table, int currScope, int func_scope, int curr, unsigned label, unsigned line){
+    if(e->type != tableitem_e) return e;
+    else{
+        expr* result = newexpr(var_e, newtemp(table,currScope,func_scope,curr));
+        emit(tablegetelem, e, e->index, result, label, line);
+        return result;
+    }
+}
 void print_expr(expr * exp, int indent){
     int i;
     printf("EXPRESSION @%p {\n", exp);

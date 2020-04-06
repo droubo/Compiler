@@ -68,7 +68,7 @@ void expand (void);
 expr * newexpr(expr_t type, SymTabEntry* sym);
 
 void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned label, unsigned line);
-
+struct expr *emit_iftableitem(expr* e, SymTable * table, int currScope, int func_scope, int curr, unsigned label, unsigned line);
 /* Always call with indent = 0 */
 void print_expr(expr * exp, int indent);
 

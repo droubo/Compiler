@@ -23,7 +23,7 @@ unsigned int flag_func = 0;
 unsigned int flag_op = 0;
 unsigned int fail_icode = 0;
 SymTabEntry *global_tmp;
-
+int table_flag = 0;
 FILE * errorFile;
 
 %}
@@ -92,6 +92,7 @@ FILE * errorFile;
 %type<express> expr
 %type<express> assignexpr
 %type<express> const
+%type<express> member
 
 /* priority */
 
@@ -156,7 +157,7 @@ expr : assignexpr
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		printf("%s op %d\n" , $1->sym->name, $3->numConst);
 		$$ = newexpr(arithexpr_e,tmp);
-                emit(add, $1, $3, $$, 1, 1);
+                emit(add, $1, $3, $$, 1, yylineno);
 		}
      | expr MINUS expr {
                 if(flag_func == 1 && flag_op == 0) {
@@ -165,7 +166,7 @@ expr : assignexpr
                 }
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
-                emit(sub, $1, $3, $$, 1, 1);
+                emit(sub, $1, $3, $$, 1, yylineno);
 		}
      | expr MULT expr {
                 if(flag_func == 1 && flag_op == 0) {
@@ -174,7 +175,7 @@ expr : assignexpr
                 }
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
-                emit(mul, $1, $3, $$, 1, 1);
+                emit(mul, $1, $3, $$, 1, yylineno);
 		}
      | expr DIV expr {
                 if(flag_func == 1 && flag_op == 0) {
@@ -183,7 +184,7 @@ expr : assignexpr
                 }
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
-                emit(diva, $1, $3, $$, 1, 1);
+                emit(diva, $1, $3, $$, 1, yylineno);
 		}
 	 | term { $$ = $1; }
      ;
@@ -198,38 +199,31 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
      | primary { $$ = $1; }
      ;
 
-assignexpr : lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno); flag_func = 0;} ASSIGN expr
+assignexpr : lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno); flag_func = 0; table_flag = 1; } ASSIGN expr
 		{
-			emit(assign, $4, NULL, $1, 1, 1);
-			printf("%s op %s\n" , $1->sym->name, $4->sym->name);
+			if($1->index != NULL){
+				emit(tablesetelem, $1->index, $4, $1, 1, 1);
+				emit_iftableitem($lvalue, table, currscope, currfunc, 1, 1, yylineno);
+			}
+			else{
+				emit(assign, $4, NULL, $1, 1, 1);
+			}
+			table_flag = 0;
 		}
 
 primary : lvalue
         | call
         | objectdef
         | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
-        | const {$$ = $1;}
+        | const
         ;
 
 lvalue : ID {	
 			SymTabEntry *tmp = lookup_SymTable(table, $1);
 			if(tmp != NULL && tmp->isActive == 1){
-			/*
-				if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
-					fprintf(errorFile, "ERROR @ line %d: %s is a library function\n", yylineno, $1);
-				}
-				*/
-				if(currscope > currfunc){
-					
-				}
 				if(tmp->scope != 0 && tmp->func_scope != currfunc && strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") && strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
 					fprintf(errorFile, "ERROR @ line %d: %s cannot be accessed\n",yylineno, $1);
 				}
-				/*
-				else if(!strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
-					fprintf(errorFile, "ERROR @ line %d: %s is already declared as function\n",yylineno, $1);
-				}
-				*/
 				else if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") || !strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
 					flag_func = 1;
 					global_tmp = tmp;
@@ -240,8 +234,9 @@ lvalue : ID {
 			else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, currfunc, LOCAL));
 
 			tmp = lookup_SymTable(table, $1);
+			
 			$$ = newexpr(var_e,tmp);
-                        
+			printf("LVALUE: %s\n", $1);
 			
 		}
        | local ID {
@@ -275,10 +270,20 @@ lvalue : ID {
 				}
 				else fprintf(errorFile, "ERROR @ line %d: %s is not a global variable nor a global function\n",yylineno, $2);
 	    }
-       | member {fprintf(yyout,"lvalue -> member\n");}
+       | member {
+				 if(table_flag==1) $lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, 1, 1, yylineno);;
+		}
        ;
 
-member : lvalue DOT ID {printf("DOT: %s", $3);}
+member : lvalue DOT ID {
+		$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, 1, 1, yylineno);
+		expr* item = newexpr(tableitem_e, $lvalue->sym);
+		expr* tmp = newexpr(conststring_e, NULL);
+		tmp->strConst = $3;
+		tmp->const_type = 1;
+		item->index = tmp;
+		$$ = item;
+		}
        | lvalue LEFT_BRACKET expr RIGHT_BRACKET
        | call DOT ID
        | call LEFT_BRACKET expr RIGHT_BRACKET
