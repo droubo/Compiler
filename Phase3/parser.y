@@ -548,7 +548,10 @@ int main(int argc, char** argv)
                 print_Scopes(table);
         } else printusage();
 
-        print_quads(stdout);
+		if(!fail_icode)
+        	print_quads(stdout);
+		else
+			printf("icode generation failed\n");
 
 	return 0;
 }
