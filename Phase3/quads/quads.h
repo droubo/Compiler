@@ -40,7 +40,7 @@ typedef enum iopcode {
     if_lesseq, if_greatereq, if_less, 
     if_greater, call, param,
     ret, getretval, funcstart,
-    funcend, tablecreate, tablegetelem, tablesetelem
+    funcend, tablecreate, tablegetelem, tablesetelem, jump
 } iopcode;
 
 typedef struct expr {
@@ -74,4 +74,5 @@ void print_expr(expr * exp, int indent);
 
 void print_quads(FILE * file);
 
+extern quad * quads;
 #endif

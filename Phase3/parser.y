@@ -24,6 +24,8 @@ unsigned int flag_op = 0;
 unsigned int fail_icode = 0;
 SymTabEntry *global_tmp;
 int table_flag = 0;
+int label = 0;
+int jump_label = 0;
 FILE * errorFile;
 
 %}
@@ -157,7 +159,7 @@ expr : assignexpr
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		printf("%s op %d\n" , $1->sym->name, $3->numConst);
 		$$ = newexpr(arithexpr_e,tmp);
-                emit(add, $1, $3, $$, 1, yylineno);
+                emit(add, $1, $3, $$, label++, yylineno);
 		}
      | expr MINUS expr {
                 if(flag_func == 1 && flag_op == 0) {
@@ -166,7 +168,7 @@ expr : assignexpr
                 }
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
-                emit(sub, $1, $3, $$, 1, yylineno);
+                emit(sub, $1, $3, $$, label++, yylineno);
 		}
      | expr MULT expr {
                 if(flag_func == 1 && flag_op == 0) {
@@ -175,7 +177,7 @@ expr : assignexpr
                 }
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
-                emit(mul, $1, $3, $$, 1, yylineno);
+                emit(mul, $1, $3, $$, label++, yylineno);
 		}
      | expr DIV expr {
                 if(flag_func == 1 && flag_op == 0) {
@@ -184,7 +186,7 @@ expr : assignexpr
                 }
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 		$$ = newexpr(arithexpr_e,tmp);
-                emit(diva, $1, $3, $$, 1, yylineno);
+                emit(diva, $1, $3, $$, label++, yylineno);
 		}
 	 | term { $$ = $1; }
      ;
@@ -202,11 +204,11 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
 assignexpr : lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno); flag_func = 0; table_flag = 1; } ASSIGN expr
 		{
 			if($1->index != NULL){
-				emit(tablesetelem, $1->index, $4, $1, 1, 1);
-				emit_iftableitem($lvalue, table, currscope, currfunc, 1, 1, yylineno);
+				emit(tablesetelem, $1->index, $4, $1, label++, yylineno);
+				emit_iftableitem($lvalue, table, currscope, currfunc, 1, label++, yylineno);
 			}
 			else{
-				emit(assign, $4, NULL, $1, 1, 1);
+				emit(assign, $4, NULL, $1, label++, yylineno);
 			}
 			table_flag = 0;
 		}
@@ -271,12 +273,12 @@ lvalue : ID {
 				else fprintf(errorFile, "ERROR @ line %d: %s is not a global variable nor a global function\n",yylineno, $2);
 	    }
        | member {
-				 if(table_flag==1) $lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, 1, 1, yylineno);;
+				 if(table_flag==1) $lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, 1, label++, yylineno);;
 		}
        ;
 
 member : lvalue DOT ID {
-		$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, 1, 1, yylineno);
+		$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, 1, label++, yylineno);
 		expr* item = newexpr(tableitem_e, $lvalue->sym);
 		expr* tmp = newexpr(conststring_e, NULL);
 		tmp->strConst = $3;
@@ -327,7 +329,11 @@ block : LEFT_BRACE { currscope++; } statements RIGHT_BRACE { hide_Scope(table,cu
       ;
 
 funcdef : FUNCTION ID {
-
+		expr *tmp_expr = newexpr(costnum_e,NULL);
+		jump_label = label;
+		tmp_expr->const_type = 0;
+		emit(jump, NULL, NULL, tmp_expr, label++, yylineno);
+		
 		currfunc++;
 		SymTabEntry *tmp = lookup_SymTableScope(table, currscope, $2);
 		if(tmp != NULL){
@@ -336,10 +342,15 @@ funcdef : FUNCTION ID {
 			}
 			else fprintf(errorFile, "ERROR @ line %d: %s already declared\n",yylineno, $2);
 		}
-		else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, USERFUNC));
-		
-		} LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {
+		else tmp = insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, USERFUNC));
 
+		emit(funcstart, NULL, NULL, newexpr(programfunc_e, tmp), label++, yylineno);
+
+		} LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {
+			
+			SymTabEntry *tmp = lookup_SymTableScope(table, currscope, $2);
+			emit(funcend, NULL, NULL, newexpr(programfunc_e, tmp), label++, yylineno);
+			quads[jump_label].result->numConst = label;
 			currfunc--;
 
 		}

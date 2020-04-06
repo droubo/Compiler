@@ -125,6 +125,7 @@ void print_quads(FILE * file){
             case tablecreate:   { fprintf(file, "TABLECREATE"); break; }
             case tablegetelem:  { fprintf(file, "TABLEGETELEM"); break; }
 			case tablesetelem:  { fprintf(file, "TABLESETELEM"); break; }
+            case jump:  { fprintf(file, "JUMP"); break; }
 
             default: { fprintf(file, "*ERROR* "); break; }
         }
