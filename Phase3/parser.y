@@ -412,10 +412,9 @@ ifstmt : ifexpr statement { edit_quad(jump_label, NULL, NULL, newconstnumexpr((d
        ;
 
 ifexpr : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
-		printf("HELLO\n\n\n");
 		emit(if_eq, newconstboolexpr(1),newconstnumexpr(currQuad+3), $3, yylineno);
-		emit(jump, NULL, NULL, 0, yylineno);
 		jump_label = currQuad;
+		emit(jump, NULL, NULL, 0, yylineno);
 		}
 		;
 elseexpr : 
