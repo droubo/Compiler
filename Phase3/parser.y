@@ -27,6 +27,7 @@ unsigned int loop_flag = 0;
 SymTabEntry *global_tmp;
 int table_flag = 0;
 int jump_label = 0;
+
 FILE * errorFile;
 
 %}
@@ -96,6 +97,8 @@ FILE * errorFile;
 %type<express> assignexpr
 %type<express> const
 %type<express> member
+%type<ipc> compop
+%type<ipc> boolop
 
 /* priority */
 
@@ -119,7 +122,7 @@ FILE * errorFile;
 /* expr is a struct , we need to include the code */
 %code requires { #include "quads/quads.h" }
 
-%union {double integer; char* id; double real; expr *express; unsigned char bool;}
+%union {double integer; char* id; double real; expr *express; unsigned char bool; iopcode ipc;}
 
 /* %expect 14 */
 
@@ -203,11 +206,38 @@ expr : assignexpr
         	    fail_icode = 1; 
         	}
 			SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
-				$$ = newexpr(arithexpr_e,tmp);
-        	    emit(diva, $1, $3, $$, yylineno);
+			$$ = newexpr(arithexpr_e,tmp);
+        	emit(diva, $1, $3, $$, yylineno);
 			}
+		| expr compop expr{
+			SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
+			$$ = newexpr(boolexpr_e,tmp);
+        	emit($2, $3, newconstnumexpr(currQuad+3), $1, yylineno);
+			emit(jump, newconstnumexpr(currQuad+4), NULL, NULL, yylineno);
+			emit(assign, $$, newconstboolexpr(1), NULL, yylineno);
+			emit(jump, newconstnumexpr(currQuad+3), NULL, NULL, yylineno);
+			emit(assign, $$,newconstboolexpr(0), NULL, yylineno);
+
+
+		}
+		| expr boolop expr {
+			SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
+			$$ = newexpr(boolexpr_e,tmp);
+			emit($2, $1, $3, $$, yylineno);
 	 	| term { $$ = $1; }
      ;
+
+
+compop: GREATER {$$ = if_greater; }
+   | GREATER_EQUAL {$$ = if_greatereq; }
+   | LESS {$$ = if_less; }
+   | LESS_EQUAL {$$ = if_lesseq; }
+   | EQUAL {flag_op = 1; flag_func = 0; $$ = if_eq;}
+   | NOT_EQUAL {flag_op = 1; flag_func = 0; $$ = if_noteq;}
+   ;
+
+boolop: AND {flag_op = 1; flag_func = 0; $$ = and;}
+   | OR {flag_op = 1; flag_func = 0; $$ = or;}
 
 term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
      | MINUS expr {
