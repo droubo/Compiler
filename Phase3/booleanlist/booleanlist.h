@@ -7,7 +7,7 @@ typedef struct booleanList{
 
 } booleanList;
 
-booleanList * booleanList_makelist(int label);
+booleanList * booleanList_makeList(int label);
 booleanList * booleanList_merge(booleanList * list1, booleanList * list2);
 
 #endif

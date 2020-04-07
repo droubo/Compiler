@@ -5,6 +5,7 @@
 #include <unistd.h> 
 #include <fcntl.h>
 #include "symtab/symtable.h"
+#include "booleanlist/booleanList.h"
 
 
 #define YY_DECL int alpha_yylex (void* yylval)
@@ -209,21 +210,26 @@ expr : assignexpr
 			$$ = newexpr(arithexpr_e,tmp);
         	emit(diva, $1, $3, $$, yylineno);
 			}
-		| expr compop expr{
-			SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
-			$$ = newexpr(boolexpr_e,tmp);
-        	emit($2, $3, newconstnumexpr(currQuad+3), $1, yylineno);
-			emit(jump, newconstnumexpr(currQuad+4), NULL, NULL, yylineno);
-			emit(assign, $$, newconstboolexpr(1), NULL, yylineno);
-			emit(jump, newconstnumexpr(currQuad+3), NULL, NULL, yylineno);
-			emit(assign, $$,newconstboolexpr(0), NULL, yylineno);
-
-
+		| expr OR expr {
+			flag_op = 1; flag_func = 0;
 		}
-		| expr boolop expr {
-			SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
-			$$ = newexpr(boolexpr_e,tmp);
-			emit($2, $1, $3, $$, yylineno);
+
+		| expr AND expr {
+			flag_op = 1; flag_func = 0;
+		}
+
+		| NOT expr {
+			flag_op = 1; flag_func = 0;
+		}
+
+		| expr compop expr {
+			$$->truelist = booleanList_makeList(currQuad);
+			$$->falselist = booleanList_makeList(currQuad + 1);
+
+			emit($2, $1, $3, NULL, yylineno);
+			emit(jump,NULL, NULL, NULL, yylineno);
+		}
+
 	 	| term { $$ = $1; }
      ;
 
@@ -238,6 +244,8 @@ compop: GREATER {$$ = if_greater; }
 
 boolop: AND {flag_op = 1; flag_func = 0; $$ = and;}
    | OR {flag_op = 1; flag_func = 0; $$ = or;}
+
+
 
 term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
      | MINUS expr {
@@ -386,9 +394,7 @@ lvalue : ID {
 member : lvalue DOT ID {
 		$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno);
 		expr* item = newexpr(tableitem_e, $lvalue->sym);
-		expr* tmp = newexpr(conststring_e, NULL);
-		tmp->strConst = $3;
-		tmp->const_type = 1;
+		expr* tmp = newconststringexpr($3);
 		item->index = tmp;
 		$$ = item;
 		}
@@ -437,7 +443,6 @@ block : LEFT_BRACE { currscope++; } statements RIGHT_BRACE { hide_Scope(table,cu
 funcdef : FUNCTION ID {
 		expr *tmp_expr = newexpr(constnum_e,NULL);
 		jump_label = currQuad;
-		tmp_expr->const_type = 0;
 		emit(jump, NULL, NULL, tmp_expr, yylineno);
 		
 		currfunc++;

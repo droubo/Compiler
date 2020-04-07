@@ -59,7 +59,7 @@ expr * newconstboolexpr(unsigned char bool){
 expr * newconststringexpr(char * str){
     expr * temp;
     temp = (expr*) malloc(sizeof(expr));
-    temp->type = constbool_e;
+    temp->type = conststring_e;
     temp->sym = NULL;
     temp->numConst = 0;
     temp->strConst = str;
@@ -140,6 +140,9 @@ void print_quad_arg(expr * arg, FILE * file){
             case conststring_e: { fprintf(file, "%s ", arg->strConst); break; }
             default:            { fprintf(file, "%s ", arg->sym->name); break; }
         }
+    else
+        fprintf(file, "(nil) ");
+    
 }
 
 void print_quads(FILE * file){

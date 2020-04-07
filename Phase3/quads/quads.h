@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <string.h>
 #include "../symtab/symtable.h"
-#include "../booleanlist/booleanlist.h"
+#include "../booleanList/booleanList.h"
 
 #define VAR_TRUE 1
 #define VAR_FALSE 0

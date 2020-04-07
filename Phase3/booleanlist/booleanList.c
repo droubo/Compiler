@@ -6,7 +6,7 @@
 #define NULL 0
 #endif
 
-booleanList * booleanList_makelist(int label){
+booleanList * booleanList_makeList(int label){
     booleanList * list;
     list = malloc(sizeof(booleanList));
     list->label = label;
