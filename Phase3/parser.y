@@ -22,6 +22,8 @@ unsigned int anonym_func_count = 0;
 unsigned int flag_func = 0;
 unsigned int flag_op = 0;
 unsigned int fail_icode = 0;
+unsigned int return_flag = 0;
+unsigned int loop_flag = 0;
 SymTabEntry *global_tmp;
 int table_flag = 0;
 int jump_label = 0;
@@ -139,9 +141,27 @@ statement :
      | ifstmt
      |  whilestmt
      | forstmt
-     |  returnstmt
-     |  BREAK SEMICOLON
-     |  CONTINUE SEMICOLON
+     |  returnstmt {
+		 			if(return_flag == 0)
+	 				 {
+		 				fprintf(errorFile,"ERROR @ line %d: Cannot use return outside of a function\n",yylineno);
+						fail_icode = 1;
+					 }
+				   }
+     |  BREAK SEMICOLON {
+		 				if(loop_flag == 0)
+	 					 {
+		 					fprintf(errorFile,"ERROR @ line %d: Cannot use break outside of a loop\n",yylineno);
+							 fail_icode = 1;
+						 }
+	 					}
+     |  CONTINUE SEMICOLON {
+		 					if(loop_flag == 0)
+	 						{ 
+								 fprintf(errorFile,"ERROR @ line %d: Cannot use continue outside of a loop\n",yylineno);
+								 fail_icode = 1;
+							}
+	 					   }
      |  block
      |  funcdef
      | SEMICOLON
@@ -191,8 +211,12 @@ expr : assignexpr
 
 term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
      | MINUS expr {
-        	if(flag_func == 1) 
+        	if(flag_func == 1)
+			{
 				fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> - expr\n", yylineno); 
+				fail_icode = 1;
+			} 
+				
 			flag_func = 0;
 			emit(mul, $2, newconstnumexpr(-1), $2, yylineno);
             $$ = $2;
@@ -200,19 +224,50 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
      | NOT expr {flag_op = 1; flag_func = 0; fprintf(yyout,"term -> not expr\n");}
      | PLUS_PLUS lvalue {
             if(flag_func == 1)
-                    fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> ++ lvalue\n", yylineno);
+            {
+				fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> ++ lvalue\n", yylineno);
+				fail_icode = 1;
+			}
             flag_func = 0;
 			
 			emit(add, $2, newconstnumexpr(1), $2, yylineno);
 			$$ = $2;
 		}
-     | lvalue PLUS_PLUS {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> lvalue ++\n", yylineno); flag_func = 0;}
-     | MINUS_MINUS lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -- lvalue\n", yylineno); flag_func = 0;}
-     | lvalue MINUS_MINUS {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : lavlue --\n", yylineno); flag_func = 0;}
+     | lvalue PLUS_PLUS {
+		 				 if(flag_func == 1) 
+	 					 {
+							 fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -> lvalue ++\n", yylineno);
+							 fail_icode = 1;
+						 }
+	 					 flag_func = 0;
+						}
+     | MINUS_MINUS lvalue {
+		 					if(flag_func == 1)  
+							{
+								fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : term -- lvalue\n", yylineno);
+								fail_icode = 1;
+	 						}
+	 					   flag_func = 0;
+						  }
+     | lvalue MINUS_MINUS {
+		 				   if(flag_func == 1)
+	 					   {
+								fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : lavlue --\n", yylineno);
+								fail_icode = 1;
+						   } 
+						   flag_func = 0;
+						  }
      | primary { $$ = $1; }
      ;
 
-assignexpr : lvalue {if(flag_func == 1) fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno); flag_func = 0; table_flag = 1; } ASSIGN expr
+assignexpr : lvalue {
+					 if(flag_func == 1)
+					 {
+						 fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno);
+						 fail_icode = 1;
+					 } 
+					 flag_func = 0; table_flag = 1; 
+					} ASSIGN expr
 		{
 			if($1->index != NULL){
 				emit(tablesetelem, $1->index, $4, $1, yylineno);
@@ -236,6 +291,7 @@ lvalue : ID {
 			if(tmp != NULL && tmp->isActive == 1){
 				if(tmp->scope != 0 && tmp->func_scope != currfunc && strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") && strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
 					fprintf(errorFile, "ERROR @ line %d: %s cannot be accessed\n",yylineno, $1);
+					fail_icode = 1;
 				}
 				else if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") || !strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
 					flag_func = 1;
@@ -258,6 +314,7 @@ lvalue : ID {
 			if(tmp != NULL && tmp->isActive == 1){
 				if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
 					fprintf(errorFile, "ERROR @ line %d: %s is a library function\n",yylineno, $2);
+					fail_icode = 1;
 				}
                                 else if(tmp->scope == currscope && strcmp(SymbolTypeToString(tmp->type),"FORMAL") == 0)
                                 {
@@ -265,6 +322,7 @@ lvalue : ID {
                                 }
 				else if(tmp->scope == currscope){
 					fprintf(errorFile, "ERROR @ line %d: %s already declared\n",yylineno, $2);
+					fail_icode = 1;
 				}
 				else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, LOCAL));
 			}
@@ -276,12 +334,19 @@ lvalue : ID {
        | DOUBLE_COLON ID {
 				SymTabEntry *tmp = lookup_SymTableScope(table, 0, $2);
 				if(tmp != NULL){
-					if(tmp->scope != 0) fprintf(errorFile, "ERROR @ line %d: %s is not a global variable nor a global function\n",yylineno, $2);
-                                        
-                                        /* found global function */
-                                        if(strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") == 0 || strcmp(SymbolTypeToString(tmp->type),"USERFUNC") == 0 ) flag_func = 1;
+					if(tmp->scope != 0) 
+					{ 
+						fprintf(errorFile, "ERROR @ line %d: %s is not a global variable nor a global function\n",yylineno, $2);
+						fail_icode = 1;
+                    }      
+                    /* found global function */
+                    if(strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") == 0 || strcmp(SymbolTypeToString(tmp->type),"USERFUNC") == 0 ) flag_func = 1;
 				}
-				else fprintf(errorFile, "ERROR @ line %d: %s is not a global variable nor a global function\n",yylineno, $2);
+				else
+				{ 
+					fprintf(errorFile, "ERROR @ line %d: %s is not a global variable nor a global function\n",yylineno, $2);
+					fail_icode = 1;
+				}
 	    }
        | member {
 				 if(table_flag==1) $lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno);;
@@ -350,15 +415,23 @@ funcdef : FUNCTION ID {
 		if(tmp != NULL){
 			if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
 				fprintf(errorFile, "ERROR @ line %d: %s is library function\n",yylineno, $2);
+				fail_icode = 1;
 			}
-			else fprintf(errorFile, "ERROR @ line %d: %s already declared\n",yylineno, $2);
+			else
+			{ 
+				fprintf(errorFile, "ERROR @ line %d: %s already declared\n",yylineno, $2);
+				fail_icode = 1;
+			}
 		}
 		else tmp = insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, USERFUNC));
 
 		emit(funcstart, NULL, NULL, newexpr(programfunc_e, tmp), yylineno);
 
-		} LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS block {
+		} LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS { return_flag = 1; } block {
 			
+			/* out of function block , we cant use return here */
+			return_flag = 0;
+
 			SymTabEntry *tmp = lookup_SymTableScope(table, currscope, $2);
 			emit(funcend, NULL, NULL, newexpr(programfunc_e, tmp), yylineno);
 			edit_quad(jump_label, NULL, NULL, newconstnumexpr((double)currQuad+1));
@@ -383,27 +456,41 @@ const : REALCONST { $$ = newconstnumexpr((double) $1); }
 idlist : /*   */
        | ID {
 			 SymTabEntry *tmp = lookup_SymTableScope(table, currscope+1, $1);
-			 if(tmp == NULL && (tmp = lookup_SymTableScope(table, 0, $1)) != NULL){
-				if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")) fprintf(errorFile,"ERROR @ line %d: Cannot have a library function as argument\n", yylineno);
+			 if(tmp == NULL && (tmp = lookup_SymTableScope(table, 0, $1)) != NULL)
+			 {
+				if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"LIBFUNC"))
+				{
+					fprintf(errorFile,"ERROR @ line %d: Cannot have a library function as argument\n", yylineno);
+					fail_icode = 1;
+				}
 				else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1,currfunc, FORMAL));
 			}
-			 else if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"FORMAL") && tmp->isActive == 1){
+			else if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"FORMAL") && tmp->isActive == 1)
+			{
 				fprintf(errorFile,"ERROR @ line %d: Cannot have the same argument names\n", yylineno);
-			 }
-			 else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, currfunc,FORMAL));
+				fail_icode = 1;
+			}
+			else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, currfunc,FORMAL));
 	   
 		}	
 	   COMA idlist
 	   | ID {
 			 SymTabEntry *tmp = lookup_SymTableScope(table, currscope+1, $1);
-			 if(tmp == NULL && (tmp = lookup_SymTableScope(table, 0, $1)) != NULL){
-				if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")) fprintf(errorFile,"ERROR @ line %d: Cannot have a library function as argument\n", yylineno);
+			 if(tmp == NULL && (tmp = lookup_SymTableScope(table, 0, $1)) != NULL)
+			 {
+				if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"LIBFUNC"))
+				{
+					fprintf(errorFile,"ERROR @ line %d: Cannot have a library function as argument\n", yylineno);
+					fail_icode = 1;
+				}
 				else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1,currfunc, FORMAL));
 			}
-			 else if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"FORMAL") && tmp->isActive == 1){
+			else if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"FORMAL") && tmp->isActive == 1)
+			{
 				fprintf(errorFile,"ERROR @ line %d: Cannot have the same argument names\n", yylineno);
-			 }
-			 else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, currfunc,FORMAL));
+				fail_icode = 1;
+			}
+			else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, currfunc,FORMAL));
 	   
 		}	
        ;
@@ -421,10 +508,10 @@ elseexpr :
 		| ELSE statement
 		;
 
-whilestmt : WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS statement
+whilestmt : WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_flag = 1;} statement {loop_flag = 0;}
           ;
 
-forstmt : FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS statement
+forstmt : FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {loop_flag = 1;} statement {loop_flag = 0;}
         ;
 
 returnstmt : RETURN expr SEMICOLON {flag_func = 0;}
