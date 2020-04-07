@@ -3,6 +3,7 @@
 #include "quads.h"
 #include "temp.h"
 #include <math.h>
+#include "../symtab/numPlaces.h"
 
 quad * quads = (quad *) 0;
 unsigned total = 0;
@@ -142,7 +143,7 @@ void print_quad_arg(expr * arg, FILE * file){
 }
 
 void print_quads(FILE * file){
-    int i;
+    int i, j;
     quad * curr_quad;
     for(i = 0; i < currQuad; i++){
         curr_quad = quads + i;
@@ -151,9 +152,14 @@ void print_quads(FILE * file){
             printf("Hit null quad\n");
             return;
         }
-
-        if(file == stdout)
-            fprintf(file, "%d ", curr_quad->label);
+    
+        if(file == stdout){
+            fprintf(file, "%d", curr_quad->label);
+        
+            for(j = 0; j < numPlaces(currQuad) - numPlaces(curr_quad->label) + 2; j++){
+                fprintf(file, " ");
+            }
+        }
 
         switch(curr_quad->op){
             case assign:    	{ fprintf(file, "ASSIGN"); break;}

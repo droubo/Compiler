@@ -13,10 +13,8 @@
  * Lexical analyzer file for use with flex.
  */ 
 
- #include "parser.h"
-
-#define INT_MIN -2147483647
-#define INT_MAX 2147483647
+#include "parser.h"
+#include "symtab/numPlaces.h"
 
  struct alpha_token_t {
 	unsigned int     numline;
@@ -65,12 +63,6 @@ char * appendChar(int * size, char * string, char c){
     (*size)++;
     string = realloc(string, *size);
     string[*size - 1] = c;
-}
-
-int numPlaces (int n) {
-    if (n < 0) return numPlaces ((n == INT_MIN) ? INT_MAX: -n);
-    if (n < 10) return 1;
-    return 1 + numPlaces (n / 10);
 }
 
 %}

@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.y": "c",
+        "*.l": "c",
+        "numplaces.h": "c"
+    }
+}
