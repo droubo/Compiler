@@ -1,10 +1,7 @@
 #include "booleanList.h"
 #include <stdlib.h>
 #include <stdio.h>
-
-#ifndef NULL
-#define NULL 0
-#endif
+#include "../quads/quads.h"
 
 booleanList * booleanList_makeList(int label){
     booleanList * list;
@@ -34,6 +31,14 @@ booleanList * booleanList_merge(booleanList * list1, booleanList * list2){
     return list;
 }
 
+void backpatch(booleanList * list, int label){
+    while(list != NULL){
+        edit_quad(list->label, NULL, NULL, newconstnumexpr(label));
+        list = list->next;
+    }
+}
+
+/*
 int test(){
     booleanList * list1 = booleanList_makelist(1);
     booleanList * list2 = booleanList_makelist(2);
@@ -46,3 +51,4 @@ int test(){
         list = list->next;
     }
 }
+*/

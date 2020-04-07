@@ -9,6 +9,7 @@
 #include <string.h>
 #include "../symtab/symtable.h"
 #include "../booleanList/booleanList.h"
+#include "../symtab/numPlaces.h"
 
 #define VAR_TRUE 1
 #define VAR_FALSE 0
@@ -16,8 +17,6 @@
 #define EXPAND_SIZE 1024
 #define CURR_SIZE (total*sizeof(quad))
 #define NEW_SIZE (EXPAND_SIZE * sizeof(quad) + CURR_SIZE)
-
-extern unsigned int currQuad;
 
 typedef enum expr_t {
     var_e,
@@ -70,6 +69,10 @@ typedef struct quad {
     unsigned line;
 } quad;
 
+extern quad * quads;
+extern unsigned total;
+extern unsigned int currQuad;
+
 void expand (void);
 
 expr * newexpr(expr_t type, SymTabEntry* sym);
@@ -87,6 +90,8 @@ struct expr *emit_iftableitem(expr* e, SymTable * table, int currScope, int func
 void print_expr(expr * exp, int indent);
 
 void print_quads(FILE * file);
+
+void edit_quad(int index, expr * arg1, expr * arg2, expr * result);
 
 extern quad * quads;
 #endif

@@ -1,4 +1,1 @@
-function x(a,b){
-b = 3;
-t.a = 4;
-}
+x = 1 < 2 or 3 < 4 or 5 < 6;

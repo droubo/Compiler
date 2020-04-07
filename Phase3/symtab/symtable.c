@@ -46,7 +46,6 @@ SymTabEntry *  insert_SymTable(SymTable * table, SymTabEntry sym){
         table->table[index] = node;
         table->table[index]->nextInHash = temp;
     }
-    printf("Inserted %s\n", sym.name);
     return node;
 }
 

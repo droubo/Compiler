@@ -5,7 +5,7 @@
 #include <unistd.h> 
 #include <fcntl.h>
 #include "symtab/symtable.h"
-#include "booleanlist/booleanList.h"
+#include "booleanList/booleanList.h"
 
 
 #define YY_DECL int alpha_yylex (void* yylval)
@@ -95,11 +95,12 @@ FILE * errorFile;
 %type<express> primary
 %type<express> term
 %type<express> expr
+%type<express> compexpr
+%type<express> boolexpr
 %type<express> assignexpr
 %type<express> const
 %type<express> member
 %type<ipc> compop
-%type<ipc> boolop
 
 /* priority */
 
@@ -210,29 +211,46 @@ expr : assignexpr
 			$$ = newexpr(arithexpr_e,tmp);
         	emit(diva, $1, $3, $$, yylineno);
 			}
-		| expr OR expr {
+
+	 	| term { $$ = $1; }
+		| compexpr { $$ = $1; }
+     	;
+
+compexpr :
+		boolexpr OR boolexpr {
+			flag_op = 1; flag_func = 0;
+			backpatch($1->falselist, 69);
+			$1->truelist = booleanList_merge($1->truelist, $3->falselist);
+			$$ = newexpr(boolexpr_e, NULL);
+			$$->falselist = $3->falselist;
+		}
+		
+		| compexpr OR boolexpr{
+			flag_op = 1; flag_func = 0;
+			backpatch($1->falselist, 69);
+			$1->truelist = booleanList_merge($1->truelist, $3->falselist);
+			$$ = newexpr(boolexpr_e, NULL);
+			$$->falselist = $3->falselist;
+		}
+
+		| boolexpr AND boolexpr {
 			flag_op = 1; flag_func = 0;
 		}
 
-		| expr AND expr {
+		| NOT boolexpr {
 			flag_op = 1; flag_func = 0;
 		}
+		;
 
-		| NOT expr {
-			flag_op = 1; flag_func = 0;
-		}
-
-		| expr compop expr {
+boolexpr : expr compop expr {
+			$$ = newexpr(boolexpr_e, NULL);
 			$$->truelist = booleanList_makeList(currQuad);
 			$$->falselist = booleanList_makeList(currQuad + 1);
-
+			printf("%.0f op %.0f\n", $1->numConst, $3->numConst);
 			emit($2, $1, $3, NULL, yylineno);
 			emit(jump,NULL, NULL, NULL, yylineno);
 		}
-
-	 	| term { $$ = $1; }
-     ;
-
+		;
 
 compop: GREATER {$$ = if_greater; }
    | GREATER_EQUAL {$$ = if_greatereq; }
@@ -241,11 +259,6 @@ compop: GREATER {$$ = if_greater; }
    | EQUAL {flag_op = 1; flag_func = 0; $$ = if_eq;}
    | NOT_EQUAL {flag_op = 1; flag_func = 0; $$ = if_noteq;}
    ;
-
-boolop: AND {flag_op = 1; flag_func = 0; $$ = and;}
-   | OR {flag_op = 1; flag_func = 0; $$ = or;}
-
-
 
 term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
      | MINUS expr {
@@ -299,23 +312,21 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
      ;
 
 assignexpr : lvalue {
-					 if(flag_func == 1)
-					 {
-						 fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno);
-						 fail_icode = 1;
-					 } 
-					 flag_func = 0; table_flag = 1; 
-					} ASSIGN expr
-		{
-			if($1->index != NULL){
-				emit(tablesetelem, $1->index, $4, $1, yylineno);
-				emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno);
-			}
-			else{
-				emit(assign, $4, NULL, $1, yylineno);
-			}
-			table_flag = 0;
-		}
+						if(flag_func == 1){
+							fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno);
+							fail_icode = 1;
+						} 
+						flag_func = 0; table_flag = 1; 
+					} 
+		ASSIGN expr {
+						if($1->index != NULL){
+							emit(tablesetelem, $1->index, $4, $1, yylineno);
+							emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno);
+						} else{ 
+							emit(assign, $4, NULL, $1, yylineno);
+						}
+						table_flag = 0;
+					}
 
 primary : lvalue
         | call
@@ -536,7 +547,7 @@ ifstmt : ifexpr statement { edit_quad(jump_label, NULL, NULL, newconstnumexpr((d
 ifexpr : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
 		emit(if_eq, newconstboolexpr(VAR_TRUE),newconstnumexpr(currQuad+3), $3, yylineno);
 		jump_label = currQuad;
-		emit(jump, NULL, NULL, 0, yylineno);
+		emit(jump, NULL, NULL, NULL, yylineno);
 		}
 		;
 elseexpr : 
@@ -682,7 +693,7 @@ int main(int argc, char** argv)
         /* add library functions */
         insert_SymTable(table,new_SymTabEntry("print",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
         insert_SymTable(table,new_SymTabEntry("input",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
-	insert_SymTable(table,new_SymTabEntry("objectmemberkeys",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
+		insert_SymTable(table,new_SymTabEntry("objectmemberkeys",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
         insert_SymTable(table,new_SymTabEntry("objecttotalmembers",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
         insert_SymTable(table,new_SymTabEntry("objectcopy",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
         insert_SymTable(table,new_SymTabEntry("totalarguments",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
@@ -694,13 +705,13 @@ int main(int argc, char** argv)
         insert_SymTable(table,new_SymTabEntry("sin",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
         yyparse();
 
-        if(args != NULL && strcmp(args, "-s") == 0)
-                print_Scopes(table);
-        else if(args != NULL && strcmp(args, "-t") == 0)
-                print_SymTable(table);
+        if(args != NULL && strcmp(args, "-s") == 0) {}
+                //print_Scopes(table);
+        else if(args != NULL && strcmp(args, "-t") == 0) {}
+                //print_SymTable(table);
         else if(args == NULL){
-                print_SymTable(table);
-                print_Scopes(table);
+                //print_SymTable(table);
+                //print_Scopes(table);
         } else printusage();
 
 		if(!fail_icode)

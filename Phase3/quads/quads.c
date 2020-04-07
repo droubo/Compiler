@@ -138,15 +138,14 @@ void print_quad_arg(expr * arg, FILE * file){
             case constnum_e:    { print_double(arg->numConst, file); break; }
             case constbool_e:   { if(arg->boolConst == VAR_TRUE) fprintf(file, "TRUE "); else fprintf(file, "FALSE "); break; }
             case conststring_e: { fprintf(file, "%s ", arg->strConst); break; }
-            default:            { fprintf(file, "%s ", arg->sym->name); break; }
+            default:            { fprintf(file, "(nil) "); break; } // fix to be symtab entry
         }
-    else
-        fprintf(file, "(nil) ");
     
 }
 
 void print_quads(FILE * file){
     int i, j;
+    printf("\n>> I CODE\n\n");
     quad * curr_quad;
     for(i = 0; i < currQuad; i++){
         curr_quad = quads + i;
@@ -203,12 +202,11 @@ void print_quads(FILE * file){
         }
 
 		fprintf(file, " ");
-
         print_quad_arg(curr_quad->result, file);
 		print_quad_arg(curr_quad->arg1, file);
         print_quad_arg(curr_quad->arg2, file);
-
-		fprintf(file, "\n");
-
+        fprintf(file, "\n");
     }
+
+    printf("\n>> END\n");
 }
