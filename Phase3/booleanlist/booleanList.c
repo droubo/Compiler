@@ -1,4 +1,5 @@
 #include "booleanList.h"
+#include <stdlib.h>
 
 #ifndef NULL
 #define NULL 0
@@ -30,4 +31,8 @@ booleanList * booleanList_merge(booleanList * list1, booleanList * list2){
     currNode->next = list2;
 
     return list;
+}
+
+int main(){
+
 }
