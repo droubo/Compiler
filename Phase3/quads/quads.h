@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <string.h>
 #include "../symtab/symtable.h"
+#include "../booleanlist/booleanlist.h"
 
 #define VAR_TRUE 1
 #define VAR_FALSE 0
@@ -55,7 +56,8 @@ typedef struct expr {
     double numConst;
     char * strConst;
     unsigned char boolConst;
-    int const_type; /* -1 = symtab 0 = num 1 = str 2 = bool */
+    booleanList * truelist;
+    booleanList * falselist;
     struct expr * next;
 } expr;
 
