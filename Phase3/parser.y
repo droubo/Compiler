@@ -95,9 +95,9 @@ FILE * errorFile;
 %type<express> primary
 %type<express> term
 %type<express> expr
-%type<express> compexpr
 %type<express> boolexpr
 %type<express> assignexpr
+%type<_M> expr_M
 %type<express> const
 %type<express> member
 %type<ipc> compop
@@ -124,7 +124,7 @@ FILE * errorFile;
 /* expr is a struct , we need to include the code */
 %code requires { #include "quads/quads.h" }
 
-%union {double integer; char* id; double real; expr *express; unsigned char bool; iopcode ipc;}
+%union {M * _M; double integer; char* id; double real; expr *express; unsigned char bool; iopcode ipc;}
 
 /* %expect 14 */
 
@@ -211,36 +211,32 @@ expr : assignexpr
 			$$ = newexpr(arithexpr_e,tmp);
         	emit(diva, $1, $3, $$, yylineno);
 			}
+		| boolexpr OR expr_M boolexpr {
+			flag_op = 1; flag_func = 0;
+			printf("OR\n");
 
+			backpatch($1->falselist, $3->quad);
+			$$ = newexpr(boolexpr_e, NULL);
+			$$->truelist = booleanList_merge($1->truelist, $4->truelist);
+			$$->falselist = $4->falselist;
+		}
+
+		| boolexpr AND expr_M boolexpr {
+			flag_op = 1; flag_func = 0;
+			printf("AND\n");
+
+			backpatch($1->truelist, $3->quad);
+			$$ = newexpr(boolexpr_e, NULL);
+			$$->truelist = $4->truelist;
+			$$->falselist = booleanList_merge($1->falselist, $4->falselist);
+		}
 	 	| term { $$ = $1; }
-		| compexpr { $$ = $1; }
      	;
 
-compexpr :
-		boolexpr OR boolexpr {
-			flag_op = 1; flag_func = 0;
-			backpatch($1->falselist, 69);
-			$1->truelist = booleanList_merge($1->truelist, $3->falselist);
-			$$ = newexpr(boolexpr_e, NULL);
-			$$->falselist = $3->falselist;
-		}
-		
-		| compexpr OR boolexpr{
-			flag_op = 1; flag_func = 0;
-			backpatch($1->falselist, 69);
-			$1->truelist = booleanList_merge($1->truelist, $3->falselist);
-			$$ = newexpr(boolexpr_e, NULL);
-			$$->falselist = $3->falselist;
-		}
-
-		| boolexpr AND boolexpr {
-			flag_op = 1; flag_func = 0;
-		}
-
-		| NOT boolexpr {
-			flag_op = 1; flag_func = 0;
-		}
-		;
+expr_M : {
+	$$ = (M *) malloc(sizeof(M));
+	$$->quad = currQuad + 1;
+}
 
 boolexpr : expr compop expr {
 			$$ = newexpr(boolexpr_e, NULL);
@@ -250,6 +246,7 @@ boolexpr : expr compop expr {
 			emit($2, $1, $3, NULL, yylineno);
 			emit(jump,NULL, NULL, NULL, yylineno);
 		}
+		| expr { $$ = $1; };
 		;
 
 compop: GREATER {$$ = if_greater; }
@@ -319,6 +316,18 @@ assignexpr : lvalue {
 						flag_func = 0; table_flag = 1; 
 					} 
 		ASSIGN expr {
+						if($expr->type == boolexpr_e){
+							expr * temp;
+							temp = newexpr(var_e, newtemp(table, currscope, currfunc));
+							emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
+							emit(jump, NULL, NULL, newconstnumexpr(currQuad + 3), yylineno);
+							emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
+							backpatch($expr->truelist, currQuad - 2);
+							backpatch($expr->falselist, currQuad);
+							emit(assign, temp, NULL, $1, yylineno);
+							return;
+						}
+
 						if($1->index != NULL){
 							emit(tablesetelem, $1->index, $4, $1, yylineno);
 							emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno);

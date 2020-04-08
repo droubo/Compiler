@@ -138,6 +138,7 @@ void print_quad_arg(expr * arg, FILE * file){
             case constnum_e:    { print_double(arg->numConst, file); break; }
             case constbool_e:   { if(arg->boolConst == VAR_TRUE) fprintf(file, "TRUE "); else fprintf(file, "FALSE "); break; }
             case conststring_e: { fprintf(file, "%s ", arg->strConst); break; }
+            case var_e:         { fprintf(file, "%s ", arg->sym->name); break; }
             default:            { fprintf(file, "(nil) "); break; } // fix to be symtab entry
         }
     

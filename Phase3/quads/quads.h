@@ -48,6 +48,10 @@ typedef enum iopcode {
     funcend, tablecreate, tablegetelem, tablesetelem, jump
 } iopcode;
 
+typedef struct M {
+    int quad;
+} M;
+
 typedef struct expr {
     expr_t type;
     SymTabEntry * sym;
