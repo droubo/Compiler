@@ -5,7 +5,6 @@
 #include <unistd.h> 
 #include <fcntl.h>
 #include "symtab/symtable.h"
-#include "booleanList/booleanList.h"
 
 
 #define YY_DECL int alpha_yylex (void* yylval)
@@ -95,13 +94,23 @@ FILE * errorFile;
 %type<express> primary
 %type<express> term
 %type<express> expr
-%type<express> boolexpr
 %type<express> assignexpr
-%type<_M> expr_M
 %type<express> const
 %type<express> member
+%type<express> tablemake
+%type<express> elist
+%type<express> indexed
+%type<express> boolexpr
+%type<sym> funcdef
 %type<ipc> compop
-
+%type<integer> ifexpr
+%type<integer> elseexpr
+%type<integer> whilestart
+%type<integer> whilecond
+%type<integer> forprefix
+%type<integer> N
+%type<integer> M_
+%type<_M> expr_M
 /* priority */
 
 %right ASSIGN
@@ -124,7 +133,7 @@ FILE * errorFile;
 /* expr is a struct , we need to include the code */
 %code requires { #include "quads/quads.h" }
 
-%union {M * _M; double integer; char* id; double real; expr *express; unsigned char bool; iopcode ipc;}
+%union {M * _M; double integer; char* id; double real; expr *express; unsigned char bool; iopcode ipc; SymTabEntry* sym;}
 
 /* %expect 14 */
 
@@ -318,7 +327,7 @@ assignexpr : lvalue {
 		ASSIGN expr {
 						if($expr->type == boolexpr_e){
 							expr * temp;
-							temp = newexpr(var_e, newtemp(table, currscope, currfunc));
+							temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
 							emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
 							emit(jump, NULL, NULL, newconstnumexpr(currQuad + 3), yylineno);
 							emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
@@ -337,11 +346,14 @@ assignexpr : lvalue {
 						table_flag = 0;
 					}
 
+		;
 primary : lvalue
         | call
-        | objectdef
-        | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
+        | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS { 			
+			$$ = newexpr(programfunc_e,$funcdef);
+		}
         | const
+		| tablemake
         ;
 
 lvalue : ID {	
@@ -357,13 +369,10 @@ lvalue : ID {
 				}
 			}
 				
-            if(currscope == 0) insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, GLOBAL));
-			else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, currfunc, LOCAL));
-
-			tmp = lookup_SymTable(table, $1);
+            if(currscope == 0) tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, GLOBAL));
+			else tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, currfunc, LOCAL));
 			
 			$$ = newexpr(var_e,tmp);
-			printf("LVALUE: %s\n", $1);
 			
 		}
        | local ID {
@@ -414,7 +423,8 @@ lvalue : ID {
 member : lvalue DOT ID {
 		$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno);
 		expr* item = newexpr(tableitem_e, $lvalue->sym);
-		expr* tmp = newconststringexpr($3);
+		expr* tmp = newexpr(conststring_e, NULL);
+		tmp->strConst = $3;
 		item->index = tmp;
 		$$ = item;
 		}
@@ -422,6 +432,16 @@ member : lvalue DOT ID {
        | call DOT ID
        | call LEFT_BRACKET expr RIGHT_BRACKET
        ;
+tablemake : LEFT_BRACKET elist RIGHT_BRACKET {
+		expr* tmp = newexpr(newtable_e, (SymTabEntry *)newtemp(table,currscope, currfunc, 0));
+		emit(tablecreate, tmp, NULL, NULL, yylineno);
+		int i;
+		for(i = 0; $elist; $elist = $elist->next){
+			emit(tablesetelem, tmp, newconstnumexpr(i++), $elist, yylineno);
+		}
+		$$ = tmp;
+			}
+		  | LEFT_BRACKET indexed RIGHT_BRACKET
 
 call : call {flag_func = 0;} LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
      | lvalue {flag_func = 0;} callsuffix
@@ -439,13 +459,9 @@ methodcall : DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
            ;
 
 elist :
-      | expr {flag_func = 0;} COMA elist
-	  | expr {flag_func = 0;}
+      | expr {flag_func = 0;} COMA elist {$expr->next = $4;  $$ = $expr;}
+	  | expr {flag_func = 0;} {$$ = $expr; }
       ;
-
-objectdef : LEFT_BRACKET elist RIGHT_BRACKET
-          | LEFT_BRACKET indexed RIGHT_BRACKET
-          ;
 
 indexed : indexedelem comaindexedelem
         ;
@@ -481,7 +497,6 @@ funcdef : FUNCTION ID {
 		else tmp = insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, USERFUNC));
 
 		emit(funcstart, NULL, NULL, newexpr(programfunc_e, tmp), yylineno);
-
 		} LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS { return_flag = 1; } block {
 			
 			/* out of function block , we cant use return here */
@@ -550,25 +565,46 @@ idlist : /*   */
 		}	
        ;
 
-ifstmt : ifexpr statement { edit_quad(jump_label, NULL, NULL, newconstnumexpr((double)currQuad+1));} elseexpr
+ifstmt : ifexpr statement { edit_quad((int)$1, NULL, NULL, newconstnumexpr((double)currQuad+1));} elseexpr {if(jump_label == -1) { edit_quad((int)$1, NULL, NULL, newconstnumexpr((double)$elseexpr+2)); edit_quad((int)$elseexpr, NULL, NULL, newconstnumexpr((double)currQuad+1)); } }
        ;
 
 ifexpr : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
 		emit(if_eq, newconstboolexpr(VAR_TRUE),newconstnumexpr(currQuad+3), $3, yylineno);
-		jump_label = currQuad;
-		emit(jump, NULL, NULL, NULL, yylineno);
+		$$ = currQuad;
+		emit(jump, NULL, NULL, 0, yylineno);
 		}
 		;
 elseexpr : 
-		| ELSE statement
+		| ELSE {jump_label = currQuad; emit(jump, NULL,NULL,0,yylineno); } statement {$$ = jump_label; jump_label = -1;} 
 		;
 
-whilestmt : WHILE LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_flag = 1;} statement {loop_flag = 0;}
+whilestmt : whilestart whilecond statement {loop_flag = 0; emit(jump, NULL, NULL, newconstnumexpr((double)$whilestart+1), yylineno); edit_quad((int)$whilecond, NULL, NULL, newconstnumexpr((double)currQuad+1));}
           ;
 
-forstmt : FOR LEFT_PARENTHESIS elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTHESIS {loop_flag = 1;} statement {loop_flag = 0;}
+whilestart : WHILE { $$ = currQuad; }
+			;
+whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_flag = 1; emit(if_eq, $expr, newconstboolexpr(1),newconstnumexpr((double)currQuad + 3), yylineno); $$ = currQuad; emit(jump, NULL, NULL, 0, yylineno); }
+			;
+
+forstmt : forprefix N elist RIGHT_PARENTHESIS N {loop_flag = 1;} statement N {
+			 loop_flag = 0;	
+			 edit_quad((int)$forprefix, NULL, NULL, newconstnumexpr((double)$5 +2));
+			 edit_quad((int)$2, NULL, NULL, newconstnumexpr((double)currQuad+1));
+			 edit_quad((int)$5, NULL, NULL, newconstnumexpr((double)jump_label));
+			 edit_quad((int)$8, NULL, NULL, newconstnumexpr((double)$2+2));
+		}
         ;
 
+forprefix: FOR LEFT_PARENTHESIS elist SEMICOLON M_ expr SEMICOLON {
+		jump_label = $M_;
+		$$ = currQuad;
+		emit(if_eq, $expr, newconstboolexpr(1), NULL, yylineno);
+	}
+		;
+M_ : { $$ = currQuad+1; }
+	;
+N : { $$ = currQuad; emit(jump, NULL,NULL,0, yylineno); }
+	;
 returnstmt : RETURN expr SEMICOLON {flag_func = 0;}
            | RETURN SEMICOLON
            ;
@@ -702,7 +738,7 @@ int main(int argc, char** argv)
         /* add library functions */
         insert_SymTable(table,new_SymTabEntry("print",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
         insert_SymTable(table,new_SymTabEntry("input",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
-		insert_SymTable(table,new_SymTabEntry("objectmemberkeys",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
+	insert_SymTable(table,new_SymTabEntry("objectmemberkeys",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
         insert_SymTable(table,new_SymTabEntry("objecttotalmembers",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
         insert_SymTable(table,new_SymTabEntry("objectcopy",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
         insert_SymTable(table,new_SymTabEntry("totalarguments",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
@@ -714,13 +750,13 @@ int main(int argc, char** argv)
         insert_SymTable(table,new_SymTabEntry("sin",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
         yyparse();
 
-        if(args != NULL && strcmp(args, "-s") == 0) {}
-                //print_Scopes(table);
-        else if(args != NULL && strcmp(args, "-t") == 0) {}
-                //print_SymTable(table);
+        if(args != NULL && strcmp(args, "-s") == 0)
+                print_Scopes(table);
+        else if(args != NULL && strcmp(args, "-t") == 0)
+                print_SymTable(table);
         else if(args == NULL){
-                //print_SymTable(table);
-                //print_Scopes(table);
+                print_SymTable(table);
+                print_Scopes(table);
         } else printusage();
 
 		if(!fail_icode)
