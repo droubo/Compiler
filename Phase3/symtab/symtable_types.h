@@ -17,6 +17,13 @@ typedef enum SymbolType {
 	LIBFUNC
 } SymbolType;
 
+typedef enum scopespace_t
+{
+	programvar,
+	functionlocal,
+	formalarg
+} scopespace_t;
+
 typedef struct SymTabEntry {
 	const char *name;
 	unsigned int line;
@@ -27,7 +34,12 @@ typedef struct SymTabEntry {
 	} value;
 	unsigned int scope;
 	unsigned int func_scope;
+
+	/* for offset */
 	unsigned int offset;
+	scopespace_t space;
+	/*------------*/
+
 	enum SymbolType type;
 	struct SymTabEntry * nextInScope;
 	struct SymTabEntry * nextInHash;
