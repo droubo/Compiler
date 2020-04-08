@@ -95,6 +95,7 @@ FILE * errorFile;
 %type<express> term
 %type<express> expr
 %type<express> assignexpr
+%type<express> assignboolexpr
 %type<express> const
 %type<express> member
 %type<express> tablemake
@@ -182,6 +183,7 @@ statement :
      ;
 
 expr : assignexpr
+	| assignboolexpr
      	| expr PLUS expr {
         	if(flag_func == 1 && flag_op == 0) {
         	        fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); 
@@ -242,11 +244,6 @@ expr : assignexpr
 	 	| term { $$ = $1; }
      	;
 
-expr_M : {
-	$$ = (M *) malloc(sizeof(M));
-	$$->quad = currQuad + 1;
-}
-
 boolexpr : expr compop expr {
 			$$ = newexpr(boolexpr_e, NULL);
 			$$->truelist = booleanList_makeList(currQuad);
@@ -257,6 +254,11 @@ boolexpr : expr compop expr {
 		}
 		| expr { $$ = $1; };
 		;
+
+expr_M : {
+	$$ = (M *) malloc(sizeof(M));
+	$$->quad = currQuad + 1;
+}
 
 compop: GREATER {$$ = if_greater; }
    | GREATER_EQUAL {$$ = if_greatereq; }
@@ -317,6 +319,25 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
      | primary { $$ = $1; }
      ;
 
+assignboolexpr : lvalue {
+						if(flag_func == 1){
+							fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno);
+							fail_icode = 1;
+						} 
+						flag_func = 0; table_flag = 1; 
+					} 
+		ASSIGN boolexpr {
+			expr * temp;
+			temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+			emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
+			emit(jump, NULL, NULL, newconstnumexpr(currQuad + 3), yylineno);
+			emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
+			backpatch($boolexpr->truelist, currQuad - 2);
+			backpatch($boolexpr->falselist, currQuad);
+			emit(assign, temp, NULL, $1, yylineno);
+		}
+		;
+
 assignexpr : lvalue {
 						if(flag_func == 1){
 							fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno);
@@ -325,27 +346,26 @@ assignexpr : lvalue {
 						flag_func = 0; table_flag = 1; 
 					} 
 		ASSIGN expr {
-						if($expr->type == boolexpr_e){
-							expr * temp;
-							temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
-							emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
-							emit(jump, NULL, NULL, newconstnumexpr(currQuad + 3), yylineno);
-							emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
-							backpatch($expr->truelist, currQuad - 2);
-							backpatch($expr->falselist, currQuad);
-							emit(assign, temp, NULL, $1, yylineno);
-							return;
-						}
+			if($expr->type == boolexpr_e){
+				expr * temp;
+				temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+				emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
+				emit(jump, NULL, NULL, newconstnumexpr(currQuad + 3), yylineno);
+				emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
+				backpatch($expr->truelist, currQuad - 2);
+				backpatch($expr->falselist, currQuad);
+				emit(assign, temp, NULL, $1, yylineno);
+				return;
+			}
 
-						if($1->index != NULL){
-							emit(tablesetelem, $1->index, $4, $1, yylineno);
-							emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno);
-						} else{ 
-							emit(assign, $4, NULL, $1, yylineno);
-						}
-						table_flag = 0;
-					}
-
+			if($1->index != NULL){
+				emit(tablesetelem, $1->index, $4, $1, yylineno);
+				emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno);
+			} else{ 
+				emit(assign, $4, NULL, $1, yylineno);
+			}
+			table_flag = 0;
+		}
 		;
 primary : lvalue
         | call
@@ -749,16 +769,16 @@ int main(int argc, char** argv)
         insert_SymTable(table,new_SymTabEntry("cos",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
         insert_SymTable(table,new_SymTabEntry("sin",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
         yyparse();
-
+		/*
         if(args != NULL && strcmp(args, "-s") == 0)
-                print_Scopes(table);
+                //print_Scopes(table);
         else if(args != NULL && strcmp(args, "-t") == 0)
-                print_SymTable(table);
+                //print_SymTable(table);
         else if(args == NULL){
-                print_SymTable(table);
-                print_Scopes(table);
+                //print_SymTable(table);
+                //print_Scopes(table);
         } else printusage();
-
+*/
 		if(!fail_icode)
         	print_quads(stdout);
 		else
