@@ -9,6 +9,6 @@ typedef struct booleanList{
 
 booleanList * booleanList_makeList(int label);
 booleanList * booleanList_merge(booleanList * list1, booleanList * list2);
-void backpatch(booleanList * list, int label);
+void backpatch(booleanList * list, unsigned int label);
 
 #endif

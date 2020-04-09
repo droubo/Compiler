@@ -77,7 +77,19 @@ void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned line) {
     p->arg1 = arg1;
     p->arg2 = arg2;
     p->result = result;
-    p->label = currQuad;
+    p->line = line;
+}
+
+void emit_jump (iopcode op, expr * arg1, expr * arg2, unsigned int label, unsigned int line) {
+    if(currQuad == total)
+        expand();
+    
+    quad * p = quads + currQuad++;
+    p->op = op;
+    p->arg1 = arg1;
+    p->arg2 = arg2;
+    p->result = NULL;
+    p->label = label;
     p->line = line;
 }
 
@@ -109,7 +121,7 @@ void print_expr(expr * exp, int indent){
 
 }
 
-void edit_quad(int index, expr * arg1, expr * arg2, expr * result){
+void edit_quad(int index, expr * arg1, expr * arg2, expr * result, unsigned int label){
     quad * curr_quad;
     
     curr_quad = quads + index;
@@ -122,6 +134,9 @@ void edit_quad(int index, expr * arg1, expr * arg2, expr * result){
     
     if(result != NULL)
         curr_quad->result = result;
+
+    if(label != -1)
+        curr_quad->label = label;
 
 }
 
@@ -157,9 +172,9 @@ void print_quads(FILE * file){
         }
     
         if(file == stdout){
-            fprintf(file, "%d", curr_quad->label);
+            fprintf(file, "%d", i);
         
-            for(j = 0; j < numPlaces(currQuad) - numPlaces(curr_quad->label) + 2; j++){
+            for(j = 0; j < numPlaces(currQuad) - numPlaces(i) + 2; j++){
                 fprintf(file, " ");
             }
         }

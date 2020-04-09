@@ -524,7 +524,7 @@ funcdef : FUNCTION ID {
 
 			SymTabEntry *tmp = lookup_SymTableScope(table, currscope, $2);
 			emit(funcend, NULL, NULL, newexpr(programfunc_e, tmp), yylineno);
-			edit_quad(jump_label, NULL, NULL, newconstnumexpr((double)currQuad+1));
+			edit_quad(jump_label, NULL, NULL, newconstnumexpr((double)currQuad+1), -1);
 			currfunc--;
 
 		}
@@ -585,7 +585,7 @@ idlist : /*   */
 		}	
        ;
 
-ifstmt : ifexpr statement { edit_quad((int)$1, NULL, NULL, newconstnumexpr((double)currQuad+1));} elseexpr {if(jump_label == -1) { edit_quad((int)$1, NULL, NULL, newconstnumexpr((double)$elseexpr+2)); edit_quad((int)$elseexpr, NULL, NULL, newconstnumexpr((double)currQuad+1)); } }
+ifstmt : ifexpr statement { edit_quad((int)$1, NULL, NULL, newconstnumexpr((double)currQuad+1), -1);} elseexpr {if(jump_label == -1) { edit_quad((int)$1, NULL, NULL, newconstnumexpr((double)$elseexpr+2), -1); edit_quad((int)$elseexpr, NULL, NULL, newconstnumexpr((double)currQuad+1), -1); } }
        ;
 
 ifexpr : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
@@ -598,7 +598,7 @@ elseexpr :
 		| ELSE {jump_label = currQuad; emit(jump, NULL,NULL,0,yylineno); } statement {$$ = jump_label; jump_label = -1;} 
 		;
 
-whilestmt : whilestart whilecond statement {loop_flag = 0; emit(jump, NULL, NULL, newconstnumexpr((double)$whilestart+1), yylineno); edit_quad((int)$whilecond, NULL, NULL, newconstnumexpr((double)currQuad+1));}
+whilestmt : whilestart whilecond statement {loop_flag = 0; emit(jump, NULL, NULL, newconstnumexpr((double)$whilestart+1), yylineno); edit_quad((int)$whilecond, NULL, NULL, newconstnumexpr((double)currQuad+1), -1);}
           ;
 
 whilestart : WHILE { $$ = currQuad; }
@@ -608,10 +608,10 @@ whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_flag = 1; emit(if_eq, 
 
 forstmt : forprefix N elist RIGHT_PARENTHESIS N {loop_flag = 1;} statement N {
 			 loop_flag = 0;	
-			 edit_quad((int)$forprefix, NULL, NULL, newconstnumexpr((double)$5 +2));
-			 edit_quad((int)$2, NULL, NULL, newconstnumexpr((double)currQuad+1));
-			 edit_quad((int)$5, NULL, NULL, newconstnumexpr((double)jump_label));
-			 edit_quad((int)$8, NULL, NULL, newconstnumexpr((double)$2+2));
+			 edit_quad((int)$forprefix, NULL, NULL, newconstnumexpr((double)$5 +2), -1);
+			 edit_quad((int)$2, NULL, NULL, newconstnumexpr((double)currQuad+1), -1);
+			 edit_quad((int)$5, NULL, NULL, newconstnumexpr((double)jump_label), -1);
+			 edit_quad((int)$8, NULL, NULL, newconstnumexpr((double)$2+2), -1);
 		}
         ;
 

@@ -31,9 +31,9 @@ booleanList * booleanList_merge(booleanList * list1, booleanList * list2){
     return list;
 }
 
-void backpatch(booleanList * list, int label){
+void backpatch(booleanList * list, unsigned int label){
     while(list != NULL){
-        edit_quad(list->label, NULL, NULL, newconstnumexpr(label));
+        edit_quad(list->label, NULL, NULL, NULL, label);
         list = list->next;
     }
 }
