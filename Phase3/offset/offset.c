@@ -5,6 +5,16 @@
 
 /* some code taken from Lecture 9 , HY340 */
 
+void printNumOfVars()
+{
+    printf("\nprogramVarOffset : %d\n",programVarOffset);
+}
+
+unsigned int getscopeSpaceCounter()
+{
+    return scopeSpaceCounter;
+}
+
 SymbolType  currscopespace()
 {
     if(scopeSpaceCounter == 1)
@@ -48,6 +58,29 @@ void exitscopespace()
     scopeSpaceCounter--;
 }
 
+void resetformalargsoffset()
+{
+    formalArgOffset = 0;
+}
+
+void resetfunctionlocaloffset()
+{
+    functionLocalOffset = 0;
+}
+
+void restorecurroffset(unsigned int n)
+{
+    switch(currscopespace())
+    {
+        case programvar : programVarOffset = n; break;
+        case functionlocal : functionLocalOffset = n; break;
+        case formalarg : formalArgOffset = n; break;
+        default : assert(0);
+    }   
+}
+
+/*-------- stack---------- */
+
 void push(int data)
 {
     if(top == -1)
@@ -62,6 +95,7 @@ void push(int data)
     stack[++top] = data;
 }
 
+/* need fix when pop , realloc fewer memory */
 int pop()
 {
     if(top != -1) return stack[top--];

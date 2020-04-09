@@ -20,8 +20,19 @@ unsigned int  formalArgOffset = 0;
 
 unsigned int scopeSpaceCounter = 1;
 
-unsigned currscopeoffset();
+unsigned int currscopeoffset();
+
+unsigned int getscopeSpaceCounter();
 
 void inccurrscopeoffset();
+
+void resetformalargsoffset();
+
+void resetfunctionlocaloffset();
+
+void restorecurroffset(unsigned int n);
+
+void printNumOfVars();
+
 
 #endif
