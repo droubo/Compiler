@@ -77,7 +77,19 @@ void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned line) {
     p->arg1 = arg1;
     p->arg2 = arg2;
     p->result = result;
-    p->label = currQuad;
+    p->line = line;
+}
+
+void emit_jump (iopcode op, expr * arg1, expr * arg2, unsigned int label, unsigned int line) {
+    if(currQuad == total)
+        expand();
+    
+    quad * p = quads + currQuad++;
+    p->op = op;
+    p->arg1 = arg1;
+    p->arg2 = arg2;
+    p->result = NULL;
+    p->label = label;
     p->line = line;
 }
 
@@ -109,7 +121,7 @@ void print_expr(expr * exp, int indent){
 
 }
 
-void edit_quad(int index, expr * arg1, expr * arg2, expr * result){
+void edit_quad(int index, expr * arg1, expr * arg2, expr * result, unsigned int label){
     quad * curr_quad;
     
     curr_quad = quads + index;
@@ -123,6 +135,9 @@ void edit_quad(int index, expr * arg1, expr * arg2, expr * result){
     if(result != NULL)
         curr_quad->result = result;
 
+    if(label != -1)
+        curr_quad->label = label;
+
 }
 
 void print_double(double d, FILE * file){
@@ -135,11 +150,17 @@ void print_double(double d, FILE * file){
 void print_quad_arg(expr * arg, FILE * file){
     if(arg != NULL)
         switch(arg->type){
+            case var_e || tableitem_e || programfunc_e || libraryfunc_e || newtable_e: {
+                fprintf(file, "%s ", arg->sym->name); break;
+            }
+
             case constnum_e:    { print_double(arg->numConst, file); break; }
             case constbool_e:   { if(arg->boolConst == VAR_TRUE) fprintf(file, "TRUE "); else fprintf(file, "FALSE "); break; }
             case conststring_e: { fprintf(file, "%s ", arg->strConst); break; }
-            case var_e:         { fprintf(file, "%s ", arg->sym->name); break; }
-            default:            { fprintf(file, "(nil) "); break; } // fix to be symtab entry
+
+            case nil_e:         { fprintf(file, "(nil) "); break; }
+
+            default:            { fprintf(file, "*error* "); break; }
         }
     
 }
@@ -157,57 +178,66 @@ void print_quads(FILE * file){
         }
     
         if(file == stdout){
-            fprintf(file, "%d", curr_quad->label);
+            fprintf(file, "%d", i);
         
-            for(j = 0; j < numPlaces(currQuad) - numPlaces(curr_quad->label) + 2; j++){
+            for(j = 0; j < numPlaces(currQuad) - numPlaces(i) + 2; j++){
                 fprintf(file, " ");
             }
         }
 
         switch(curr_quad->op){
-            case assign:    	{ fprintf(file, "ASSIGN"); break;}
-            case add:       	{ fprintf(file, "ADD"); break; }
-            case sub:       	{ fprintf(file, "SUB"); break; }
+            case assign:    	{ fprintf(file, "ASSIGN "); break;}
+            case add:       	{ fprintf(file, "ADD "); break; }
+            case sub:       	{ fprintf(file, "SUB "); break; }
 
-            case mul:       	{ fprintf(file, "MUL"); break; }
-            case diva:      	{ fprintf(file, "DIV"); break; }
-            case mod:       	{ fprintf(file, "MOD"); break; }
+            case mul:       	{ fprintf(file, "MUL "); break; }
+            case diva:      	{ fprintf(file, "DIV "); break; }
+            case mod:       	{ fprintf(file, "MOD "); break; }
 
-            case uminus:    	{ fprintf(file, "UMINUS"); break; }
-            case and:    		{ fprintf(file, "AND"); break; }
-            case or:    		{ fprintf(file, "OR"); break; }
+            case uminus:    	{ fprintf(file, "UMINUS "); break; }
+            case and:    		{ fprintf(file, "AND "); break; }
+            case or:    		{ fprintf(file, "OR "); break; }
 
-			case not:    		{ fprintf(file, "NOT"); break; }
-            case if_eq:    		{ fprintf(file, "IF_EQ"); break; }
-            case if_noteq:  	{ fprintf(file, "IF_NOTEQ"); break; }
+			case not:    		{ fprintf(file, "NOT "); break; }
+            case if_eq:    		{ fprintf(file, "IF_EQ "); break; }
+            case if_noteq:  	{ fprintf(file, "IF_NOTEQ "); break; }
 
-			case if_lesseq: 	{ fprintf(file, "IF_LESSEQ"); break; }
-            case if_greatereq:	{ fprintf(file, "IF_GREATEREQ"); break; }
-            case if_less:    	{ fprintf(file, "IF_LESS"); break; }
+			case if_lesseq: 	{ fprintf(file, "IF_LESSEQ "); break; }
+            case if_greatereq:	{ fprintf(file, "IF_GREATEREQ "); break; }
+            case if_less:    	{ fprintf(file, "IF_LESS "); break; }
 			
-			case if_greater:    { fprintf(file, "IF_GREATER"); break; }
-            case call:    		{ fprintf(file, "CALL"); break; }
-            case param:    		{ fprintf(file, "PARAM"); break; }
+			case if_greater:    { fprintf(file, "IF_GREATER "); break; }
+            case call:    		{ fprintf(file, "CALL "); break; }
+            case param:    		{ fprintf(file, "PARAM "); break; }
 			
-			case ret:    		{ fprintf(file, "RET"); break; }
-            case getretval:    	{ fprintf(file, "GETRETVAL"); break; }
-            case funcstart:    	{ fprintf(file, "FUNCSTART"); break; }
+			case ret:    		{ fprintf(file, "RET "); break; }
+            case getretval:    	{ fprintf(file, "GETRETVAL "); break; }
+            case funcstart:    	{ fprintf(file, "FUNCSTART "); break; }
 
-			case funcend:    	{ fprintf(file, "FUNCEND"); break; }
-            case tablecreate:   { fprintf(file, "TABLECREATE"); break; }
-            case tablegetelem:  { fprintf(file, "TABLEGETELEM"); break; }
-			case tablesetelem:  { fprintf(file, "TABLESETELEM"); break; }
-            case jump:  { fprintf(file, "JUMP"); break; }
+			case funcend:    	{ fprintf(file, "FUNCEND "); break; }
+            case tablecreate:   { fprintf(file, "TABLECREATE "); break; }
+            case tablegetelem:  { fprintf(file, "TABLEGETELEM "); break; }
+			case tablesetelem:  { fprintf(file, "TABLESETELEM "); break; }
+            case jump:          { fprintf(file, "JUMP "); break; }
 
             default: { fprintf(file, "*ERROR* "); break; }
         }
 
-		fprintf(file, " ");
-        print_quad_arg(curr_quad->result, file);
-		print_quad_arg(curr_quad->arg1, file);
-        print_quad_arg(curr_quad->arg2, file);
+        switch(curr_quad->op){
+            case if_eq || if_noteq || if_lesseq || if_greatereq || if_less || if_greater: {
+                    print_quad_arg(curr_quad->arg1, file);
+                    print_quad_arg(curr_quad->arg2, file);
+                    fprintf("%d", curr_quad->label);
+                    break;
+            } 
+            case jump: { fprintf("%d", curr_quad->label); break; }
+            default: {
+                print_quad_arg(curr_quad->result, file);
+		        print_quad_arg(curr_quad->arg1, file);
+                print_quad_arg(curr_quad->arg2, file);
+            }
+        }
         fprintf(file, "\n");
     }
-
     printf("\n>> END\n");
 }

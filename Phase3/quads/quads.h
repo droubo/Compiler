@@ -89,13 +89,15 @@ expr * newconststringexpr(char * str);
 
 void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned line);
 
+void emit_jump(iopcode op, expr * arg1, expr * arg2, unsigned int label, unsigned line);
+
 struct expr *emit_iftableitem(expr* e, SymTable * table, int currScope, int func_scope, int curr, unsigned line);
 
 void print_expr(expr * exp, int indent);
 
 void print_quads(FILE * file);
 
-void edit_quad(int index, expr * arg1, expr * arg2, expr * result);
+void edit_quad(int index, expr * arg1, expr * arg2, expr * result, unsigned int label);
 
 extern quad * quads;
 #endif
