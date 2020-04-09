@@ -383,15 +383,43 @@ lvalue : ID {
 					fprintf(errorFile, "ERROR @ line %d: %s cannot be accessed\n",yylineno, $1);
 					fail_icode = 1;
 				}
+				/* is function */
 				else if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") || !strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
 					flag_func = 1;
 					global_tmp = tmp;
 				}
 			}
-				
-            if(currscope == 0) tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, GLOBAL));
-			else tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, currfunc, LOCAL));
-			
+			/* variable exists in defferent scope , insert */
+			else if(tmp != NULL && tmp->isActive == 0)
+			{
+				SymbolType type;
+				if(currscope == 0) type = GLOBAL;
+				else type = LOCAL;
+				tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, type));
+				tmp->space = currscopespace();
+				tmp->offset = currscopeoffset();
+				inccurrscopeoffset();
+				printf("var : %s | scope : %d | space : %d | offset : %d\n",tmp->name,tmp->scope,tmp->space,tmp->offset);
+			}
+			else if(tmp == NULL)
+			{
+
+				/* insertion scope = 0 */	
+            	if(currscope == 0)
+				{
+					tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, GLOBAL));
+				}
+				/* insertion scope > 0 */
+				else
+				{
+				 	tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, currfunc, LOCAL));
+				}
+				tmp->space = currscopespace();
+				tmp->offset = currscopeoffset();
+				inccurrscopeoffset();
+				printf("var : %s | scope : %d | space : %d | offset : %d\n",tmp->name,tmp->scope,tmp->space,tmp->offset);
+			}				
+	
 			$$ = newexpr(var_e,tmp);
 			
 		}
@@ -403,18 +431,32 @@ lvalue : ID {
 					fprintf(errorFile, "ERROR @ line %d: %s is a library function\n",yylineno, $2);
 					fail_icode = 1;
 				}
-                                else if(tmp->scope == currscope && strcmp(SymbolTypeToString(tmp->type),"FORMAL") == 0)
-                                {
-                                        /* do nothing , refer to arguments as local*/
-                                }
+                else if(tmp->scope == currscope && strcmp(SymbolTypeToString(tmp->type),"FORMAL") == 0)
+                {
+                    /* do nothing , refer to arguments as local*/
+                }
 				else if(tmp->scope == currscope){
 					fprintf(errorFile, "ERROR @ line %d: %s already declared\n",yylineno, $2);
 					fail_icode = 1;
 				}
-				else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, LOCAL));
+				/* insert local on different scope */
+				else
+				{
+					tmp = insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, LOCAL));
+					tmp->space = currscopespace();
+					tmp->offset = currscopeoffset();
+					inccurrscopeoffset();
+					printf("var : %s | scope : %d | space : %d | offset : %d\n",tmp->name,tmp->scope,tmp->space,tmp->offset);
+				}
 			}
-			else {
-				insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, LOCAL));
+			/* insert local */
+			else if(tmp == NULL) 
+			{
+				tmp = insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, LOCAL));
+				tmp->space = currscopespace();
+				tmp->offset = currscopeoffset();
+				inccurrscopeoffset();
+				printf("var : %s | scope : %d | space : %d | offset : %d\n",tmp->name,tmp->scope,tmp->space,tmp->offset);
 			}
 		
 		}
@@ -769,6 +811,8 @@ int main(int argc, char** argv)
         insert_SymTable(table,new_SymTabEntry("cos",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
         insert_SymTable(table,new_SymTabEntry("sin",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
         yyparse();
+
+		printNumOfVars();
 		/*
         if(args != NULL && strcmp(args, "-s") == 0)
                 //print_Scopes(table);
