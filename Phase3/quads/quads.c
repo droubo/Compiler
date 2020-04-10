@@ -170,24 +170,19 @@ void print_quad_arg(expr * arg, FILE * file){
 void print_quads(FILE * file){
     int i, j;
     printf("\n>> I CODE\n\n");
-    quad * curr_quad;
+    quad curr_quad;
     for(i = 0; i < currQuad; i++){
-        curr_quad = quads + i;
-        
-        if(curr_quad == NULL){
-            printf("Hit null quad\n");
-            return;
-        }
+        curr_quad = quads[i];
     
         if(file == stdout){
             fprintf(file, "%d", i + 1);
         
-            for(j = 0; j < numPlaces(currQuad) - numPlaces(i) + 2; j++){
+            for(j = 0; j < numPlaces(currQuad) - numPlaces(i + 1) + 2; j++){
                 fprintf(file, " ");
             }
         }
 
-        switch(curr_quad->op){
+        switch(curr_quad.op){
             case assign:    	{ fprintf(file, "ASSIGN "); break;}
             case add:       	{ fprintf(file, "ADD "); break; }
             case sub:       	{ fprintf(file, "SUB "); break; }
@@ -224,23 +219,23 @@ void print_quads(FILE * file){
 
             default: { fprintf(file, "*ERROR* "); break; }
         }
-        switch(curr_quad->op){
+        switch(curr_quad.op){
             case if_eq:
             case if_noteq:
             case if_lesseq:
             case if_greatereq:
             case if_less:
             case if_greater: {
-                    print_quad_arg(curr_quad->arg1, file);
-                    print_quad_arg(curr_quad->arg2, file);
-                    fprintf(file, "%d", curr_quad->label);
+                    print_quad_arg(curr_quad.arg1, file);
+                    print_quad_arg(curr_quad.arg2, file);
+                    fprintf(file, "%d", curr_quad.label);
                     break;
             }
-            case jump: { fprintf(file, "%d", curr_quad->label); break; }
+            case jump: { fprintf(file, "%d", curr_quad.label); break; }
             default: {
-                print_quad_arg(curr_quad->result, file);
-		        print_quad_arg(curr_quad->arg1, file);
-                print_quad_arg(curr_quad->arg2, file);
+                print_quad_arg(curr_quad.result, file);
+		        print_quad_arg(curr_quad.arg1, file);
+                print_quad_arg(curr_quad.arg2, file);
                 break;
             }
         }

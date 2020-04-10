@@ -103,8 +103,6 @@ FILE * errorFile;
 %type<express> tablemake
 %type<express> elist
 %type<express> indexed
-%type<express> boolexpr
-%type<express> assignboolexpr
 %type<sym> funcdef
 %type<ipc> compop
 %type<integer> ifexpr
@@ -214,7 +212,6 @@ continue_: CONTINUE SEMICOLON {
 	 					   }
 
 expr : assignexpr
-		| assignboolexpr
      	| expr PLUS expr {
         	if(flag_func == 1 && flag_op == 0) {
         	        fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); 
@@ -225,7 +222,7 @@ expr : assignexpr
 			SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 			$$ = newexpr(arithexpr_e,tmp);
         	    emit(add, $1, $3, $$, yylineno);
-			}
+		}
      	| expr MINUS expr {
         	if(flag_func == 1 && flag_op == 0) {
         	        fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); 
@@ -234,7 +231,7 @@ expr : assignexpr
 			SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 			$$ = newexpr(arithexpr_e,tmp);
         	    emit(sub, $1, $3, $$, yylineno);
-			}
+		}
      	| expr MULT expr {
         	if(flag_func == 1 && flag_op == 0) {
         	        fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); 
@@ -243,7 +240,7 @@ expr : assignexpr
 			SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 			$$ = newexpr(arithexpr_e,tmp);
         	    emit(mul, $1, $3, $$, yylineno);
-			}
+		}
      	| expr DIV expr {
         	if(flag_func == 1 && flag_op == 0) {
         	    fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); 
@@ -252,8 +249,58 @@ expr : assignexpr
 			SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 			$$ = newexpr(arithexpr_e,tmp);
         	emit(diva, $1, $3, $$, yylineno);
-			}
-		| boolexpr OR expr_M boolexpr {
+		}
+		| expr GREATER expr {
+			$$ = newexpr(boolexpr_e, NULL);
+			$$->truelist = booleanList_makeList(currQuad);
+			$$->falselist = booleanList_makeList(currQuad + 1);
+			printf("%.0f op %.0f\n", $1->numConst, $3->numConst);
+			emit(if_greater, $1, $3, NULL, yylineno);
+			emit_jump(jump, NULL, NULL, 0, yylineno);
+		}
+		| expr GREATER_EQUAL expr {
+			$$ = newexpr(boolexpr_e, NULL);
+			$$->truelist = booleanList_makeList(currQuad);
+			$$->falselist = booleanList_makeList(currQuad + 1);
+			printf("%.0f op %.0f\n", $1->numConst, $3->numConst);
+			emit(if_greatereq, $1, $3, NULL, yylineno);
+			emit_jump(jump, NULL, NULL, 0, yylineno);
+		}
+		| expr LESS expr {
+			$$ = newexpr(boolexpr_e, NULL);
+			$$->truelist = booleanList_makeList(currQuad);
+			$$->falselist = booleanList_makeList(currQuad + 1);
+			printf("%.0f op %.0f\n", $1->numConst, $3->numConst);
+			emit(if_less, $1, $3, NULL, yylineno);
+			emit_jump(jump, NULL, NULL, 0, yylineno);
+		}
+		| expr LESS_EQUAL expr {
+			$$ = newexpr(boolexpr_e, NULL);
+			$$->truelist = booleanList_makeList(currQuad);
+			$$->falselist = booleanList_makeList(currQuad + 1);
+			printf("%.0f op %.0f\n", $1->numConst, $3->numConst);
+			emit(if_lesseq, $1, $3, NULL, yylineno);
+			emit_jump(jump, NULL, NULL, 0, yylineno);
+		}
+		| expr EQUAL expr {
+			flag_op = 1; flag_func = 0; 
+			$$ = newexpr(boolexpr_e, NULL);
+			$$->truelist = booleanList_makeList(currQuad);
+			$$->falselist = booleanList_makeList(currQuad + 1);
+			printf("%.0f op %.0f\n", $1->numConst, $3->numConst);
+			emit(if_eq, $1, $3, NULL, yylineno);
+			emit_jump(jump, NULL, NULL, 0, yylineno);
+		}
+		| expr NOT_EQUAL expr {
+			flag_op = 1; flag_func = 0; 
+			$$ = newexpr(boolexpr_e, NULL);
+			$$->truelist = booleanList_makeList(currQuad);
+			$$->falselist = booleanList_makeList(currQuad + 1);
+			printf("%.0f op %.0f\n", $1->numConst, $3->numConst);
+			emit(if_noteq, $1, $3, NULL, yylineno);
+			emit_jump(jump, NULL, NULL, 0, yylineno);
+		}
+		| expr OR M_ expr {
 			flag_op = 1; flag_func = 0;
 			printf("OR\n");
 
@@ -263,7 +310,7 @@ expr : assignexpr
 			$$->falselist = $4->falselist;
 		}
 
-		| boolexpr AND expr_M boolexpr {
+		| expr AND M_ expr {
 			flag_op = 1; flag_func = 0;
 			printf("AND\n");
 
@@ -274,30 +321,6 @@ expr : assignexpr
 		}
 	 	| term { $$ = $1; }
      	;
-
-expr_M : {
-	$$ = (M *) malloc(sizeof(M));
-	$$->quad = currQuad + 1;
-}
-
-boolexpr : expr compop expr {
-			$$ = newexpr(boolexpr_e, NULL);
-			$$->truelist = booleanList_makeList(currQuad);
-			$$->falselist = booleanList_makeList(currQuad + 1);
-			printf("%.0f op %.0f\n", $1->numConst, $3->numConst);
-			emit($2, $1, $3, NULL, yylineno);
-			emit_jump(jump, NULL, NULL, 0, yylineno);
-		}
-		| expr { $$ = $1; };
-		;
-
-compop: GREATER {$$ = if_greater; }
-   | GREATER_EQUAL {$$ = if_greatereq; }
-   | LESS {$$ = if_less; }
-   | LESS_EQUAL {$$ = if_lesseq; }
-   | EQUAL {flag_op = 1; flag_func = 0; $$ = if_eq;}
-   | NOT_EQUAL {flag_op = 1; flag_func = 0; $$ = if_noteq;}
-   ;
 
 term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
      | MINUS expr {
@@ -311,6 +334,7 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
 			emit(mul, $2, newconstnumexpr(-1), $2, yylineno);
             $$ = $2;
 		} %prec UMINUS
+	// TODO: This has to go to expr
      | NOT expr {flag_op = 1; flag_func = 0; fprintf(yyout,"term -> not expr\n");}
      | PLUS_PLUS lvalue {
             if(flag_func == 1)
@@ -381,25 +405,6 @@ assignexpr : lvalue {
 						table_flag = 0;
 					}
 
-		;
-
-assignboolexpr : lvalue {
-                        if(flag_func == 1){
-                            fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno);
-                            fail_icode = 1;
-                        } 
-                        flag_func = 0; table_flag = 1; 
-                    } 
-        ASSIGN boolexpr {
-            expr * temp;
-            temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
-            emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
-            emit_jump(jump, NULL, NULL, currQuad + 3, yylineno);
-            emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
-            backpatch($boolexpr->truelist, currQuad - 2);
-            backpatch($boolexpr->falselist, currQuad);
-            emit(assign, temp, NULL, $1, yylineno);
-        }
         ;
 primary : lvalue
         | call
@@ -551,7 +556,7 @@ normcall : LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
 
 methodcall : DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
            ;
-
+// TODO: This also needs boolean backpatching?
 elist :
       | expr {flag_func = 0;} COMA elist {$expr->next = $4;  $$ = $expr;}
 	  | expr {flag_func = 0;} {$$ = $expr; }
@@ -560,7 +565,7 @@ elist :
 indexed : indexedelem comaindexedelem
         ;
 
-comaindexedelem : /* */
+comaindexedelem :
                 | COMA indexedelem comaindexedelem
                 ;
 
@@ -672,6 +677,7 @@ ifstmt : ifexpr statement { edit_quad((int)$1, NULL, NULL, NULL, currQuad+1);} e
 		}
        ;
 
+// TODO: Put bool eval
 ifexpr : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
 		emit_jump(if_eq,  $3, newconstboolexpr(VAR_TRUE), currQuad+3, yylineno);
 		$$ = currQuad;
@@ -693,9 +699,11 @@ whilestmt : whilestart whilecond loopstmt {
 
 whilestart : WHILE { $$ = currQuad; }
 			;
+// TODO: Put bool eval
 whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_flag = 1; emit_jump(if_eq, $expr, newconstboolexpr(1), currQuad + 3, yylineno); $$ = currQuad; emit_jump(jump, NULL, NULL, 0, yylineno); }
 			;
 
+// TODO: Put bool eval
 forstmt : forprefix N elist RIGHT_PARENTHESIS N {loop_flag = 1;} loopstmt N {
 			 loop_flag = 0;	
 			 edit_quad((int)$forprefix, NULL, NULL, NULL, $5 +2);
@@ -722,6 +730,7 @@ M_ : { $$ = currQuad+1; }
 	;
 N : { $$ = currQuad; emit_jump(jump,NULL, NULL, 0, yylineno); }
 	;
+// TODO: Put bool eval
 returnstmt : RETURN expr SEMICOLON {flag_func = 0;}
            | RETURN SEMICOLON
            ;
