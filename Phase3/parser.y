@@ -304,7 +304,7 @@ expr : assignexpr
 			flag_op = 1; flag_func = 0;
 			printf("OR\n");
 
-			backpatch($1->falselist, $3->quad);
+			backpatch($1->falselist, $3);
 			$$ = newexpr(boolexpr_e, NULL);
 			$$->truelist = booleanList_merge($1->truelist, $4->truelist);
 			$$->falselist = $4->falselist;
@@ -314,7 +314,7 @@ expr : assignexpr
 			flag_op = 1; flag_func = 0;
 			printf("AND\n");
 
-			backpatch($1->truelist, $3->quad);
+			backpatch($1->truelist, $3);
 			$$ = newexpr(boolexpr_e, NULL);
 			$$->truelist = $4->truelist;
 			$$->falselist = booleanList_merge($1->falselist, $4->falselist);
