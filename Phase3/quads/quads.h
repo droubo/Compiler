@@ -69,8 +69,8 @@ typedef struct quad {
     expr * result;
     expr * arg1;
     expr * arg2;
-    unsigned label;
-    unsigned line;
+    unsigned int label;
+    unsigned int line;
 } quad;
 
 extern quad * quads;

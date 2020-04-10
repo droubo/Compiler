@@ -4,7 +4,7 @@
 #include <string.h>
 #include "temp.h"
 #include "../symtab/symtable.h"
-
+#include "../symtab/numPlaces.h"
 #define INT_MIN -2147483647
 #define INT_MAX 2147483647
 
