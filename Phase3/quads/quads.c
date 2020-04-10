@@ -1,5 +1,3 @@
-/* Some code Taken from lecture 9, Slides 37, 38 
-   Frontisthrio 4 Slide 15 */
 #include "quads.h"
 #include "temp.h"
 #include <math.h>
