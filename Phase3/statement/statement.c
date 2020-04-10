@@ -13,7 +13,6 @@ int newlist(int i){
 }
 
 int mergelist(int l1, int l2){
-printf("MERGE: %d %d\n\n", l1, l2);
 	if(!l1) return l2;
 	else if(!l2) return l1;
 	else {
@@ -28,7 +27,6 @@ void patchlist(int list, int label){
 	while(list){
 		int next = quads[list].label;
 		quads[list].label = label;
-		printf("Quad: %d %d\n\n", list, quads[list].label);
 		list = next;
 
 	}

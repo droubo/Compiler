@@ -30,7 +30,7 @@ int table_flag = 0;
 int jump_label = 0;
 int loopcounter = 0;
 loopcounterstack *lcs = NULL;
-
+int else_flag = 0;
 FILE * errorFile;
 
 %}
@@ -108,7 +108,6 @@ FILE * errorFile;
 %type<sym> funcdef
 %type<ipc> compop
 %type<integer> ifexpr
-%type<integer> elseexpr
 %type<integer> whilestart
 %type<integer> whilecond
 %type<integer> forprefix
@@ -120,6 +119,12 @@ FILE * errorFile;
 %type<stmt> break
 %type<stmt> continue_
 %type<stmt> loopstmt
+%type<stmt> block
+%type<stmt> ifstmt
+%type<stmt> whilestmt
+%type<stmt> forstmt
+%type<stmt> elseexpr
+
 
 /* priority */
 
@@ -152,12 +157,12 @@ FILE * errorFile;
 program : statements
         ;
 
-statements : 
-		   | statement { $$ = $1; }
-           | statements statement { 
-				printf("DD: %d\n\n", $2.breakList);
-				$$.breakList = mergelist($1.breakList, $2.breakList);
-				$$.contList = mergelist($1.contList, $2.contList);
+statements : {make_stmt(&$$); }
+		   //| statement { $$ = $1; printf("STMT: %d\n\n", $1.breakList);}
+           | statement statements { 
+				//printf("DD: %d %d\n\n", $2.breakList, $1.breakList);
+				$$.breakList = mergelist($2.breakList, $1.breakList);
+				$$.contList = mergelist($2.contList, $1.contList);
 		   }
 		   /* correct statement ,  continue */
            | error_statement statements /* wrong statement , continue */
@@ -168,9 +173,9 @@ error_statement : error statement /* consume the stack until you find a statemen
 
 statement : 
        expr SEMICOLON { make_stmt(&$$); }
-     | ifstmt { make_stmt(&$$); }
-     |  whilestmt { make_stmt(&$$); }
-     | forstmt { make_stmt(&$$); }
+     | ifstmt { $$ = $1; }
+     |  whilestmt { $$ = $1; }
+     | forstmt { $$ = $1; }
      |  returnstmt {
 		 			if(return_flag == 0)
 	 				 {
@@ -180,31 +185,32 @@ statement :
 				   make_stmt(&$$); }
      | break { $$ = $1; }
 	 | continue_ { $$ = $1; }
-     |  block { make_stmt(&$$); }
+     |  block { $$ = $1; }
      |  funcdef { make_stmt(&$$); }
      | SEMICOLON { make_stmt(&$$); }
      ; 
 
 break:  BREAK SEMICOLON {
-		 				if(loop_flag == 0)
+		 				if(loopcounter == 0)
 	 					 {
 		 					fprintf(errorFile,"ERROR @ line %d: Cannot use break outside of a loop\n",yylineno);
-							 fail_icode = 1;
+							 //fail_icode = 1;
 						 }
 						make_stmt(&$$);
-						$$.breakList = newlist(currQuad+1);
+						$$.breakList = newlist(currQuad);
 						emit_jump(jump, NULL, NULL, 0, yylineno);
 						printf("break: %d\n\n", $$.breakList);
 	 					}
 continue_: CONTINUE SEMICOLON {
-		 					if(loop_flag == 0)
+		 					if(loopcounter == 0)
 	 						{ 
 								 fprintf(errorFile,"ERROR @ line %d: Cannot use continue outside of a loop\n",yylineno);
-								 fail_icode = 1;
+								 //fail_icode = 1;
 							}
 							make_stmt(&$$);
-							$$.breakList = newlist(currQuad);
+							$$.contList = newlist(currQuad);
 							emit_jump(jump, NULL, NULL, 0, yylineno);
+							printf("continue: %d\n\n", $$.contList);
 	 					   }
 
 expr : assignexpr
@@ -344,24 +350,7 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
      | primary { $$ = $1; }
      ;
 
-assignboolexpr : lvalue {
-                        if(flag_func == 1){
-                            fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno);
-                            fail_icode = 1;
-                        } 
-                        flag_func = 0; table_flag = 1; 
-                    } 
-        ASSIGN boolexpr {
-            expr * temp;
-            temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
-            emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
-            emit_jump(jump, NULL, NULL, currQuad + 3, yylineno);
-            emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
-            backpatch($boolexpr->truelist, currQuad - 2);
-            backpatch($boolexpr->falselist, currQuad);
-            emit(assign, temp, NULL, $1, yylineno);
-        }
-        ;
+
 
 assignexpr : lvalue {
 						if(flag_func == 1){
@@ -393,6 +382,25 @@ assignexpr : lvalue {
 					}
 
 		;
+
+assignboolexpr : lvalue {
+                        if(flag_func == 1){
+                            fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno);
+                            fail_icode = 1;
+                        } 
+                        flag_func = 0; table_flag = 1; 
+                    } 
+        ASSIGN boolexpr {
+            expr * temp;
+            temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+            emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
+            emit_jump(jump, NULL, NULL, currQuad + 3, yylineno);
+            emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
+            backpatch($boolexpr->truelist, currQuad - 2);
+            backpatch($boolexpr->falselist, currQuad);
+            emit(assign, temp, NULL, $1, yylineno);
+        }
+        ;
 primary : lvalue
         | call
         | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS { 			
@@ -559,7 +567,7 @@ comaindexedelem : /* */
 indexedelem : LEFT_BRACE expr COLON expr RIGHT_BRACE
             ;
 
-block : LEFT_BRACE { currscope++; } statements RIGHT_BRACE { hide_Scope(table,currscope); currscope--;}
+block : LEFT_BRACE { currscope++; } statements RIGHT_BRACE { hide_Scope(table,currscope); currscope--; $$ = $statements;}
       ;
 
 funcdef : FUNCTION ID {
@@ -654,31 +662,38 @@ idlist : /*   */
 		}	
        ;
 
-ifstmt : ifexpr statement { edit_quad((int)$1, NULL, NULL, NULL, currQuad+1);} elseexpr {if(jump_label == -1) { edit_quad((int)$1, NULL, NULL, NULL, $elseexpr+2); edit_quad((int)$elseexpr, NULL, NULL, NULL, currQuad+1); } }
+ifstmt : ifexpr statement { edit_quad((int)$1, NULL, NULL, NULL, currQuad+1);} elseexpr {if(else_flag == -1) {
+		edit_quad((int)$1, NULL, NULL, NULL, jump_label+2);
+		edit_quad((int)jump_label, NULL, NULL, NULL, currQuad+1);
+		else_flag = 0;
+		}
+		$$.breakList = mergelist($elseexpr.breakList, $statement.breakList);
+		$$.contList = mergelist($elseexpr.contList, $statement.contList);
+		}
        ;
 
 ifexpr : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
-		emit(if_eq, newconstboolexpr(VAR_TRUE),newconstnumexpr(currQuad+3), $3, yylineno);
+		emit_jump(if_eq,  $3, newconstboolexpr(VAR_TRUE), currQuad+3, yylineno);
 		$$ = currQuad;
 		emit_jump(jump, NULL, NULL, 0, yylineno);
 		}
 		;
-elseexpr : 
-		| ELSE {jump_label = currQuad; emit_jump(jump,NULL,NULL, 0,yylineno); } statement {$$ = jump_label; jump_label = -1;} 
+elseexpr : ELSE {jump_label = currQuad; emit_jump(jump, NULL,NULL, 0 ,yylineno); } statement {$$ = $statement; else_flag = -1;} 
+		 | {make_stmt(&$$);}
 		;
 
 whilestmt : whilestart whilecond loopstmt {
 			loop_flag = 0;
 			emit_jump(jump, NULL, NULL, $whilestart+1, yylineno);
-			edit_quad((int)$whilecond, NULL, NULL, NULL, currQuad);
+			edit_quad($whilecond, NULL, NULL, NULL, currQuad+1);
 			patchlist($loopstmt.breakList, currQuad+1);
-			patchlist($loopstmt.contList, $2+1);
+			patchlist($loopstmt.contList, $whilecond);
 			}
           ;
 
 whilestart : WHILE { $$ = currQuad; }
 			;
-whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_flag = 1; emit(if_eq, $expr, newconstboolexpr(1),newconstnumexpr((double)currQuad + 3), yylineno); $$ = currQuad; emit(jump, NULL, NULL, NULL, yylineno); }
+whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_flag = 1; emit_jump(if_eq, $expr, newconstboolexpr(1), currQuad + 3, yylineno); $$ = currQuad; emit_jump(jump, NULL, NULL, 0, yylineno); }
 			;
 
 forstmt : forprefix N elist RIGHT_PARENTHESIS N {loop_flag = 1;} loopstmt N {
@@ -687,20 +702,21 @@ forstmt : forprefix N elist RIGHT_PARENTHESIS N {loop_flag = 1;} loopstmt N {
 			 edit_quad((int)$2, NULL, NULL, NULL, currQuad+1);
 			 edit_quad((int)$5, NULL, NULL, NULL, jump_label);
 			 edit_quad((int)$8, NULL, NULL, NULL, $2+2);
-			 patchlist($loopstmt.breakList, currQuad);
+			 patchlist($loopstmt.breakList, currQuad+1);
 			 patchlist($loopstmt.contList, $2+1);
+
 		}
         ;
 
 forprefix: FOR LEFT_PARENTHESIS elist SEMICOLON M_ expr SEMICOLON {
 		jump_label = $M_;
 		$$ = currQuad;
-		emit(if_eq, $expr, newconstboolexpr(1), NULL, yylineno);
+		emit_jump(if_eq, $expr, newconstboolexpr(1), 0, yylineno);
 	}
 		;
 loopstart: {loopcounter++;};
 loopend: {loopcounter--;};
-loopstmt: loopstart statement loopend { $$ = $statement; };
+loopstmt: loopstart statement loopend { $$ = $statement;};
 
 M_ : { $$ = currQuad+1; }
 	;
