@@ -1,5 +1,3 @@
-while(a){
-if(b) { break; }
-c = 4;
+while(a > b){
+	x = x + 1 / a - b;
 }
-h = 5;

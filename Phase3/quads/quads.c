@@ -150,11 +150,16 @@ void print_quad_arg(expr * arg, FILE * file){
         switch(arg->type){
             case var_e:
             case tableitem_e:
+            
             case programfunc_e:
             case libraryfunc_e:
-            case newtable_e: {
-                fprintf(file, "%s ", arg->sym->name); break;
-            }
+             
+            case arithexpr_e: 
+            case newtable_e:    { fprintf(file, "%s ", arg->sym->name); break; }
+            
+            case boolexpr_e:    { fprintf(file, "boolexpr_e "); break; }
+            case assignexpr_e:  { fprintf(file, "assinexpr_e "); break; }
+
 
             case constnum_e:    { print_double(arg->numConst, file); break; }
             case constbool_e:   { if(arg->boolConst == VAR_TRUE) fprintf(file, "TRUE "); else fprintf(file, "FALSE "); break; }

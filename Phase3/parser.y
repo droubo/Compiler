@@ -220,8 +220,8 @@ expr : assignexpr
         	flag_op = 0; flag_func = 0;
 
 			SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
-			$$ = newexpr(arithexpr_e,tmp);
-        	    emit(add, $1, $3, $$, yylineno);
+			$$ = newexpr(arithexpr_e, tmp);
+        	emit(add, $1, $3, $$, yylineno);
 		}
      	| expr MINUS expr {
         	if(flag_func == 1 && flag_op == 0) {
@@ -230,7 +230,7 @@ expr : assignexpr
         	}
 			SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 			$$ = newexpr(arithexpr_e,tmp);
-        	    emit(sub, $1, $3, $$, yylineno);
+        	emit(sub, $1, $3, $$, yylineno);
 		}
      	| expr MULT expr {
         	if(flag_func == 1 && flag_op == 0) {
@@ -239,7 +239,7 @@ expr : assignexpr
         	}
 			SymTabEntry *tmp = (SymTabEntry *)newtemp(table,currscope, currfunc, 0);
 			$$ = newexpr(arithexpr_e,tmp);
-        	    emit(mul, $1, $3, $$, yylineno);
+        	emit(mul, $1, $3, $$, yylineno);
 		}
      	| expr DIV expr {
         	if(flag_func == 1 && flag_op == 0) {
@@ -409,10 +409,7 @@ assignexpr : lvalue {
 							backpatch($expr->truelist, currQuad - 2);
 							backpatch($expr->falselist, currQuad);
 							emit(assign, temp, NULL, $1, yylineno);
-							return;
-						}
-
-						if($1->index != NULL){
+						} else if($1->index != NULL){
 							emit(tablesetelem, $1->index, $4, $1, yylineno);
 							emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno);
 						} else{ 
@@ -683,7 +680,7 @@ idlist : /*   */
 		}	
        ;
 
-ifstmt : ifexpr statement { edit_quad((int)$1, NULL, NULL, NULL, currQuad+1);} elseexpr {if(else_flag == -1) {
+ifstmt : ifexpr statement {edit_quad((int)$1, NULL, NULL, NULL, currQuad+1);} elseexpr {if(else_flag == -1) {
 		edit_quad((int)$1, NULL, NULL, NULL, jump_label+2);
 		edit_quad((int)jump_label, NULL, NULL, NULL, currQuad+1);
 		else_flag = 0;
@@ -693,9 +690,17 @@ ifstmt : ifexpr statement { edit_quad((int)$1, NULL, NULL, NULL, currQuad+1);} e
 		}
        ;
 
-// TODO: Put bool eval
 ifexpr : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
-		emit_jump(if_eq,  $3, newconstboolexpr(VAR_TRUE), currQuad+3, yylineno);
+		expr * temp;
+		if($expr->type == boolexpr_e){
+			temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+			emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
+			emit_jump(jump, NULL, NULL, currQuad + 3, yylineno);
+			emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
+			backpatch($expr->truelist, currQuad - 2);
+			backpatch($expr->falselist, currQuad);
+		}
+		emit_jump(if_eq,  temp, newconstboolexpr(VAR_TRUE), currQuad+3, yylineno);
 		$$ = currQuad;
 		emit_jump(jump, NULL, NULL, 0, yylineno);
 		}
@@ -716,7 +721,21 @@ whilestmt : whilestart whilecond loopstmt {
 whilestart : WHILE { $$ = currQuad; }
 			;
 // TODO: Put bool eval
-whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_flag = 1; emit_jump(if_eq, $expr, newconstboolexpr(1), currQuad + 3, yylineno); $$ = currQuad; emit_jump(jump, NULL, NULL, 0, yylineno); }
+whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
+		loop_flag = 1;
+		expr * temp;
+		if($expr->type == boolexpr_e){
+			temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+			emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
+			emit_jump(jump, NULL, NULL, currQuad + 3, yylineno);
+			emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
+			backpatch($expr->truelist, currQuad - 2);
+			backpatch($expr->falselist, currQuad);
+		}
+		emit_jump(if_eq, temp, newconstboolexpr(1), currQuad + 3, yylineno);
+		$$ = currQuad;
+		emit_jump(jump, NULL, NULL, 0, yylineno);
+	}
 			;
 
 // TODO: Put bool eval

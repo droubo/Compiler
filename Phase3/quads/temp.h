@@ -5,6 +5,8 @@
 #define INT_MIN -2147483647
 #define INT_MAX 2147483647
 
+extern int tempcounter;
+
 /* Used code from Lecture 9 Slide 45 */
 char * newtempname();
 

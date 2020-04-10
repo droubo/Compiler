@@ -13,6 +13,7 @@ int tempcounter = 0;
 char * newtempname() {
     char * name = malloc(sizeof(char) * (numPlaces(tempcounter) + 2));
     sprintf(name, "_t%d", tempcounter);
+    printf("tempname = %s\n", name);
     tempcounter++;
     return name;
 }
@@ -25,10 +26,9 @@ SymTabEntry * newtemp(SymTable * table, int currScope, int func_scope, int curr)
 
     name = newtempname();
     sym = lookup_SymTableScope(table, currScope, name);
-    if(sym == NULL){
-        insert_SymTable(table, new_SymTabEntry(name, -1, 1, NULL, NULL, currScope, func_scope, LOCAL));
-        return lookup_SymTable(table, name);
-    }
+    if(sym == NULL)
+        return insert_SymTable(table, new_SymTabEntry(name, -1, 1, NULL, NULL, currScope, func_scope, LOCAL));
+
     else
         return sym;
 }
