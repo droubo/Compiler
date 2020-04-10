@@ -720,7 +720,7 @@ whilestmt : whilestart whilecond loopstmt {
 
 whilestart : WHILE { $$ = currQuad; }
 			;
-// TODO: Put bool eval
+
 whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
 		loop_flag = 1;
 		expr * temp;
@@ -738,9 +738,8 @@ whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
 	}
 			;
 
-// TODO: Put bool eval
 forstmt : forprefix N elist RIGHT_PARENTHESIS N {loop_flag = 1;} loopstmt N {
-			 loop_flag = 0;	
+			 loop_flag = 0;
 			 edit_quad((int)$forprefix, NULL, NULL, NULL, $5 +2);
 			 edit_quad((int)$2, NULL, NULL, NULL, currQuad+1);
 			 edit_quad((int)$5, NULL, NULL, NULL, jump_label);
@@ -754,7 +753,16 @@ forstmt : forprefix N elist RIGHT_PARENTHESIS N {loop_flag = 1;} loopstmt N {
 forprefix: FOR LEFT_PARENTHESIS elist SEMICOLON M_ expr SEMICOLON {
 		jump_label = $M_;
 		$$ = currQuad;
-		emit_jump(if_eq, $expr, newconstboolexpr(1), 0, yylineno);
+		expr * temp;
+		if($expr->type == boolexpr_e){
+			temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+			emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
+			emit_jump(jump, NULL, NULL, currQuad + 3, yylineno);
+			emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
+			backpatch($expr->truelist, currQuad - 2);
+			backpatch($expr->falselist, currQuad);
+		}
+		emit_jump(if_eq, temp, newconstboolexpr(1), 0, yylineno);
 	}
 		;
 loopstart: {loopcounter++;};
