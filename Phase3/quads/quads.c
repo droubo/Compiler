@@ -151,7 +151,11 @@ void print_double(double d, FILE * file){
 void print_quad_arg(expr * arg, FILE * file){
     if(arg != NULL)
         switch(arg->type){
-            case var_e || tableitem_e || programfunc_e || libraryfunc_e || newtable_e: {
+            case var_e: 
+            case tableitem_e: 
+            case programfunc_e: 
+            case libraryfunc_e: 
+            case newtable_e: {
                 fprintf(file, "%s ", arg->sym->name); break;
             }
 
@@ -172,12 +176,12 @@ void print_quads(FILE * file){
     quad * curr_quad;
     for(i = 0; i < currQuad; i++){
         curr_quad = quads + i;
-        
+
         if(curr_quad == NULL){
             printf("Hit null quad\n");
             return;
         }
-    
+
         if(file == stdout){
             fprintf(file, "%d", i);
         
@@ -225,14 +229,20 @@ void print_quads(FILE * file){
         }
 
         switch(curr_quad->op){
-            case if_eq || if_noteq || if_lesseq || if_greatereq || if_less || if_greater: {
+            case if_eq: 
+            case if_noteq: 
+            case if_lesseq: 
+            case if_greatereq: 
+            case if_less: 
+            case if_greater: {
                     print_quad_arg(curr_quad->arg1, file);
                     print_quad_arg(curr_quad->arg2, file);
-                    fprintf(file, "%d", curr_quad->label);
+                    fprintf("%d", curr_quad->label);
                     break;
-            } 
+            }
             case jump: { fprintf(file, "%d", curr_quad->label); break; }
             default: {
+
                 print_quad_arg(curr_quad->result, file);
 		        print_quad_arg(curr_quad->arg1, file);
                 print_quad_arg(curr_quad->arg2, file);
