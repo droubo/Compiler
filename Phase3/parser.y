@@ -5,7 +5,7 @@
 #include <unistd.h> 
 #include <fcntl.h>
 #include "symtab/symtable.h"
-#include "booleanList/statement.h"
+#include "statement/statement.h"
 
 
 #define YY_DECL int alpha_yylex (void* yylval)
@@ -104,6 +104,7 @@ FILE * errorFile;
 %type<express> elist
 %type<express> indexed
 %type<express> boolexpr
+%type<express> assignboolexpr
 %type<sym> funcdef
 %type<ipc> compop
 %type<integer> ifexpr
@@ -152,31 +153,37 @@ program : statements
         ;
 
 statements : 
-           | statement statements /* correct statement ,  continue */
+		   | statement { $$ = $1; }
+           | statements statement { 
+				printf("DD: %d\n\n", $2.breakList);
+				$$.breakList = mergelist($1.breakList, $2.breakList);
+				$$.contList = mergelist($1.contList, $2.contList);
+		   }
+		   /* correct statement ,  continue */
            | error_statement statements /* wrong statement , continue */
            ;
 
 error_statement : error statement /* consume the stack until you find a statement */
                 ;
 
-statement :
-       expr SEMICOLON
-     | ifstmt
-     |  whilestmt
-     | forstmt
+statement : 
+       expr SEMICOLON { make_stmt(&$$); }
+     | ifstmt { make_stmt(&$$); }
+     |  whilestmt { make_stmt(&$$); }
+     | forstmt { make_stmt(&$$); }
      |  returnstmt {
 		 			if(return_flag == 0)
 	 				 {
 		 				fprintf(errorFile,"ERROR @ line %d: Cannot use return outside of a function\n",yylineno);
 						fail_icode = 1;
 					 }
-				   }
-     | break
-	 | continue_
-     |  block
-     |  funcdef
-     | SEMICOLON
-     ;
+				   make_stmt(&$$); }
+     | break { $$ = $1; }
+	 | continue_ { $$ = $1; }
+     |  block { make_stmt(&$$); }
+     |  funcdef { make_stmt(&$$); }
+     | SEMICOLON { make_stmt(&$$); }
+     ; 
 
 break:  BREAK SEMICOLON {
 		 				if(loop_flag == 0)
@@ -185,8 +192,9 @@ break:  BREAK SEMICOLON {
 							 fail_icode = 1;
 						 }
 						make_stmt(&$$);
-						$$.breakList = newlist(currQuad);
-						emit(jump, NULL, NULL, newconstnumexpr(0), yylineno);
+						$$.breakList = newlist(currQuad+1);
+						emit_jump(jump, NULL, NULL, 0, yylineno);
+						printf("break: %d\n\n", $$.breakList);
 	 					}
 continue_: CONTINUE SEMICOLON {
 		 					if(loop_flag == 0)
@@ -196,10 +204,11 @@ continue_: CONTINUE SEMICOLON {
 							}
 							make_stmt(&$$);
 							$$.breakList = newlist(currQuad);
-							emit(jump, NULL, NULL, newconstnumexpr(0), yylineno);
+							emit_jump(jump, NULL, NULL, 0, yylineno);
 	 					   }
 
 expr : assignexpr
+		| assignboolexpr
      	| expr PLUS expr {
         	if(flag_func == 1 && flag_op == 0) {
         	        fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno); 
@@ -271,7 +280,7 @@ boolexpr : expr compop expr {
 			$$->falselist = booleanList_makeList(currQuad + 1);
 			printf("%.0f op %.0f\n", $1->numConst, $3->numConst);
 			emit($2, $1, $3, NULL, yylineno);
-			emit(jump,NULL, NULL, NULL, yylineno);
+			emit_jump(jump, NULL, NULL, 0, yylineno);
 		}
 		| expr { $$ = $1; };
 		;
@@ -335,6 +344,25 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
      | primary { $$ = $1; }
      ;
 
+assignboolexpr : lvalue {
+                        if(flag_func == 1){
+                            fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno);
+                            fail_icode = 1;
+                        } 
+                        flag_func = 0; table_flag = 1; 
+                    } 
+        ASSIGN boolexpr {
+            expr * temp;
+            temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+            emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
+            emit_jump(jump, NULL, NULL, currQuad + 3, yylineno);
+            emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
+            backpatch($boolexpr->truelist, currQuad - 2);
+            backpatch($boolexpr->falselist, currQuad);
+            emit(assign, temp, NULL, $1, yylineno);
+        }
+        ;
+
 assignexpr : lvalue {
 						if(flag_func == 1){
 							fprintf(errorFile,"ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno);
@@ -347,7 +375,7 @@ assignexpr : lvalue {
 							expr * temp;
 							temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
 							emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
-							emit(jump, NULL, NULL, newconstnumexpr(currQuad + 3), yylineno);
+							emit_jump(jump, NULL, NULL, currQuad + 3, yylineno);
 							emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
 							backpatch($expr->truelist, currQuad - 2);
 							backpatch($expr->falselist, currQuad);
@@ -374,48 +402,88 @@ primary : lvalue
 		| tablemake
         ;
 
-lvalue : ID {	
-			SymTabEntry *tmp = lookup_SymTable(table, $1);
-			if(tmp != NULL && tmp->isActive == 1){
-				if(tmp->scope != 0 && tmp->func_scope != currfunc && strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") && strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
-					fprintf(errorFile, "ERROR @ line %d: %s cannot be accessed\n",yylineno, $1);
-					fail_icode = 1;
-				}
-				else if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") || !strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
-					flag_func = 1;
-					global_tmp = tmp;
-				}
-			}
-				
-            else if(currscope == 0) tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, GLOBAL));
-			else tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, currfunc, LOCAL));
-			
-			$$ = newexpr(var_e,tmp);
-			
-		}
+lvalue : ID {   
+            SymTabEntry *tmp = lookup_SymTable(table, $1);
+            if(tmp != NULL && tmp->isActive == 1){
+                if(tmp->scope != 0 && tmp->func_scope != currfunc && strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") && strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
+                    fprintf(errorFile, "ERROR @ line %d: %s cannot be accessed\n",yylineno, $1);
+                    fail_icode = 1;
+                }
+                /* is function */
+                else if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC") || !strcmp(SymbolTypeToString(tmp->type),"USERFUNC")){
+                    flag_func = 1;
+                    global_tmp = tmp;
+                }
+            }
+            /* variable exists in defferent scope , insert */
+            else if(tmp != NULL && tmp->isActive == 0)
+            {
+                SymbolType type;
+                if(currscope == 0) type = GLOBAL;
+                else type = LOCAL;
+                tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, type));
+                tmp->space = currscopespace();
+                tmp->offset = currscopeoffset();
+                inccurrscopeoffset();
+                printf("var : %s | scope : %d | space : %d | offset : %d\n",tmp->name,tmp->scope,tmp->space,tmp->offset);
+            }
+            else if(tmp == NULL)
+            {
+                /* insertion scope = 0 */   
+                if(currscope == 0)
+                {
+                    tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, GLOBAL));
+                }
+                /* insertion scope > 0 */
+                else
+                {
+                    tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, currfunc, LOCAL));
+                }
+                tmp->space = currscopespace();
+                tmp->offset = currscopeoffset();
+                inccurrscopeoffset();
+                printf("var : %s | scope : %d | space : %d | offset : %d\n",tmp->name,tmp->scope,tmp->space,tmp->offset);
+            }               
+    
+            $$ = newexpr(var_e,tmp);
+            
+        }
        | local ID {
-
-			SymTabEntry *tmp = lookup_SymTable(table, $2);
-			if(tmp != NULL && tmp->isActive == 1){
-				if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
-					fprintf(errorFile, "ERROR @ line %d: %s is a library function\n",yylineno, $2);
-					fail_icode = 1;
-				}
-                                else if(tmp->scope == currscope && strcmp(SymbolTypeToString(tmp->type),"FORMAL") == 0)
-                                {
-                                        /* do nothing , refer to arguments as local*/
-                                }
-				else if(tmp->scope == currscope){
-					fprintf(errorFile, "ERROR @ line %d: %s already declared\n",yylineno, $2);
-					fail_icode = 1;
-				}
-				else insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, LOCAL));
-			}
-			else {
-				insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, LOCAL));
-			}
-		
-		}
+            SymTabEntry *tmp = lookup_SymTable(table, $2);
+            if(tmp != NULL && tmp->isActive == 1){
+                if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
+                    fprintf(errorFile, "ERROR @ line %d: %s is a library function\n",yylineno, $2);
+                    fail_icode = 1;
+                }
+                else if(tmp->scope == currscope && strcmp(SymbolTypeToString(tmp->type),"FORMAL") == 0)
+                {
+                    /* do nothing , refer to arguments as local*/
+                }
+                else if(tmp->scope == currscope){
+                    fprintf(errorFile, "ERROR @ line %d: %s already declared\n",yylineno, $2);
+                    fail_icode = 1;
+                }
+                /* insert local on different scope */
+                else
+                {
+                    tmp = insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, LOCAL));
+                    tmp->space = currscopespace();
+                    tmp->offset = currscopeoffset();
+                    inccurrscopeoffset();
+                    printf("var : %s | scope : %d | space : %d | offset : %d\n",tmp->name,tmp->scope,tmp->space,tmp->offset);
+                }
+            }
+            /* insert local */
+            else if(tmp == NULL) 
+            {
+                tmp = insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, LOCAL));
+                tmp->space = currscopespace();
+                tmp->offset = currscopeoffset();
+                inccurrscopeoffset();
+                printf("var : %s | scope : %d | space : %d | offset : %d\n",tmp->name,tmp->scope,tmp->space,tmp->offset);
+            }
+        
+        }
        | DOUBLE_COLON ID {
 				SymTabEntry *tmp = lookup_SymTableScope(table, 0, $2);
 				if(tmp != NULL){
@@ -495,9 +563,8 @@ block : LEFT_BRACE { currscope++; } statements RIGHT_BRACE { hide_Scope(table,cu
       ;
 
 funcdef : FUNCTION ID {
-		expr *tmp_expr = newexpr(constnum_e,NULL);
 		jump_label = currQuad;
-		emit(jump, NULL, NULL, tmp_expr, yylineno);
+		emit_jump(jump, NULL, NULL, 0 , yylineno);
 		
 		currfunc++;
 		SymTabEntry *tmp = lookup_SymTableScope(table, currscope, $2);
@@ -522,19 +589,20 @@ funcdef : FUNCTION ID {
 
 			SymTabEntry *tmp = lookup_SymTableScope(table, currscope, $2);
 			emit(funcend, NULL, NULL, newexpr(programfunc_e, tmp), yylineno);
-			edit_quad(jump_label, NULL, NULL, newconstnumexpr((double)currQuad+1));
+			edit_quad(jump_label, NULL, NULL, NULL, currQuad+1);
 			currfunc--;
 
 		}
-        | FUNCTION {currfunc++;
+        | FUNCTION {
+					currfunc++;
                     char* anonym = (char *)malloc(sizeof(char)*2);
                     sprintf(anonym,"$%d",anonym_func_count++);
                     insert_SymTable(table, new_SymTabEntry(anonym, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, USERFUNC));
                    }  LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS  funcblockstart block funcblockend
         ;
 
-funcblockstart: {push(&lcs, loopcounter);};
-funcblockend: {loopcounter = pop(&lcs);};
+funcblockstart: {push_lpstack(&lcs, loopcounter);};
+funcblockend: {loopcounter = pop_lpstack(&lcs);};
 
 const : REALCONST { $$ = newconstnumexpr((double) $1); }
       | INTCONST { $$ = newconstnumexpr((double) $1); }
@@ -586,39 +654,39 @@ idlist : /*   */
 		}	
        ;
 
-ifstmt : ifexpr statement { edit_quad((int)$1, NULL, NULL, newconstnumexpr((double)currQuad+1));} elseexpr {if(jump_label == -1) { edit_quad((int)$1, NULL, NULL, newconstnumexpr((double)$elseexpr+2)); edit_quad((int)$elseexpr, NULL, NULL, newconstnumexpr((double)currQuad+1)); } }
+ifstmt : ifexpr statement { edit_quad((int)$1, NULL, NULL, NULL, currQuad+1);} elseexpr {if(jump_label == -1) { edit_quad((int)$1, NULL, NULL, NULL, $elseexpr+2); edit_quad((int)$elseexpr, NULL, NULL, NULL, currQuad+1); } }
        ;
 
 ifexpr : IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {
 		emit(if_eq, newconstboolexpr(VAR_TRUE),newconstnumexpr(currQuad+3), $3, yylineno);
 		$$ = currQuad;
-		emit(jump, NULL, NULL, 0, yylineno);
+		emit_jump(jump, NULL, NULL, 0, yylineno);
 		}
 		;
 elseexpr : 
-		| ELSE {jump_label = currQuad; emit(jump, NULL,NULL,0,yylineno); } statement {$$ = jump_label; jump_label = -1;} 
+		| ELSE {jump_label = currQuad; emit_jump(jump,NULL,NULL, 0,yylineno); } statement {$$ = jump_label; jump_label = -1;} 
 		;
 
 whilestmt : whilestart whilecond loopstmt {
 			loop_flag = 0;
-			emit(jump, NULL, NULL, newconstnumexpr((double)$whilestart+1), yylineno);
-			edit_quad((int)$whilecond, NULL, NULL, newconstnumexpr((double)currQuad+1));
-			patchlist($loopstmt.breakList, currQuad);
+			emit_jump(jump, NULL, NULL, $whilestart+1, yylineno);
+			edit_quad((int)$whilecond, NULL, NULL, NULL, currQuad);
+			patchlist($loopstmt.breakList, currQuad+1);
 			patchlist($loopstmt.contList, $2+1);
 			}
           ;
 
 whilestart : WHILE { $$ = currQuad; }
 			;
-whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_flag = 1; emit(if_eq, $expr, newconstboolexpr(1),newconstnumexpr((double)currQuad + 3), yylineno); $$ = currQuad; emit(jump, NULL, NULL, 0, yylineno); }
+whilecond : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {loop_flag = 1; emit(if_eq, $expr, newconstboolexpr(1),newconstnumexpr((double)currQuad + 3), yylineno); $$ = currQuad; emit(jump, NULL, NULL, NULL, yylineno); }
 			;
 
 forstmt : forprefix N elist RIGHT_PARENTHESIS N {loop_flag = 1;} loopstmt N {
 			 loop_flag = 0;	
-			 edit_quad((int)$forprefix, NULL, NULL, newconstnumexpr((double)$5 +2));
-			 edit_quad((int)$2, NULL, NULL, newconstnumexpr((double)currQuad+1));
-			 edit_quad((int)$5, NULL, NULL, newconstnumexpr((double)jump_label));
-			 edit_quad((int)$8, NULL, NULL, newconstnumexpr((double)$2+2));
+			 edit_quad((int)$forprefix, NULL, NULL, NULL, $5 +2);
+			 edit_quad((int)$2, NULL, NULL, NULL, currQuad+1);
+			 edit_quad((int)$5, NULL, NULL, NULL, jump_label);
+			 edit_quad((int)$8, NULL, NULL, NULL, $2+2);
 			 patchlist($loopstmt.breakList, currQuad);
 			 patchlist($loopstmt.contList, $2+1);
 		}
@@ -636,7 +704,7 @@ loopstmt: loopstart statement loopend { $$ = $statement; };
 
 M_ : { $$ = currQuad+1; }
 	;
-N : { $$ = currQuad; emit(jump, NULL,NULL,0, yylineno); }
+N : { $$ = currQuad; emit_jump(jump,NULL, NULL, 0, yylineno); }
 	;
 returnstmt : RETURN expr SEMICOLON {flag_func = 0;}
            | RETURN SEMICOLON
@@ -783,17 +851,18 @@ int main(int argc, char** argv)
         insert_SymTable(table,new_SymTabEntry("sin",0,1,new_Variable(NULL),new_Function(NULL),0,0,LIBFUNC));
         yyparse();
 
-        if(args != NULL && strcmp(args, "-s") == 0)
-                print_Scopes(table);
-        else if(args != NULL && strcmp(args, "-t") == 0)
-                print_SymTable(table);
+        if(args != NULL && strcmp(args, "-s") == 0){}
+                //print_Scopes(table);
+        else if(args != NULL && strcmp(args, "-t") == 0){}
+                //print_SymTable(table);
         else if(args == NULL){
-                print_SymTable(table);
-                print_Scopes(table);
+                //print_SymTable(table);
+                //print_Scopes(table);
         } else printusage();
 
 		if(!fail_icode)
         	print_quads(stdout);
+			
 		else
 			printf("icode generation failed\n");
 

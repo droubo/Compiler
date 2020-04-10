@@ -5,6 +5,7 @@
 #include <math.h>
 #include "../symtab/numPlaces.h"
 
+
 quad * quads = (quad *) 0;
 unsigned total = 0;
 unsigned int currQuad = 0;
@@ -150,11 +151,7 @@ void print_double(double d, FILE * file){
 void print_quad_arg(expr * arg, FILE * file){
     if(arg != NULL)
         switch(arg->type){
-            case var_e:
-            case tableitem_e:
-            case programfunc_e:
-            case libraryfunc_e:
-            case newtable_e: {
+            case var_e || tableitem_e || programfunc_e || libraryfunc_e || newtable_e: {
                 fprintf(file, "%s ", arg->sym->name); break;
             }
 
@@ -182,7 +179,7 @@ void print_quads(FILE * file){
         }
     
         if(file == stdout){
-            fprintf(file, "%d", i + 1);
+            fprintf(file, "%d", i);
         
             for(j = 0; j < numPlaces(currQuad) - numPlaces(i) + 2; j++){
                 fprintf(file, " ");
@@ -226,24 +223,19 @@ void print_quads(FILE * file){
 
             default: { fprintf(file, "*ERROR* "); break; }
         }
+
         switch(curr_quad->op){
-            case if_eq:
-            case if_noteq:
-            case if_lesseq:
-            case if_greatereq:
-            case if_less:
-            case if_greater: {
+            case if_eq || if_noteq || if_lesseq || if_greatereq || if_less || if_greater: {
                     print_quad_arg(curr_quad->arg1, file);
                     print_quad_arg(curr_quad->arg2, file);
                     fprintf(file, "%d", curr_quad->label);
                     break;
-            }
+            } 
             case jump: { fprintf(file, "%d", curr_quad->label); break; }
             default: {
                 print_quad_arg(curr_quad->result, file);
 		        print_quad_arg(curr_quad->arg1, file);
                 print_quad_arg(curr_quad->arg2, file);
-                break;
             }
         }
         fprintf(file, "\n");
