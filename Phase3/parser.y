@@ -345,6 +345,7 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
             flag_func = 0;
 			
 			emit(add, $2, newconstnumexpr(1), $2, yylineno);
+			emit(assign, $2, NULL, newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc)), yylineno);
 			$$ = $2;
 		}
      | lvalue PLUS_PLUS {
@@ -354,6 +355,11 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
 							 fail_icode = 1;
 						 }
 	 					 flag_func = 0;
+
+						 emit(assign, $1, NULL, newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc)), yylineno);
+						 emit(add, $1, newconstnumexpr(1), $1, yylineno);
+			
+						 $$ = $1;
 						}
      | MINUS_MINUS lvalue {
 		 					if(flag_func == 1)  
@@ -362,6 +368,12 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
 								fail_icode = 1;
 	 						}
 	 					   flag_func = 0;
+
+						  
+						  emit(sub, $2, newconstnumexpr(1), $2, yylineno);
+						  emit(assign, $2, NULL, newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc)), yylineno);
+			
+						  $$ = $2;
 						  }
      | lvalue MINUS_MINUS {
 		 				   if(flag_func == 1)
@@ -370,6 +382,10 @@ term : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS {$$ = $2;}
 								fail_icode = 1;
 						   } 
 						   flag_func = 0;
+
+						  emit(assign, $1, NULL, newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc)), yylineno);
+						  emit(sub, $1, newconstnumexpr(1), $1, yylineno);
+						  $$ = $1;
 						  }
      | primary { $$ = $1; }
      ;
@@ -595,10 +611,10 @@ funcdef : FUNCTION ID {
 		else tmp = insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, USERFUNC));
 
 		emit(funcstart, NULL, NULL, newexpr(programfunc_e, tmp), yylineno);
-		} LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS { return_flag = 1; } funcblockstart block funcblockend {
+		} LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS { return_flag++; } funcblockstart block funcblockend {
 			
 			/* out of function block , we cant use return here */
-			return_flag = 0;
+			return_flag--;
 
 			SymTabEntry *tmp = lookup_SymTableScope(table, currscope, $2);
 			emit(funcend, NULL, NULL, newexpr(programfunc_e, tmp), yylineno);
@@ -611,7 +627,7 @@ funcdef : FUNCTION ID {
                     char* anonym = (char *)malloc(sizeof(char)*2);
                     sprintf(anonym,"$%d",anonym_func_count++);
                     insert_SymTable(table, new_SymTabEntry(anonym, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, USERFUNC));
-                   }  LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS  funcblockstart block funcblockend
+                   }  LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS { return_flag++; }  funcblockstart block funcblockend 
         ;
 
 funcblockstart: {push_lpstack(&lcs, loopcounter);};
@@ -731,8 +747,17 @@ M_ : { $$ = currQuad+1; }
 N : { $$ = currQuad; emit_jump(jump,NULL, NULL, 0, yylineno); }
 	;
 // TODO: Put bool eval
-returnstmt : RETURN expr SEMICOLON {flag_func = 0;}
-           | RETURN SEMICOLON
+returnstmt : RETURN expr SEMICOLON {
+		flag_func = 0;
+		if(return_flag != 0){
+			emit(ret, NULL, NULL, $expr, yylineno);
+		}
+}
+           | RETURN SEMICOLON {
+		    if(return_flag != 0){
+			emit(ret, NULL, NULL, NULL, yylineno);
+		}
+		   }
            ;
 
 
