@@ -98,7 +98,13 @@ void push(int data)
 /* need fix when pop , realloc fewer memory */
 int pop()
 {
-    if(top != -1) return stack[top--];
+    if(top != -1)
+    { 
+        int tmp = stack[top];
+        /* realloc , -1 int */
+        stack = realloc(stack,sizeof(int)* top--);
+        return tmp;
+    }
     printf("Can't pop() : STACK EMPTY\n");
     assert(0);
 }

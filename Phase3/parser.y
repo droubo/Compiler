@@ -608,10 +608,43 @@ funcdef : FUNCTION ID {
 		else tmp = insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, USERFUNC));
 
 		emit(funcstart, NULL, NULL, newexpr(programfunc_e, tmp), yylineno);
-		} LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS { return_flag++; } funcblockstart block funcblockend {
+
+		/* offset code for function */
+		push(currscopeoffset());
+		enterscopespace();
+		resetformalargsoffset();
+
+		} 
+		
+		LEFT_PARENTHESIS idlist
+		{ 
+			/* exiting formal args offset */
+			/* need to save total args? currscopeoffset(); */
+		}
+		RIGHT_PARENTHESIS 	
+		{ 
+			return_flag++; 
+			
+			/* offset code for function locals */
+			enterscopespace();
+			resetfunctionlocaloffset();
+		} 
+
+		funcblockstart block 
+		{
+			/* offset code when exiting function local space*/
+			/* $funcbody = currspaceoffset() , extracting total locals */
+			exitscopespace();
+		} 
+		funcblockend {
 			
 			/* out of function block , we cant use return here */
 			return_flag--;
+
+			/* offset code when exiting function definition */
+			exitscopespace();
+			/* funprefix.totallocals = $funcbody , saving total locals number in symtab*/
+			restorecurroffset(pop());
 
 			SymTabEntry *tmp = lookup_SymTableScope(table, currscope, $2);
 			emit(funcend, NULL, NULL, newexpr(programfunc_e, tmp), yylineno);
@@ -619,12 +652,47 @@ funcdef : FUNCTION ID {
 			currfunc--;
 
 		}
-        | FUNCTION {
-					currfunc++;
-                    char* anonym = (char *)malloc(sizeof(char)*2);
-                    sprintf(anonym,"$%d",anonym_func_count++);
-                    insert_SymTable(table, new_SymTabEntry(anonym, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, USERFUNC));
-                   }  LEFT_PARENTHESIS idlist RIGHT_PARENTHESIS { return_flag++; }  funcblockstart block funcblockend 
+        | FUNCTION 
+		{
+		 	currfunc++;
+            char* anonym = (char *)malloc(sizeof(char)*2);
+         	sprintf(anonym,"$%d",anonym_func_count++);
+         	insert_SymTable(table, new_SymTabEntry(anonym, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, USERFUNC));
+
+		 	/* offset code for anonymous function */
+		    push(currscopeoffset());
+			enterscopespace();
+			resetformalargsoffset();
+
+        }  
+		LEFT_PARENTHESIS idlist
+		{
+			/* exiting formal args offset */
+			/* need to save total args? currscopeoffset(); */
+		}
+		RIGHT_PARENTHESIS 
+		{ 
+			return_flag++;
+			/* offset code for anonymous function locals */
+			enterscopespace();
+			resetfunctionlocaloffset(); 
+		}  
+		funcblockstart block
+		{
+			/* offset code when exiting function local space*/
+			/* $funcbody = currspaceoffset() , extracting total locals */
+			exitscopespace();
+		} 
+		funcblockend
+		{
+			/* out of function block , we cant use return here */
+			return_flag--;
+
+			/* offset code when exiting function definition */
+			exitscopespace();
+			/* funprefix.totallocals = $funcbody , saving total locals number in symtab*/
+			restorecurroffset(pop());
+		} 
         ;
 
 funcblockstart: {push_lpstack(&lcs, loopcounter);};
@@ -648,15 +716,28 @@ idlist : /*   */
 					fprintf(errorFile,"ERROR @ line %d: Cannot have a library function as argument\n", yylineno);
 					fail_icode = 1;
 				}
-				else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1,currfunc, FORMAL));
+				else
+				{
+					tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1,currfunc, FORMAL));
+					tmp->space = currscopespace();
+                    tmp->offset = currscopeoffset();
+                    inccurrscopeoffset();
+                    printf("var : %s | scope : %d | space : %d | offset : %d\n",tmp->name,tmp->scope,tmp->space,tmp->offset);
+				}
 			}
 			else if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"FORMAL") && tmp->isActive == 1)
 			{
 				fprintf(errorFile,"ERROR @ line %d: Cannot have the same argument names\n", yylineno);
 				fail_icode = 1;
 			}
-			else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, currfunc,FORMAL));
-	   
+			else
+			{
+				tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, currfunc,FORMAL));
+	   			tmp->space = currscopespace();
+                tmp->offset = currscopeoffset();
+                inccurrscopeoffset();
+                printf("var : %s | scope : %d | space : %d | offset : %d\n",tmp->name,tmp->scope,tmp->space,tmp->offset);
+			}
 		}	
 	   COMA idlist
 	   | ID {
@@ -668,15 +749,28 @@ idlist : /*   */
 					fprintf(errorFile,"ERROR @ line %d: Cannot have a library function as argument\n", yylineno);
 					fail_icode = 1;
 				}
-				else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1,currfunc, FORMAL));
+				else 
+				{
+					tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1,currfunc, FORMAL));
+					tmp->space = currscopespace();
+                    tmp->offset = currscopeoffset();
+                    inccurrscopeoffset();
+                    printf("var : %s | scope : %d | space : %d | offset : %d\n",tmp->name,tmp->scope,tmp->space,tmp->offset);
+				}			
 			}
 			else if(tmp != NULL && !strcmp(SymbolTypeToString(tmp->type),"FORMAL") && tmp->isActive == 1)
 			{
 				fprintf(errorFile,"ERROR @ line %d: Cannot have the same argument names\n", yylineno);
 				fail_icode = 1;
 			}
-			else insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, currfunc,FORMAL));
-	   
+			else
+			{
+				 tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope+1, currfunc,FORMAL));
+	   			 tmp->space = currscopespace();
+                 tmp->offset = currscopeoffset();
+                 inccurrscopeoffset();
+                 printf("var : %s | scope : %d | space : %d | offset : %d\n",tmp->name,tmp->scope,tmp->space,tmp->offset);
+			}
 		}	
        ;
 

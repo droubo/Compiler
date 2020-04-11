@@ -7,6 +7,8 @@ typedef struct Variable {
 
 typedef struct Function {
 	void * args;
+	int num_of_args;
+	int num_of_locals;
 } Function;
 
 typedef enum SymbolType {
