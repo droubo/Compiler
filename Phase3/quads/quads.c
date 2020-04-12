@@ -66,6 +66,21 @@ expr * newconststringexpr(char * str){
     return temp;
 }
 
+expr* lvalue_expr(SymTabEntry* sym){
+	assert(sym);
+	expr* e = (expr*) malloc(sizeof(expr));
+	memset(e,0,sizeof(expr));
+	e->next = (expr*)0;
+	e->sym = sym;
+	switch(sym->type){
+		case GLOBAL	: e->type = var_e; break;
+		case LOCAL	: e->type = var_e; break;
+		case USERFUNC 	: e->type = programfunc_e; break;
+		case LIBFUNC 	: e->type = libraryfunc_e; break;
+		default: assert(0);
+	}
+	return e;
+}
 void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned line) {
     if(currQuad == total)
         expand();
@@ -98,6 +113,13 @@ struct expr *emit_iftableitem(expr* e, SymTable * table, int currScope, int func
         emit(tablegetelem, e, e->index, result, line);
         return result;
     }
+}
+
+expr * member_item(expr * lv, char* name, SymTable * table, int currScope, int func_scope, int curr, unsigned line){
+	lv = emit_iftableitem(lv, table, currScope, func_scope, curr, line);
+	expr* ti = newexpr(tableitem_e, lv->sym);
+	ti->index = newconststringexpr(name);
+	return ti;
 }
 
 void print_expr(expr * exp, int indent){
@@ -137,6 +159,20 @@ void edit_quad(int index, expr * arg1, expr * arg2, expr * result, unsigned int 
         curr_quad->label = label;
 
 }
+
+expr * make_call(expr* lv, expr* reversed_elist, SymTable **table, int yyline, int currscope, int funcscope, int curr){
+	expr* func = emit_iftableitem(lv, (*table), currscope, funcscope, curr, yyline);
+	while(reversed_elist){
+		emit(param, reversed_elist, NULL, NULL, yyline);
+		reversed_elist = reversed_elist->next;
+	}
+	emit(call, func, NULL, NULL, 0);
+	expr* result = newexpr(var_e, newtemp((*table), currscope, funcscope, curr));
+	emit(getretval, NULL, NULL, result, yyline);
+	return result;
+
+}
+
 
 void print_double(double d, FILE * file){
     if((ceilf(d) == d && floor(d) == d) || d == 0.0)

@@ -103,6 +103,8 @@ FILE * errorFile;
 %type<express> tablemake
 %type<express> elist
 %type<express> indexed
+%type<express> call
+%type<express> tableitem
 %type<sym> funcdef
 %type<ipc> compop
 %type<integer> ifexpr
@@ -125,6 +127,9 @@ FILE * errorFile;
 %type<sym> funcprefix
 %type<integer> funcbody
 %type<id> funcname
+%type<call_> callsuffix
+%type<call_> normcall
+%type<call_> methodcall
 
 /* priority */
 
@@ -148,7 +153,7 @@ FILE * errorFile;
 /* expr is a struct , we need to include the code */
 %code requires { #include "quads/quads.h" }
 
-%union {stmt_t stmt; M * _M; double integer; char* id; double real; expr *express; unsigned char bool; iopcode ipc; SymTabEntry* sym;}
+%union {stmt_t stmt; M * _M; double integer; char* id; double real; expr *express; unsigned char bool; iopcode ipc; SymTabEntry* sym; call_struct call_;}
 
 /* %expect 14 */
 
@@ -419,7 +424,7 @@ assignexpr : lvalue {
 					}
 
         ;
-primary : lvalue
+primary : lvalue { $$ = emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno); }
         | call
         | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS { 			
 			$$ = newexpr(programfunc_e,$funcdef);
@@ -471,7 +476,7 @@ lvalue : ID {
                 printf("var : %s | scope : %d | space : %d | offset : %d\n",tmp->name,tmp->scope,tmp->space,tmp->offset);
             }               
     
-            $$ = newexpr(var_e,tmp);
+            $$ = lvalue_expr(tmp);
             
         }
        | local ID {
@@ -508,6 +513,7 @@ lvalue : ID {
                 inccurrscopeoffset();
                 printf("var : %s | scope : %d | space : %d | offset : %d\n",tmp->name,tmp->scope,tmp->space,tmp->offset);
             }
+			$$ = lvalue_expr(tmp);
         
         }
        | DOUBLE_COLON ID {
@@ -527,23 +533,28 @@ lvalue : ID {
 					fail_icode = 1;
 				}
 	    }
-       | member {
-				 if(table_flag==1) $lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno);;
-		}
+       | member { $$ = $1; }
+	   | tableitem { $$ = $1; }
        ;
 
-member : lvalue DOT ID {
+member : call DOT ID { $$ = member_item($call, $ID, table, currscope, currfunc, 1, yylineno); }
+       | call LEFT_BRACKET expr RIGHT_BRACKET {
+		$call = emit_iftableitem($call, table, currscope, currfunc, 1, yylineno);
+		expr* item = newexpr(tableitem_e, $call->sym);
+		item->index = $expr;
+		$$ = item;
+	   }
+       ;
+
+tableitem : lvalue DOT ID {
+		$$ = member_item($lvalue, $ID, table, currscope, currfunc, 1, yylineno);
+		}
+       | lvalue LEFT_BRACKET expr RIGHT_BRACKET {
 		$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno);
 		expr* item = newexpr(tableitem_e, $lvalue->sym);
-		expr* tmp = newexpr(conststring_e, NULL);
-		tmp->strConst = $3;
-		item->index = tmp;
+		item->index = $expr;
 		$$ = item;
-		}
-       | lvalue LEFT_BRACKET expr RIGHT_BRACKET
-       | call DOT ID
-       | call LEFT_BRACKET expr RIGHT_BRACKET
-       ;
+	   }
 tablemake : LEFT_BRACKET elist RIGHT_BRACKET {
 		expr* tmp = newexpr(newtable_e, (SymTabEntry *)newtemp(table,currscope, currfunc, 0));
 		emit(tablecreate, tmp, NULL, NULL, yylineno);
@@ -555,19 +566,41 @@ tablemake : LEFT_BRACKET elist RIGHT_BRACKET {
 			}
 		  | LEFT_BRACKET indexed RIGHT_BRACKET
 
-call : call {flag_func = 0;} LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
-     | lvalue {flag_func = 0;} callsuffix
-     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {flag_func = 0;} LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+call : call {flag_func = 0;} LEFT_PARENTHESIS elist RIGHT_PARENTHESIS { $$ = make_call($1, $elist, &table, yylineno, currscope, currfunc, 0); }
+     | lvalue {flag_func = 0;} callsuffix {
+		$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno);
+		if($callsuffix.method){
+			expr* t = $lvalue;
+			$lvalue = emit_iftableitem(member_item(t, $callsuffix.name, table, currscope, currfunc, 1, yylineno),table,  currscope, currfunc, 1, yylineno);
+			$callsuffix.elist->next = t;
+		}
+		$call = make_call($lvalue, $callsuffix.elist, &table,yylineno, currscope, currfunc, 0);
+
+	 }
+     | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS {flag_func = 0;} LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {
+		expr* func = newexpr(programfunc_e, $funcdef);
+		$call = make_call(func, $elist, &table, yylineno,  currscope, currfunc, 0);
+		
+	 }
      ;
 
-callsuffix : normcall
-           | methodcall
+callsuffix : normcall { $$ = $1; }
+           | methodcall { $$ = $1; }
            ;
 
-normcall : LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+normcall : LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {
+			$$.elist = $elist;
+			$$.method = 0;
+			$$.name = NULL;		
+
+		}
          ;
 
-methodcall : DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
+methodcall : DOUBLE_DOT ID LEFT_PARENTHESIS elist RIGHT_PARENTHESIS {
+			$$.elist = $elist;
+			$$.method = 1;
+			$$.name = $ID;
+		}
            ;
 // TODO: This also needs boolean backpatching?
 elist :

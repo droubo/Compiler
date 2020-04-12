@@ -73,6 +73,14 @@ typedef struct quad {
     unsigned int label;
     unsigned int line;
 } quad;
+typedef struct call_struct{
+	expr* elist;
+	unsigned char method;
+	char* name;
+} call_struct;
+
+
+expr * make_call(expr* lv, expr* reversed_elist, SymTable **table, int yyline, int currscope, int funcscope, int curr);
 
 extern quad * quads;
 extern unsigned total;
@@ -88,17 +96,22 @@ expr * newconstboolexpr(unsigned char bool);
 
 expr * newconststringexpr(char * str);
 
+expr* lvalue_expr(SymTabEntry* sym);
+
 void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned line);
 
 void emit_jump(iopcode op, expr * arg1, expr * arg2, unsigned int label, unsigned line);
 
 struct expr *emit_iftableitem(expr* e, SymTable * table, int currScope, int func_scope, int curr, unsigned line);
 
+expr * member_item(expr * lv, char* name, SymTable * table, int currScope, int func_scope, int curr, unsigned line);
+
 void print_expr(expr * exp, int indent);
 
 void print_quads(FILE * file);
 
 void edit_quad(int index, expr * arg1, expr * arg2, expr * result, unsigned int label);
+
 
 extern quad * quads;
 #endif
