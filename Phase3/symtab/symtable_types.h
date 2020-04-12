@@ -9,6 +9,8 @@ typedef struct Function {
 	void * args;
 	int num_of_args;
 	int num_of_locals;
+	int iaddress;
+	int jump_label;
 } Function;
 
 typedef enum SymbolType {

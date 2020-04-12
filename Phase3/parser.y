@@ -122,7 +122,9 @@ FILE * errorFile;
 %type<stmt> whilestmt
 %type<stmt> forstmt
 %type<stmt> elseexpr
-
+%type<sym> funcprefix
+%type<integer> funcbody
+%type<id> funcname
 
 /* priority */
 
@@ -156,9 +158,7 @@ program : statements
         ;
 
 statements : {make_stmt(&$$); }
-		   //| statement { $$ = $1; printf("STMT: %d\n\n", $1.breakList);}
            | statement statements { 
-				//printf("DD: %d %d\n\n", $2.breakList, $1.breakList);
 				$$.breakList = mergelist($2.breakList, $1.breakList);
 				$$.contList = mergelist($2.contList, $1.contList);
 		   }
@@ -588,14 +588,34 @@ indexedelem : LEFT_BRACE expr COLON expr RIGHT_BRACE
 block : LEFT_BRACE { currscope++; } statements RIGHT_BRACE { hide_Scope(table,currscope); currscope--; $$ = $statements;}
       ;
 
-funcdef : FUNCTION ID {
+
+funcdef : funcprefix funcargs funcbody
+	{
+			/* out of function block , we cant use return here */
+			return_flag--;
+
+			/* offset code when exiting function definition */
+			exitscopespace();
+			$funcprefix->value.funcVal->num_of_locals = $funcbody;
+			/* funprefix.totallocals = $funcbody , saving total locals number in symtab*/
+			restorecurroffset(pop());
+
+			$$ = $funcprefix;
+			emit(funcend, NULL, NULL, newexpr(programfunc_e, $funcprefix), yylineno);
+			edit_quad($funcprefix->value.funcVal->jump_label, NULL, NULL, NULL, currQuad+1);
+			currfunc--;	
+	}
+		;
+
+funcprefix : FUNCTION funcname
+	{
 		jump_label = currQuad;
 		emit_jump(jump, NULL, NULL, 0 , yylineno);
-		
+
 		currfunc++;
-		SymTabEntry *tmp = lookup_SymTableScope(table, currscope, $2);
-		if(tmp != NULL){
-			if(!strcmp(SymbolTypeToString(tmp->type),"LIBFUNC")){
+		$$ = lookup_SymTableScope(table, currscope, $2);
+		if($$ != NULL){
+			if(!strcmp(SymbolTypeToString($$->type),"LIBFUNC")){
 				fprintf(errorFile, "ERROR @ line %d: %s is library function\n",yylineno, $2);
 				fail_icode = 1;
 			}
@@ -605,18 +625,29 @@ funcdef : FUNCTION ID {
 				fail_icode = 1;
 			}
 		}
-		else tmp = insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, USERFUNC));
+		else $$ = insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, USERFUNC));
 
-		emit(funcstart, NULL, NULL, newexpr(programfunc_e, tmp), yylineno);
+		$$->value.funcVal->iaddress = currQuad + 1;
+		$$->value.funcVal->jump_label = jump_label;
+		emit(funcstart, NULL, NULL, newexpr(programfunc_e, $$), yylineno);
 
 		/* offset code for function */
 		push(currscopeoffset());
 		enterscopespace();
 		resetformalargsoffset();
 
-		} 
-		
-		LEFT_PARENTHESIS idlist
+
+	}
+	;
+
+funcname : ID { $$ = $ID; }
+		 | { char* anonym = (char *)malloc(sizeof(char)*2);
+         	 sprintf(anonym,"$%d",anonym_func_count++);
+			 $$ = anonym;
+			}
+		;
+
+funcargs : 	LEFT_PARENTHESIS idlist
 		{ 
 			/* exiting formal args offset */
 			/* need to save total args? currscopeoffset(); */
@@ -629,70 +660,17 @@ funcdef : FUNCTION ID {
 			enterscopespace();
 			resetfunctionlocaloffset();
 		} 
+		;
+		
 
-		funcblockstart block 
+funcbody : 	funcblockstart block 
 		{
 			/* offset code when exiting function local space*/
 			/* $funcbody = currspaceoffset() , extracting total locals */
-			exitscopespace();
-		} 
-		funcblockend {
-			
-			/* out of function block , we cant use return here */
-			return_flag--;
-
-			/* offset code when exiting function definition */
-			exitscopespace();
-			/* funprefix.totallocals = $funcbody , saving total locals number in symtab*/
-			restorecurroffset(pop());
-
-			SymTabEntry *tmp = lookup_SymTableScope(table, currscope, $2);
-			emit(funcend, NULL, NULL, newexpr(programfunc_e, tmp), yylineno);
-			edit_quad(jump_label, NULL, NULL, NULL, currQuad+1);
-			currfunc--;
-
-		}
-        | FUNCTION 
-		{
-		 	currfunc++;
-            char* anonym = (char *)malloc(sizeof(char)*2);
-         	sprintf(anonym,"$%d",anonym_func_count++);
-         	insert_SymTable(table, new_SymTabEntry(anonym, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope,currfunc, USERFUNC));
-
-		 	/* offset code for anonymous function */
-		    push(currscopeoffset());
-			enterscopespace();
-			resetformalargsoffset();
-
-        }  
-		LEFT_PARENTHESIS idlist
-		{
-			/* exiting formal args offset */
-			/* need to save total args? currscopeoffset(); */
-		}
-		RIGHT_PARENTHESIS 
-		{ 
-			return_flag++;
-			/* offset code for anonymous function locals */
-			enterscopespace();
-			resetfunctionlocaloffset(); 
-		}  
-		funcblockstart block
-		{
-			/* offset code when exiting function local space*/
-			/* $funcbody = currspaceoffset() , extracting total locals */
+			$<integer>$ = currscopeoffset();
 			exitscopespace();
 		} 
 		funcblockend
-		{
-			/* out of function block , we cant use return here */
-			return_flag--;
-
-			/* offset code when exiting function definition */
-			exitscopespace();
-			/* funprefix.totallocals = $funcbody , saving total locals number in symtab*/
-			restorecurroffset(pop());
-		} 
         ;
 
 funcblockstart: {push_lpstack(&lcs, loopcounter);};
