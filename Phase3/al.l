@@ -3,7 +3,7 @@
  * CS-340 Compilers
  * Spring 2020
  * 
- * Project Phase 1: Lexical Analysis
+ * Project Phase 3: Intermediate code Generation
  * 
  * Antonis Droubogiannis    csd4014@csd.uoc.gr
  * Georgios Marios Kokiadis csd3962@csd.uoc.gr

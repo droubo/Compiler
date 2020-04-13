@@ -1,5 +1,18 @@
-/* Some code Taken from lecture 9, Slides 37, 38 
-   Frontisthrio 4 Slide 15 */
+/**
+ * CS-340 Compilers
+ * Spring 2020
+ * 
+ * Project Phase 3: Intermediate code Generation
+ * 
+ * Antonis Droubogiannis    csd4014@csd.uoc.gr
+ * Georgios Marios Kokiadis csd3962@csd.uoc.gr
+ * Nikolaos Gounakis        csd3932@csd.uoc.gr
+ * 
+ * quads.h
+ * Implementation of quad and expression data
+ * structures, used to create intermediate code.
+ */
+
 #ifndef _QUADS_H
 #define _QUADS_H
 
