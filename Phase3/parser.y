@@ -492,13 +492,17 @@ assignexpr :
 
 primary : 
 	lvalue { $$ = emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno); }
-	| call | LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
+	| call 
+	| LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
 	{
 		$$ = newexpr(programfunc_e, $funcdef);
 	}
-	| const | tablemake;
+	| const 
+	| tablemake
+	;
 
-	lvalue : ID
+lvalue : 
+	ID
 	{
 		SymTabEntry *tmp = lookup_SymTable(table, $1);
 		if (tmp != NULL && tmp->isActive == 1)
@@ -830,8 +834,7 @@ const :
 	;
 
 idlist :
-	|
-	ID
+	| ID
 	{
 		SymTabEntry *tmp = lookup_SymTableScope(table, currscope + 1, $1);
 		if (tmp == NULL && (tmp = lookup_SymTableScope(table, 0, $1)) != NULL)
