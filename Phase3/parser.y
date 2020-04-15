@@ -815,7 +815,7 @@ funcbody :
 	{
 		/* offset code when exiting function local space*/
 		/* $funcbody = currspaceoffset() , extracting total locals */
-		$<integer> $ = currscopeoffset();
+		$$ = currscopeoffset();
 		exitscopespace();
 	}
 	funcblockend
