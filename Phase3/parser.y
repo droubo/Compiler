@@ -1042,7 +1042,7 @@ returnstmt : RETURN expr SEMICOLON
 	}
 	;
 
-% %
+%%
 
 int yyerror(char *yaccProvidedMessage)
 {
