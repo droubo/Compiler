@@ -94,6 +94,7 @@ expr* lvalue_expr(SymTabEntry* sym){
 		case LOCAL	: e->type = var_e; break;
 		case USERFUNC 	: e->type = programfunc_e; break;
 		case LIBFUNC 	: e->type = libraryfunc_e; break;
+        case FORMAL : e->type = var_e; break;
 		default: assert(0);
 	}
 	return e;

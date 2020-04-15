@@ -704,7 +704,7 @@ methodcall :
 	;
 
 // TODO: This also needs boolean backpatching?
-elist : 
+elist : {$$ = NULL;}
 	| expr { flag_func = 0; }
 	COMA elist
 	{
