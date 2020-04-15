@@ -173,7 +173,7 @@ FILE *errorFile;
 	SymTabEntry *sym;
 	call_struct call_;
 }
-% %
+%%
 
 program : 
 statements
