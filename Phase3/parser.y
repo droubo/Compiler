@@ -395,7 +395,7 @@ term :
 		emit(mul, $2, newconstnumexpr(-1), $2, yylineno);
 		$$ = $2;
 	}
-	% prec UMINUS
+	%prec UMINUS
 	| PLUS_PLUS lvalue
 	{
 		if (flag_func == 1)
