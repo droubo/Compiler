@@ -522,6 +522,8 @@ lvalue :
 		/* variable exists in defferent scope , insert */
 		else if (tmp != NULL && tmp->isActive == 0)
 		{
+			if(lookup_SymTableScope(table,currscope,tmp->name) == NULL)
+			{
 			SymbolType type;
 			if (currscope == 0)
 				type = GLOBAL;
@@ -532,6 +534,7 @@ lvalue :
 			tmp->offset = currscopeoffset();
 			inccurrscopeoffset();
 			printf("var : %s | scope : %d | space : %d | offset : %d\n", tmp->name, tmp->scope, tmp->space, tmp->offset);
+			}
 		}
 		else if (tmp == NULL)
 		{
@@ -811,14 +814,12 @@ funcargs :
 	;
 
 funcbody : 
-	funcblockstart block
-	{
-		/* offset code when exiting function local space*/
+	funcblockstart block funcblockend
+{/* offset code when exiting function local space*/
 		/* $funcbody = currspaceoffset() , extracting total locals */
 		$$ = currscopeoffset();
 		exitscopespace();
-	}
-	funcblockend
+}
 	;
 
 funcblockstart: { push_lpstack(&lcs, loopcounter); };

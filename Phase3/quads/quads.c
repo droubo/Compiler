@@ -180,6 +180,7 @@ void edit_quad(int index, expr * arg1, expr * arg2, expr * result, unsigned int 
 expr * make_call(expr* lv, expr* reversed_elist, SymTable **table, int yyline, int currscope, int funcscope, int curr){
 	expr* func = emit_iftableitem(lv, (*table), currscope, funcscope, curr, yyline);
 	while(reversed_elist){
+        if(reversed_elist == NULL) break;
 		emit(param, reversed_elist, NULL, NULL, yyline);
 		reversed_elist = reversed_elist->next;
 	}
