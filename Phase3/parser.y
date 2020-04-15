@@ -49,119 +49,119 @@ FILE *errorFile;
 
 /* Yacc Definitions */
 
-% start program
-% token IF 
-% token ELSE 
-% token WHILE 
-% token FOR 
-% token FUNCTION
-% token RETURN 
-% token BREAK 
-% token CONTINUE
+%start program
+%token IF 
+%token ELSE 
+%token WHILE 
+%token FOR 
+%token FUNCTION
+%token RETURN 
+%token BREAK 
+%token CONTINUE
 
-% token local
+%token local
 
-% token<bool> TRUE 
-% token<bool> FALSE 
-% token<real> NIL
+%token<bool> TRUE 
+%token<bool> FALSE 
+%token<real> NIL
 
-% token ASSIGN 
-% token PLUS 
-% token MINUS 
-% token MULT 
-% token DIV 
-% token MOD 
-% token EQUAL 
-% token GREATER_EQUAL 
-% token GREATER 
-% token LESS_EQUAL 
-% token LESS
-% token NOT_EQUAL
+%token ASSIGN 
+%token PLUS 
+%token MINUS 
+%token MULT 
+%token DIV 
+%token MOD 
+%token EQUAL 
+%token GREATER_EQUAL 
+%token GREATER 
+%token LESS_EQUAL 
+%token LESS
+%token NOT_EQUAL
 
-% token AND 
-% token OR 
-% token NOT
+%token AND 
+%token OR 
+%token NOT
 
-% token PLUS_PLUS 
-% token MINUS_MINUS 
+%token PLUS_PLUS 
+%token MINUS_MINUS 
 
 
-% token<real> REALCONST 
-% token<real> INTCONST 
-% token<id> STRING
+%token<real> REALCONST 
+%token<real> INTCONST 
+%token<id> STRING
 
-% token LEFT_BRACE 
-% token RIGHT_BRACE
-% token LEFT_BRACKET 
-% token RIGHT_BRACKET 
-% token LEFT_PARENTHESIS 
-% token RIGHT_PARENTHESIS
+%token LEFT_BRACE 
+%token RIGHT_BRACE
+%token LEFT_BRACKET 
+%token RIGHT_BRACKET 
+%token LEFT_PARENTHESIS 
+%token RIGHT_PARENTHESIS
 
-% token SEMICOLON 
-% token COMA 
-% token COLON 
-% token DOUBLE_COLON 
-% token DOT 
-% token DOUBLE_DOT
+%token SEMICOLON 
+%token COMA 
+%token COLON 
+%token DOUBLE_COLON 
+%token DOT 
+%token DOUBLE_DOT
 
-% token<id> ID
+%token<id> ID
 
-% type<express> lvalue 
-% type<express> primary 
-% type<express> term 
-% type<express> expr 
-% type<express> assignexpr 
-% type<express> const 
-% type<express> member
-% type<express> tablemake 
-% type<express> elist 
-% type<express> indexed 
-% type<express> call 
-% type<express> tableitem 
-% type<sym> funcdef 
-% type<ipc> compop 
-% type<integer> ifexpr 
-% type<integer> whilestart 
-% type<integer> whilecond 
-% type<integer> forprefix 
-% type<integer> N 
-% type<integer> M_ 
-% type<_M> expr_M
-% type<stmt> statements
-% type<stmt> statement 
-% type<stmt> break 
-% type<stmt> continue_ 
-% type<stmt> loopstmt 
-% type<stmt> block 
-% type<stmt> ifstmt 
-% type<stmt> whilestmt 
-% type<stmt> forstmt 
-% type<stmt> elseexpr 
-% type<sym> funcprefix 
-% type<integer> funcbody 
-% type<id> funcname 
-% type<call_> callsuffix 
-% type<call_> normcall 
-% type<call_> methodcall
+%type<express> lvalue 
+%type<express> primary 
+%type<express> term 
+%type<express> expr 
+%type<express> assignexpr 
+%type<express> const 
+%type<express> member
+%type<express> tablemake 
+%type<express> elist 
+%type<express> indexed 
+%type<express> call 
+%type<express> tableitem 
+%type<sym> funcdef 
+%type<ipc> compop 
+%type<integer> ifexpr 
+%type<integer> whilestart 
+%type<integer> whilecond 
+%type<integer> forprefix 
+%type<integer> N 
+%type<integer> M_ 
+%type<_M> expr_M
+%type<stmt> statements
+%type<stmt> statement 
+%type<stmt> break 
+%type<stmt> continue_ 
+%type<stmt> loopstmt 
+%type<stmt> block 
+%type<stmt> ifstmt 
+%type<stmt> whilestmt 
+%type<stmt> forstmt 
+%type<stmt> elseexpr 
+%type<sym> funcprefix 
+%type<integer> funcbody 
+%type<id> funcname 
+%type<call_> callsuffix 
+%type<call_> normcall 
+%type<call_> methodcall
 
 /* priority */
-% right ASSIGN
-% left OR 
-% left AND
-% nonassoc EQUAL NOT_EQUAL 
-% nonassoc GREATER GREATER_EQUAL LESS LESS_EQUAL
-% left PLUS MINUS 
-% left MULT DIV MOD
+%right ASSIGN
+%left OR 
+%left AND
+%nonassoc EQUAL NOT_EQUAL 
+%nonassoc GREATER GREATER_EQUAL LESS LESS_EQUAL
+%left PLUS MINUS 
+%left MULT DIV MOD
 
 /* UMINUS is minus infront of a term */
-% right NOT PLUS_PLUS MINUS_MINUS UMINUS
-% left DOT DOUBLE_DOT 
-% left LEFT_BRACKET RIGHT_BRACKET 
-% left LEFT_PARENTHESIS RIGHT_PARENTHESIS
+%right NOT PLUS_PLUS MINUS_MINUS UMINUS
+%left DOT DOUBLE_DOT 
+%left LEFT_BRACKET RIGHT_BRACKET 
+%left LEFT_PARENTHESIS RIGHT_PARENTHESIS
 
-% code requires {#include "quads/quads.h"}
+%code requires {#include "quads/quads.h"}
 
-% union {
+%union {
 	stmt_t stmt;
 	M *_M;
 	double integer;
