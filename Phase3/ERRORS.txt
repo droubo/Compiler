@@ -1,3 +1,1 @@
-quads.c LINE 184 SEGFAULT
-
-parser.y LINE 651 SEGFAULT
+parser.y SEGFAULT $callsuffix.elist->next = t; LINE : 680

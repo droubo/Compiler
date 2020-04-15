@@ -504,7 +504,7 @@ primary :
 lvalue : 
 	ID
 	{
-		SymTabEntry *tmp = lookup_SymTable(table, $1);
+		SymTabEntry *tmp = lookup_SymTable(table, $ID);
 		if (tmp != NULL && tmp->isActive == 1)
 		{
 			if (tmp->scope != 0 && tmp->func_scope != currfunc && strcmp(SymbolTypeToString(tmp->type), "LIBFUNC") && strcmp(SymbolTypeToString(tmp->type), "USERFUNC"))
@@ -519,21 +519,29 @@ lvalue :
 				global_tmp = tmp;
 			}
 		}
-		/* variable exists in defferent scope , insert */
+		/* variable is not active but exists in another block*/
 		else if (tmp != NULL && tmp->isActive == 0)
 		{
-			if(lookup_SymTableScope(table,currscope,tmp->name) == NULL)
+			SymTabEntry* entry = lookup_SymTableScope(table,0,tmp->name);
+
+			/* you are refearing to global */
+			if(entry != NULL)
 			{
-			SymbolType type;
-			if (currscope == 0)
-				type = GLOBAL;
+				tmp = entry;
+			}
+			/* the global doesnt exist , so insert new */
 			else
-				type = LOCAL;
-			tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, currfunc, type));
-			tmp->space = currscopespace();
-			tmp->offset = currscopeoffset();
-			inccurrscopeoffset();
-			printf("var : %s | scope : %d | space : %d | offset : %d\n", tmp->name, tmp->scope, tmp->space, tmp->offset);
+			{
+				SymbolType type;
+				if (currscope == 0)
+					type = GLOBAL;
+				else
+					type = LOCAL;
+				tmp = insert_SymTable(table, new_SymTabEntry($1, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, currfunc, type));
+				tmp->space = currscopespace();
+				tmp->offset = currscopeoffset();
+				inccurrscopeoffset();
+				printf("var : %s | scope : %d | space : %d | offset : %d\n", tmp->name, tmp->scope, tmp->space, tmp->offset);
 			}
 		}
 		else if (tmp == NULL)
