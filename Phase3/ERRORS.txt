@@ -1,0 +1,3 @@
+quads.c LINE 184 SEGFAULT
+
+parser.y LINE 651 SEGFAULT
