@@ -289,6 +289,17 @@ expr :
 		$$ = newexpr(arithexpr_e, tmp);
 		emit(diva, $1, $3, $$, yylineno);
 	}
+	| expr MOD expr
+	{
+		if (flag_func == 1 && flag_op == 0)
+		{
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno);
+			fail_icode = 1;
+		}
+		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc, 0);
+		$$ = newexpr(arithexpr_e, tmp);
+		emit(mod, $1, $3, $$, yylineno);
+	}
 	| expr GREATER expr
 	{
 		$$ = newexpr(boolexpr_e, NULL);
