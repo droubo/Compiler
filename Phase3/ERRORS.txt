@@ -1,1 +1,2 @@
 parser.y SEGFAULT $callsuffix.elist->next = t; LINE : 680
+parsser.y SEGFAULT else if($1->index != NULL) LINE : 491
