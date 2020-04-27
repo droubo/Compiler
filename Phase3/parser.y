@@ -44,6 +44,7 @@ int loopcounter = 0;
 loopcounterstack *lcs = NULL;
 int else_flag = 0;
 FILE *errorFile;
+int tmp_args = 0;
 
 %}
 
@@ -143,6 +144,7 @@ FILE *errorFile;
 %type<call_> callsuffix 
 %type<call_> normcall 
 %type<call_> methodcall
+%type<integer> funcargs
 
 /* priority */
 %right ASSIGN
@@ -219,7 +221,7 @@ break :
 		if (loopcounter == 0)
 		{
 			fprintf(errorFile, "ERROR @ line %d: Cannot use break outside of a loop\n", yylineno);
-			//fail_icode = 1;
+			fail_icode = 1;
 		}
 		make_stmt(&$$);
 		$$.breakList = newlist(currQuad);
@@ -231,7 +233,7 @@ break :
 		if (loopcounter == 0)
 		{
 			fprintf(errorFile, "ERROR @ line %d: Cannot use continue outside of a loop\n", yylineno);
-			//fail_icode = 1;
+			fail_icode = 1;
 		}
 		make_stmt(&$$);
 		$$.contList = newlist(currQuad);
@@ -761,8 +763,10 @@ funcdef :
 		/* offset code when exiting function definition */
 		exitscopespace();
 		$funcprefix->value.funcVal->num_of_locals = $funcbody;
-		/* funprefix.totallocals = $funcbody , saving total locals number in symtab*/
+		$funcprefix->value.funcVal->num_of_args = $funcargs;
 		restorecurroffset(pop());
+
+		printf("function : %s , total args : %d , total locals : %d\n",$funcprefix->name,$funcprefix->value.funcVal->num_of_args,$funcprefix->value.funcVal->num_of_locals);
 
 		$$ = $funcprefix;
 		emit(funcend, NULL, NULL, newexpr(programfunc_e, $funcprefix), yylineno);
@@ -820,7 +824,7 @@ funcargs :
 	LEFT_PARENTHESIS idlist
 	{
 		/* exiting formal args offset */
-		/* need to save total args? currscopeoffset(); */
+		tmp_args = currscopeoffset();
 	}
 	RIGHT_PARENTHESIS
 	{
@@ -829,20 +833,22 @@ funcargs :
 		/* offset code for function locals */
 		enterscopespace();
 		resetfunctionlocaloffset();
+		$$ = tmp_args;
 	}
 	;
 
-funcbody : 
+funcbody : {push_lpstack(&lcs, loopcounter); loopcounter = 0;}
 	funcblockstart block funcblockend
-{/* offset code when exiting function local space*/
-		/* $funcbody = currspaceoffset() , extracting total locals */
+    { 
+		loopcounter = pop_lpstack(&lcs);
+		/* offset code when exiting function local space*/
 		$$ = currscopeoffset();
 		exitscopespace();
-}
+    }
 	;
 
-funcblockstart: { push_lpstack(&lcs, loopcounter); };
-funcblockend: { loopcounter = pop_lpstack(&lcs); };
+funcblockstart: {};
+funcblockend: {};
 
 const : 
 	REALCONST { $$ = newconstnumexpr((double)$1); }
