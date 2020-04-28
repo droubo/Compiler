@@ -17,6 +17,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int top = -1;
+
+/* scopespace_t : programvar */
+unsigned int programVarOffset = 0;
+/* scopespace_t : functionlocal */
+unsigned int functionLocalOffset = 0;
+/* scopespace_t : formalarg */
+unsigned int  formalArgOffset = 0;
+
+unsigned int scopeSpaceCounter = 1;
+
 /* some code taken from Lecture 9 , HY340 */
 
 void printNumOfVars()
@@ -29,7 +40,7 @@ unsigned int getscopeSpaceCounter()
     return scopeSpaceCounter;
 }
 
-SymbolType  currscopespace()
+SymbolType currscopespace()
 {
     if(scopeSpaceCounter == 1)
     return programvar;

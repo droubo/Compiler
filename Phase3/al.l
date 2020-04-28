@@ -227,7 +227,7 @@ UNDEFINED .
 
     if(!flag){
         fprintf(stderr, "Missing closing quote at the end of string at line %d\n", startline);
-        return;
+        return 0;
     }
     
     insert_token(startline, token++, string, "STRING", "char *", string);
@@ -272,7 +272,7 @@ UNDEFINED .
 
     if(counter != 0){
         fprintf(stderr, "Malformed multiline comment at line %d\n", startline);
-        return;
+        return 0;
     }
 
     string = malloc(sizeof(char)*(numPlaces(startline) + numPlaces(endline) + 4));

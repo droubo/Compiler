@@ -1,7 +1,9 @@
-function a(){
+y = 1;
+x = a and b > c;
+/*function a(){
 for(i = 0; i < 2; i++){
 	x = x + 1;
 	break;
 	return;
 }
-}
+}*/

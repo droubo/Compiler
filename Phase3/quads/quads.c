@@ -35,6 +35,14 @@ void expand (void){
     total += EXPAND_SIZE;
 }
 
+void switch_quads(unsigned int label1, unsigned int label2){
+    quad temp;
+
+    temp = quads[label1];
+    quads[label1] = quads[label2];
+    quads[label2] = temp;
+}
+
 expr * newexpr(expr_t type, SymTabEntry* sym){
     expr * temp;
     temp = (expr*) malloc(sizeof(expr));

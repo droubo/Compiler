@@ -115,6 +115,8 @@ void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned line);
 
 void emit_jump(iopcode op, expr * arg1, expr * arg2, unsigned int label, unsigned line);
 
+void switch_quads(unsigned int label1, unsigned int label2);
+
 struct expr *emit_iftableitem(expr* e, SymTable * table, int currScope, int func_scope, unsigned line);
 
 expr * member_item(expr * lv, char* name, SymTable * table, int currScope, int func_scope, unsigned line);

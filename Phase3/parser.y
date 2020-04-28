@@ -18,6 +18,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include "quads/temp.h"
+#include "offset/offset.h"
 #include "symtab/symtable.h"
 #include "statement/statement.h"
 
@@ -120,14 +122,12 @@ int tmp_args = 0;
 %type<express> call 
 %type<express> tableitem 
 %type<sym> funcdef 
-%type<ipc> compop 
 %type<integer> ifexpr 
 %type<integer> whilestart 
 %type<integer> whilecond 
 %type<integer> forprefix 
 %type<integer> N 
-%type<integer> M_ 
-%type<_M> expr_M
+%type<integer> M_
 %type<stmt> statements
 %type<stmt> statement 
 %type<stmt> break 
@@ -307,7 +307,6 @@ expr :
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
-		printf("%.0f op %.0f\n", $1->numConst, $3->numConst);
 		emit(if_greater, $1, $3, NULL, yylineno);
 		emit_jump(jump, NULL, NULL, 0, yylineno);
 	}
@@ -316,7 +315,6 @@ expr :
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
-		printf("%.0f op %.0f\n", $1->numConst, $3->numConst);
 		emit(if_greatereq, $1, $3, NULL, yylineno);
 		emit_jump(jump, NULL, NULL, 0, yylineno);
 	}
@@ -325,7 +323,6 @@ expr :
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
-		printf("%.0f op %.0f\n", $1->numConst, $3->numConst);
 		emit(if_less, $1, $3, NULL, yylineno);
 		emit_jump(jump, NULL, NULL, 0, yylineno);
 	}
@@ -334,7 +331,6 @@ expr :
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
-		printf("%.0f op %.0f\n", $1->numConst, $3->numConst);
 		emit(if_lesseq, $1, $3, NULL, yylineno);
 		emit_jump(jump, NULL, NULL, 0, yylineno);
 	}
@@ -345,7 +341,6 @@ expr :
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
-		printf("%.0f op %.0f\n", $1->numConst, $3->numConst);
 		emit(if_eq, $1, $3, NULL, yylineno);
 		emit_jump(jump, NULL, NULL, 0, yylineno);
 	}
@@ -356,7 +351,6 @@ expr :
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
-		printf("%.0f op %.0f\n", $1->numConst, $3->numConst);
 		emit(if_noteq, $1, $3, NULL, yylineno);
 		emit_jump(jump, NULL, NULL, 0, yylineno);
 	}
@@ -364,7 +358,6 @@ expr :
 	{
 		flag_op = 1;
 		flag_func = 0;
-		printf("OR\n");
 
 		backpatch($1->falselist, $3);
 		$$ = newexpr(boolexpr_e, NULL);
@@ -376,8 +369,27 @@ expr :
 	{
 		flag_op = 1;
 		flag_func = 0;
-		printf("AND\n");
 
+
+		// take care of each case
+		if($1->type != boolexpr_e){
+			$1->truelist = booleanList_makeList(currQuad);
+			$1->falselist = booleanList_makeList(currQuad + 1);
+			emit(if_eq, $1, newconstboolexpr(VAR_TRUE), NULL, yylineno);
+			emit_jump(jump, NULL, NULL, 0, yylineno);
+			switch_quads(currQuad - 2, currQuad - 4);
+			switch_quads(currQuad - 1, currQuad - 3);
+		}
+
+		if($4->type != boolexpr_e){
+			$4->truelist = booleanList_makeList(currQuad);
+			$4->falselist = booleanList_makeList(currQuad + 1);
+			emit(if_eq, $4, newconstboolexpr(VAR_TRUE), NULL, yylineno);
+			emit_jump(jump, NULL, NULL, 0, yylineno);
+			switch_quads(currQuad - 2, currQuad - 4);
+			switch_quads(currQuad - 1, currQuad - 3);
+		}
+		
 		backpatch($1->truelist, $3);
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = $4->truelist;

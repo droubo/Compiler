@@ -19,20 +19,20 @@
 
 /* some stack implementation to save offsets */
 int* stack;
-int top = -1;
+extern int top;
 
 void push(int data);
 int pop();
 /*--------------------------*/
 
 /* scopespace_t : programvar */
-unsigned int programVarOffset = 0;
+extern unsigned int programVarOffset;
 /* scopespace_t : functionlocal */
-unsigned int functionLocalOffset = 0;
+extern unsigned int functionLocalOffset;
 /* scopespace_t : formalarg */
-unsigned int  formalArgOffset = 0;
+extern unsigned int  formalArgOffset;
 
-unsigned int scopeSpaceCounter = 1;
+extern unsigned int scopeSpaceCounter;
 
 unsigned int currscopeoffset();
 
@@ -47,6 +47,12 @@ void resetfunctionlocaloffset();
 void restorecurroffset(unsigned int n);
 
 void printNumOfVars();
+
+SymbolType currscopespace();
+
+void enterscopespace();
+
+void exitscopespace();
 
 
 #endif
