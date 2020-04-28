@@ -93,7 +93,7 @@ typedef struct call_struct{
 } call_struct;
 
 
-expr * make_call(expr* lv, expr* reversed_elist, SymTable **table, int yyline, int currscope, int funcscope, int curr);
+expr * make_call(expr* lv, expr* reversed_elist, SymTable **table, int yyline, int currscope, int funcscope);
 
 extern quad * quads;
 extern unsigned total;
@@ -115,9 +115,9 @@ void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned line);
 
 void emit_jump(iopcode op, expr * arg1, expr * arg2, unsigned int label, unsigned line);
 
-struct expr *emit_iftableitem(expr* e, SymTable * table, int currScope, int func_scope, int curr, unsigned line);
+struct expr *emit_iftableitem(expr* e, SymTable * table, int currScope, int func_scope, unsigned line);
 
-expr * member_item(expr * lv, char* name, SymTable * table, int currScope, int func_scope, int curr, unsigned line);
+expr * member_item(expr * lv, char* name, SymTable * table, int currScope, int func_scope, unsigned line);
 
 void print_expr(expr * exp, int indent);
 

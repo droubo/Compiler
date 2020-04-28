@@ -34,7 +34,7 @@ char * newtempname() {
 
 void resettemp() { tempcounter = 0; }
 
-SymTabEntry * newtemp(SymTable * table, int currScope, int func_scope, int curr) {
+SymTabEntry * newtemp(SymTable * table, int currScope, int func_scope) {
     char * name;
     SymTabEntry * sym;
 

@@ -26,6 +26,6 @@ char * newtempname();
 
 void resettemp();
 
-SymTabEntry * newtemp(SymTable * table, int currScope, int func_scope, int curr);
+SymTabEntry * newtemp(SymTable * table, int currScope, int func_scope);
 
 #endif

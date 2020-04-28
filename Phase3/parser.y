@@ -254,7 +254,7 @@ expr :
 		flag_op = 0;
 		flag_func = 0;
 
-		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc, 0);
+		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc);
 		$$ = newexpr(arithexpr_e, tmp);
 		emit(add, $1, $3, $$, yylineno);
 	}
@@ -265,7 +265,7 @@ expr :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno);
 			fail_icode = 1;
 		}
-		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc, 0);
+		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc);
 		$$ = newexpr(arithexpr_e, tmp);
 		emit(sub, $1, $3, $$, yylineno);
 	}
@@ -276,7 +276,7 @@ expr :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno);
 			fail_icode = 1;
 		}
-		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc, 0);
+		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc);
 		$$ = newexpr(arithexpr_e, tmp);
 		emit(mul, $1, $3, $$, yylineno);
 	}
@@ -287,7 +287,7 @@ expr :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno);
 			fail_icode = 1;
 		}
-		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc, 0);
+		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc);
 		$$ = newexpr(arithexpr_e, tmp);
 		emit(diva, $1, $3, $$, yylineno);
 	}
@@ -298,7 +298,7 @@ expr :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno);
 			fail_icode = 1;
 		}
-		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc, 0);
+		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc);
 		$$ = newexpr(arithexpr_e, tmp);
 		emit(mod, $1, $3, $$, yylineno);
 	}
@@ -493,7 +493,7 @@ assignexpr :
 		else if ($1->index != NULL)
 		{
 			emit(tablesetelem, $1->index, $4, $1, yylineno);
-			emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno);
+			emit_iftableitem($lvalue, table, currscope, currfunc, yylineno);
 		}
 		else
 		{
@@ -504,7 +504,7 @@ assignexpr :
 	;
 
 primary : 
-	lvalue { $$ = emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno); }
+	lvalue { $$ = emit_iftableitem($lvalue, table, currscope, currfunc, yylineno); }
 	| call 
 	| LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS
 	{
@@ -642,10 +642,10 @@ lvalue :
 	;
 
 member : 
-	call DOT ID { $$ = member_item($call, $ID, table, currscope, currfunc, 1, yylineno); }
+	call DOT ID { $$ = member_item($call, $ID, table, currscope, currfunc, yylineno); }
 	| call LEFT_BRACKET expr RIGHT_BRACKET
 	{
-		$call = emit_iftableitem($call, table, currscope, currfunc, 1, yylineno);
+		$call = emit_iftableitem($call, table, currscope, currfunc, yylineno);
 		expr *item = newexpr(tableitem_e, $call->sym);
 		item->index = $expr;
 		$$ = item;
@@ -655,18 +655,18 @@ member :
 tableitem : 
 	lvalue DOT ID
 	{
-		$$ = member_item($lvalue, $ID, table, currscope, currfunc, 1, yylineno);
+		$$ = member_item($lvalue, $ID, table, currscope, currfunc, yylineno);
 	}
 	| lvalue LEFT_BRACKET expr RIGHT_BRACKET
 	{
-		$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno);
+		$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, yylineno);
 		expr *item = newexpr(tableitem_e, $lvalue->sym);
 		item->index = $expr;
 		$$ = item;
 	}
 	tablemake : LEFT_BRACKET elist RIGHT_BRACKET
 	{
-		expr *tmp = newexpr(newtable_e, (SymTabEntry *)newtemp(table, currscope, currfunc, 0));
+		expr *tmp = newexpr(newtable_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
 		emit(tablecreate, tmp, NULL, NULL, yylineno);
 		int i;
 		for (i = 0; $elist; $elist = $elist->next)
@@ -681,24 +681,24 @@ tableitem :
 	{
 		flag_func = 0;
 	}
-	LEFT_PARENTHESIS elist RIGHT_PARENTHESIS { $$ = make_call($1, $elist, &table, yylineno, currscope, currfunc, 0); }
+	LEFT_PARENTHESIS elist RIGHT_PARENTHESIS { $$ = make_call($1, $elist, &table, yylineno, currscope, currfunc); }
 	| lvalue { flag_func = 0; }
 	callsuffix
 	{
-		$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, 1, yylineno);
+		$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, yylineno);
 		if ($callsuffix.method)
 		{
 			expr *t = $lvalue;
-			$lvalue = emit_iftableitem(member_item(t, $callsuffix.name, table, currscope, currfunc, 1, yylineno), table, currscope, currfunc, 1, yylineno);
+			$lvalue = emit_iftableitem(member_item(t, $callsuffix.name, table, currscope, currfunc, yylineno), table, currscope, currfunc, yylineno);
 			$callsuffix.elist->next = t;
 		}
-		$call = make_call($lvalue, $callsuffix.elist, &table, yylineno, currscope, currfunc, 0);
+		$call = make_call($lvalue, $callsuffix.elist, &table, yylineno, currscope, currfunc);
 	}
 	| LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS { flag_func = 0; }
 	LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
 	{
 		expr *func = newexpr(programfunc_e, $funcdef);
-		$call = make_call(func, $elist, &table, yylineno, currscope, currfunc, 0);
+		$call = make_call(func, $elist, &table, yylineno, currscope, currfunc);
 	}
 	;
 

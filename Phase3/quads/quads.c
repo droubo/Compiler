@@ -124,17 +124,17 @@ void emit_jump (iopcode op, expr * arg1, expr * arg2, unsigned int label, unsign
     p->line = line;
 }
 
-struct expr *emit_iftableitem(expr* e, SymTable * table, int currScope, int func_scope, int curr, unsigned line){
+struct expr *emit_iftableitem(expr* e, SymTable * table, int currScope, int func_scope, unsigned line){
     if(e->type != tableitem_e) return e;
     else{
-        expr* result = newexpr(var_e, newtemp(table,currScope,func_scope,curr));
+        expr* result = newexpr(var_e, newtemp(table,currScope,func_scope));
         emit(tablegetelem, e, e->index, result, line);
         return result;
     }
 }
 
-expr * member_item(expr * lv, char* name, SymTable * table, int currScope, int func_scope, int curr, unsigned line){
-	lv = emit_iftableitem(lv, table, currScope, func_scope, curr, line);
+expr * member_item(expr * lv, char* name, SymTable * table, int currScope, int func_scope, unsigned line){
+	lv = emit_iftableitem(lv, table, currScope, func_scope, line);
 	expr* ti = newexpr(tableitem_e, lv->sym);
 	ti->index = newconststringexpr(name);
 	return ti;
@@ -178,14 +178,14 @@ void edit_quad(int index, expr * arg1, expr * arg2, expr * result, unsigned int 
 
 }
 
-expr * make_call(expr* lv, expr* reversed_elist, SymTable **table, int yyline, int currscope, int funcscope, int curr){
-	expr* func = emit_iftableitem(lv, (*table), currscope, funcscope, curr, yyline);
+expr * make_call(expr* lv, expr* reversed_elist, SymTable **table, int yyline, int currscope, int funcscope){
+	expr* func = emit_iftableitem(lv, (*table), currscope, funcscope, yyline);
 	while(reversed_elist){
 		emit(param, reversed_elist, NULL, NULL, yyline);
 		reversed_elist = reversed_elist->next;
 	}
 	emit(call, func, NULL, NULL, 0);
-	expr* result = newexpr(var_e, newtemp((*table), currscope, funcscope, curr));
+	expr* result = newexpr(var_e, newtemp((*table), currscope, funcscope));
 	emit(getretval, NULL, NULL, result, yyline);
 	return result;
 
