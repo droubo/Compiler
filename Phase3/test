@@ -1,5 +1,4 @@
-y = 1;
-x = a and b > c;
+x = a or c;
 /*function a(){
 for(i = 0; i < 2; i++){
 	x = x + 1;
