@@ -195,10 +195,10 @@ statements:
 error_statement : error statement;
 
 statement : 
-	expr SEMICOLON { make_stmt(&$$); }
-	| ifstmt { $$ = $1; }
-	| whilestmt { $$ = $1; }
-	| forstmt { $$ = $1; }
+	expr SEMICOLON { make_stmt(&$$); resettemp();}
+	| ifstmt { $$ = $1; resettemp();}
+	| whilestmt { $$ = $1; resettemp();}
+	| forstmt { $$ = $1; resettemp();}
 	| returnstmt
 	{
 		if (return_flag == 0)
@@ -207,12 +207,13 @@ statement :
 			fail_icode = 1;
 		}
 		make_stmt(&$$);
+		resettemp();
 	}
-	| break { $$ = $1; }
-	| continue_ { $$ = $1; }
-	| block { $$ = $1; }
-	| funcdef { make_stmt(&$$); }
-	| SEMICOLON { make_stmt(&$$); };
+	| break { $$ = $1; resettemp(); }
+	| continue_ { $$ = $1; resettemp(); }
+	| block { $$ = $1;  resettemp();}
+	| funcdef { make_stmt(&$$); resettemp();}
+	| SEMICOLON { make_stmt(&$$); resettemp(); };
 	;
 
 break : 
@@ -417,8 +418,11 @@ term :
 		}
 
 		flag_func = 0;
-		emit(mul, $2, newconstnumexpr(-1), $2, yylineno);
-		$$ = $2;
+		
+		expr *temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+		emit(uminus, $2, NULL, temp, yylineno);
+		
+		$$ = temp;
 	}
 	%prec UMINUS
 	| PLUS_PLUS lvalue
@@ -511,6 +515,10 @@ assignexpr :
 		{
 			emit(assign, $4, NULL, $1, yylineno);
 		}
+		/* second emit */
+		expr* temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+		emit(assign,$lvalue,NULL,temp,yylineno);
+
 		table_flag = 0;
 	}
 	;
