@@ -1,4 +1,4 @@
-x = a or c;
+x = b and not a;
 /*function a(){
 for(i = 0; i < 2; i++){
 	x = x + 1;

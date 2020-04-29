@@ -40,6 +40,7 @@ unsigned int flag_op = 0;
 unsigned int fail_icode = 0;
 unsigned int return_flag = 0;
 unsigned int loop_flag = 0;
+unsigned int flag_not = 0;
 SymTabEntry *global_tmp;
 int table_flag = 0;
 int jump_label = 0;
@@ -428,12 +429,23 @@ expr :
 			switch_quads(currQuad - 2, currQuad - 4);
 			switch_quads(currQuad - 1, currQuad - 3);
 			booleanList * temp;
-			temp = $1->truelist;
-			$1->truelist = $4->truelist;
-			$4->truelist = temp;
-			temp = $1->falselist;
-			$1->falselist = $4->falselist;
-			$4->falselist = temp;
+			if(flag_not == 0) {
+				temp = $1->truelist;
+				$1->truelist = $4->truelist;
+				$4->truelist = temp;
+				temp = $1->falselist;
+				$1->falselist = $4->falselist;
+				$4->falselist = temp;
+			} else {
+				temp = $1->falselist;
+				$1->falselist = $4->truelist;
+				$4->truelist = temp;
+				temp = $1->truelist;
+				$1->truelist = $4->falselist;
+				$4->falselist = temp;
+				flag_not = 0;
+			}
+			
 			backpatch($1->truelist, $M_ + 2);
 			
 		} else if ($1->type == boolexpr_e && $4->type != boolexpr_e) {
@@ -442,7 +454,7 @@ expr :
 			emit_jump(if_eq, $4, newconstboolexpr(VAR_TRUE), 0, yylineno);
 			emit_jump(jump, NULL, NULL, 0, yylineno);
 
-			backpatch($1->truelist, $M_ + 2);
+			backpatch($1->truelist, $M_);
 
 		} else if ($1->type != boolexpr_e && $4->type != boolexpr_e) {
 			$1->truelist = booleanList_makeList(currQuad);
@@ -468,6 +480,14 @@ expr :
 	{
 		flag_op = 1;
 		flag_func = 0;
+		flag_not = 1;
+		if($2->type != boolexpr_e){
+			$2->truelist = booleanList_makeList(currQuad);
+			$2->falselist = booleanList_makeList(currQuad + 1);
+			emit_jump(if_eq, $2, newconstboolexpr(VAR_TRUE), 0, yylineno);
+			emit_jump(jump, NULL, NULL, 0, yylineno);
+		}	
+		
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = $2->falselist;
 		$$->falselist = $2->truelist;
