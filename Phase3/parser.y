@@ -17,6 +17,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <assert.h>
 #include <fcntl.h>
 #include "quads/temp.h"
 #include "offset/offset.h"
@@ -47,6 +48,8 @@ loopcounterstack *lcs = NULL;
 int else_flag = 0;
 FILE *errorFile;
 int tmp_args = 0;
+
+extern int tempcounter;
 
 %}
 
@@ -578,7 +581,24 @@ assignexpr :
 		}
 		else
 		{
-			emit(assign, $4, NULL, $1, yylineno);
+			char name[20];
+			/* temptcounter - 1 is the current tmp variable */
+			sprintf(name,"_t%d",tempcounter-1);
+			SymTabEntry* tmp_entry = lookup_SymTableScope(table, currscope, name);
+			
+			if(tempcounter == 0)
+			{
+ 				emit(assign, $4, NULL, $1, yylineno);
+ 			}
+			else if(tempcounter > 0 && tmp_entry != NULL)
+			{
+				expr* tmp_expr = newexpr(var_e, tmp_entry);
+				emit(assign, tmp_expr, NULL, $1, yylineno);
+			}
+			else
+			{
+				assert(0);
+			}
 		}
 		/* second emit */
 		expr* temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
