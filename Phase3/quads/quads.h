@@ -93,7 +93,7 @@ typedef struct call_struct{
 } call_struct;
 
 
-expr * make_call(expr* lv, expr* reversed_elist, SymTable **table, int yyline, int currscope, int funcscope);
+expr * make_call(expr* lv, expr* elist, SymTable **table, int yyline, int currscope, int funcscope);
 
 extern quad * quads;
 extern unsigned total;

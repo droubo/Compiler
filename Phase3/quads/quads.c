@@ -186,9 +186,26 @@ void edit_quad(int index, expr * arg1, expr * arg2, expr * result, unsigned int 
 
 }
 
-expr * make_call(expr* lv, expr* reversed_elist, SymTable **table, int yyline, int currscope, int funcscope){
+expr * reverse_elist(expr * elist){
+    expr * curr, * next, *prev;
+    curr = elist;
+    next = NULL;
+    prev = NULL;
+
+    while(curr != NULL){
+        next = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = next;
+    }
+    return prev;
+}
+
+expr * make_call(expr* lv, expr* elist, SymTable **table, int yyline, int currscope, int funcscope){
 	expr* func = emit_iftableitem(lv, (*table), currscope, funcscope, yyline);
-	while(reversed_elist){
+	expr * reversed_elist;
+    reversed_elist = reverse_elist(elist);
+    while(reversed_elist){
 		emit(param, reversed_elist, NULL, NULL, yyline);
 		reversed_elist = reversed_elist->next;
 	}

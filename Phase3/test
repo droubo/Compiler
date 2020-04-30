@@ -1,8 +1,4 @@
-x = b and not a;
-/*function a(){
-for(i = 0; i < 2; i++){
-	x = x + 1;
-	break;
-	return;
-}
-}*/
+function f(a, b){}
+f(a > b, c > d);
+
+// isiwse to elist

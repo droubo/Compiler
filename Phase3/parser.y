@@ -881,15 +881,46 @@ methodcall :
 
 // TODO: This also needs boolean backpatching?
 elist : {$$ = NULL;}
-	| expr {}
-	COMA elist
+	| elist COMA expr {}
 	{
-		$expr->next = $4;
-		$$ = $expr;
+		expr * list_tail;
+		list_tail = $1;
+		while(list_tail->next != NULL){
+			list_tail = list_tail->next;
+		}
+
+		
+		if ($expr->type == boolexpr_e)
+		{
+			expr *temp;
+			temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+			emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
+			emit_jump(jump, NULL, NULL, currQuad + 3, yylineno);
+			emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
+			backpatch($expr->truelist, currQuad - 2);
+			backpatch($expr->falselist, currQuad);
+			$expr = temp;
+			
+		}
+
+		list_tail->next = $expr;
+		$$ = $1;
 	}
 	| expr {}
 	{
-		$$ = $expr;
+		if ($expr->type == boolexpr_e)
+		{
+			expr *temp;
+			temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+			emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
+			emit_jump(jump, NULL, NULL, currQuad + 3, yylineno);
+			emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
+			backpatch($expr->truelist, currQuad - 2);
+			backpatch($expr->falselist, currQuad);
+			$$ = temp;
+		} else {
+			$$ = $expr;
+		}
 	}
 	;
 
