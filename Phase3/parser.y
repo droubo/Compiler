@@ -401,12 +401,22 @@ expr :
 			switch_quads(currQuad - 2, currQuad - 4);
 			switch_quads(currQuad - 1, currQuad - 3);
 			booleanList * temp;
-			temp = $1->truelist;
-			$1->truelist = $4->truelist;
-			$4->truelist = temp;
-			temp = $1->falselist;
-			$1->falselist = $4->falselist;
-			$4->falselist = temp;
+			if(flag_not == 0) {
+				temp = $1->truelist;
+				$1->truelist = $4->truelist;
+				$4->truelist = temp;
+				temp = $1->falselist;
+				$1->falselist = $4->falselist;
+				$4->falselist = temp;
+			} else {
+				temp = $1->falselist;
+				$1->falselist = $4->truelist;
+				$4->truelist = temp;
+				temp = $1->truelist;
+				$1->truelist = $4->falselist;
+				$4->falselist = temp;
+				flag_not = 0;
+			}
 			backpatch($1->falselist, $M_ + 2);
 			
 		} else if ($1->type == boolexpr_e && $4->type != boolexpr_e) {
