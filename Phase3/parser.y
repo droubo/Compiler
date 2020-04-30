@@ -35,7 +35,6 @@ SymTable *table;
 unsigned int currscope = 0;
 unsigned int currfunc = 0;
 unsigned int anonym_func_count = 0;
-unsigned int flag_func = 0;
 unsigned int flag_op = 0;
 unsigned int fail_icode = 0;
 unsigned int return_flag = 0;
@@ -248,16 +247,15 @@ break :
 	;
 
 expr : 
-	assignexpr 
+	assignexpr
 	| expr PLUS expr
 	{
-		if (flag_func == 1 && flag_op == 0)
+		if ($1->type == programfunc_e || $1->type == libraryfunc_e || $3->type == programfunc_e || $3->type == libraryfunc_e)
 		{
-			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno);
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr + expr\n", yylineno);
 			fail_icode = 1;
 		}
 		flag_op = 0;
-		flag_func = 0;
 
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc);
 		$$ = newexpr(arithexpr_e, tmp);
@@ -265,52 +263,61 @@ expr :
 	}
 	| expr MINUS expr
 	{
-		if (flag_func == 1 && flag_op == 0)
+		if ($1->type == programfunc_e || $1->type == libraryfunc_e || $3->type == programfunc_e || $3->type == libraryfunc_e)
 		{
-			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno);
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr - expr\n", yylineno);
 			fail_icode = 1;
 		}
+	
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc);
 		$$ = newexpr(arithexpr_e, tmp);
 		emit(sub, $1, $3, $$, yylineno);
 	}
 	| expr MULT expr
 	{
-		if (flag_func == 1 && flag_op == 0)
+		if ($1->type == programfunc_e || $1->type == libraryfunc_e || $3->type == programfunc_e || $3->type == libraryfunc_e)
 		{
-			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno);
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr * expr\n", yylineno);
 			fail_icode = 1;
 		}
+	
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc);
 		$$ = newexpr(arithexpr_e, tmp);
 		emit(mul, $1, $3, $$, yylineno);
 	}
 	| expr DIV expr
 	{
-		if (flag_func == 1 && flag_op == 0)
+		if ($1->type == programfunc_e || $1->type == libraryfunc_e || $3->type == programfunc_e || $3->type == libraryfunc_e)
 		{
-			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno);
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr / expr\n", yylineno);
 			fail_icode = 1;
 		}
+		
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc);
 		$$ = newexpr(arithexpr_e, tmp);
 		emit(diva, $1, $3, $$, yylineno);
 	}
 	| expr MOD expr
 	{
-		if (flag_func == 1 && flag_op == 0)
+		if ($1->type == programfunc_e || $1->type == libraryfunc_e || $3->type == programfunc_e || $3->type == libraryfunc_e)
 		{
-			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr op expr\n", yylineno);
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr MOD expr\n", yylineno);
 			fail_icode = 1;
 		}
+	
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc);
 		$$ = newexpr(arithexpr_e, tmp);
 		emit(mod, $1, $3, $$, yylineno);
 	}
 	| expr GREATER expr
 	{
+		if ($1->type == programfunc_e || $1->type == libraryfunc_e || $3->type == programfunc_e || $3->type == libraryfunc_e)
+		{
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr > expr\n", yylineno);
+			fail_icode = 1;
+		}
 		flag_op = 1;
-		flag_func = 0;
+		
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
@@ -319,8 +326,13 @@ expr :
 	}
 	| expr GREATER_EQUAL expr
 	{
+		if ($1->type == programfunc_e || $1->type == libraryfunc_e || $3->type == programfunc_e || $3->type == libraryfunc_e)
+		{
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr >= expr\n", yylineno);
+			fail_icode = 1;
+		}
 		flag_op = 1;
-		flag_func = 0;
+	
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
@@ -329,8 +341,13 @@ expr :
 	}
 	| expr LESS expr
 	{
+		if ($1->type == programfunc_e || $1->type == libraryfunc_e || $3->type == programfunc_e || $3->type == libraryfunc_e)
+		{
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr < expr\n", yylineno);
+			fail_icode = 1;
+		}
 		flag_op = 1;
-		flag_func = 0;
+	
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
@@ -339,8 +356,13 @@ expr :
 	}
 	| expr LESS_EQUAL expr
 	{
+		if ($1->type == programfunc_e || $1->type == libraryfunc_e || $3->type == programfunc_e || $3->type == libraryfunc_e)
+		{
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr <= expr\n", yylineno);
+			fail_icode = 1;
+		}
 		flag_op = 1;
-		flag_func = 0;
+	
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
@@ -350,7 +372,7 @@ expr :
 	| expr EQUAL expr
 	{
 		flag_op = 1;
-		flag_func = 0;
+	
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
@@ -360,7 +382,7 @@ expr :
 	| expr NOT_EQUAL expr
 	{
 		flag_op = 1;
-		flag_func = 0;
+	
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
@@ -370,7 +392,7 @@ expr :
 	| expr OR M_ expr
 	{
 		flag_op = 1;
-		flag_func = 0;
+	
 		if($1->type != boolexpr_e && $4->type == boolexpr_e){
 			$1->truelist = booleanList_makeList(currQuad);
 			$1->falselist = booleanList_makeList(currQuad + 1);
@@ -419,7 +441,6 @@ expr :
 	| expr AND M_ expr
 	{
 		flag_op = 1;
-		flag_func = 0;
 
 		if($1->type != boolexpr_e && $4->type == boolexpr_e){
 			$1->truelist = booleanList_makeList(currQuad);
@@ -479,7 +500,7 @@ expr :
 	| NOT expr
 	{
 		flag_op = 1;
-		flag_func = 0;
+	
 		flag_not = 1;
 		if($2->type != boolexpr_e){
 			$2->truelist = booleanList_makeList(currQuad);
@@ -492,20 +513,18 @@ expr :
 		$$->truelist = $2->falselist;
 		$$->falselist = $2->truelist;
 	}
-	| term { $$ = $1; }
+	| term { $$ = $1;}
 	;
 
 term :
 	LEFT_PARENTHESIS expr RIGHT_PARENTHESIS { $$ = $2; }
 	| MINUS expr
 	{
-		if (flag_func == 1)
+		if ($expr->type == programfunc_e || $expr->type == libraryfunc_e)
 		{
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : term -> - expr\n", yylineno);
 			fail_icode = 1;
 		}
-
-		flag_func = 0;
 		
 		expr *temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
 		emit(uminus, $2, NULL, temp, yylineno);
@@ -515,12 +534,11 @@ term :
 	%prec UMINUS
 	| PLUS_PLUS lvalue
 	{
-		if (flag_func == 1)
+		if ($lvalue->type == programfunc_e || $lvalue->type == libraryfunc_e)
 		{
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : term -> ++ lvalue\n", yylineno);
 			fail_icode = 1;
 		}
-		flag_func = 0;
 
 		emit(add, $2, newconstnumexpr(1), $2, yylineno);
 		emit(assign, $2, NULL, newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc)), yylineno);
@@ -528,12 +546,11 @@ term :
 	}
 	| lvalue PLUS_PLUS
 	{
-		if (flag_func == 1)
+		if ($lvalue->type == programfunc_e || $lvalue->type == libraryfunc_e)
 		{
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : term -> lvalue ++\n", yylineno);
 			fail_icode = 1;
 		}
-		flag_func = 0;
 
 		emit(assign, $1, NULL, newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc)), yylineno);
 		emit(add, $1, newconstnumexpr(1), $1, yylineno);
@@ -542,12 +559,11 @@ term :
 	}
 	| MINUS_MINUS lvalue
 	{
-		if (flag_func == 1)
+		if ($lvalue->type == programfunc_e || $lvalue->type == libraryfunc_e)
 		{
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : term -- lvalue\n", yylineno);
 			fail_icode = 1;
 		}
-		flag_func = 0;
 
 		emit(sub, $2, newconstnumexpr(1), $2, yylineno);
 		emit(assign, $2, NULL, newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc)), yylineno);
@@ -556,13 +572,12 @@ term :
 	}
 	| lvalue MINUS_MINUS
 	{
-		if (flag_func == 1)
+		if ($lvalue->type == programfunc_e || $lvalue->type == libraryfunc_e)
 		{
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : lavlue --\n", yylineno);
 			fail_icode = 1;
 		}
-		flag_func = 0;
-
+	
 		emit(assign, $1, NULL, newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc)), yylineno);
 		emit(sub, $1, newconstnumexpr(1), $1, yylineno);
 		$$ = $1;
@@ -573,12 +588,11 @@ term :
 assignexpr : 
 	lvalue
 	{
-		if (flag_func == 1)
+		if ($lvalue->type == programfunc_e || $lvalue->type == libraryfunc_e)
 		{
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno);
 			fail_icode = 1;
 		}
-		flag_func = 0;
 		table_flag = 1;
 	}
 	ASSIGN expr
@@ -620,9 +634,12 @@ assignexpr :
 				assert(0);
 			}
 		}
-		/* second emit */
-		expr* temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
-		emit(assign,$lvalue,NULL,temp,yylineno);
+		/* second emit if not table */
+		if($1->index == NULL)
+		{
+			expr* temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+			emit(assign,$lvalue,NULL,temp,yylineno);
+		}
 
 		table_flag = 0;
 	}
@@ -653,7 +670,6 @@ lvalue :
 			/* is function */
 			else if (!strcmp(SymbolTypeToString(tmp->type), "LIBFUNC") || !strcmp(SymbolTypeToString(tmp->type), "USERFUNC"))
 			{
-				flag_func = 1;
 				global_tmp = tmp;
 			}
 		}
@@ -754,13 +770,17 @@ lvalue :
 			}
 			/* found global function */
 			if (strcmp(SymbolTypeToString(tmp->type), "LIBFUNC") == 0 || strcmp(SymbolTypeToString(tmp->type), "USERFUNC") == 0)
-				flag_func = 1;
+			{
+				/* do nothing here */
+			}
 		}
 		else
 		{
 			fprintf(errorFile, "ERROR @ line %d: %s is not a global variable nor a global function\n", yylineno, $2);
 			fail_icode = 1;
 		}
+
+		$$ = lvalue_expr(tmp);
 	}
 	| member { $$ = $1; }
 	| tableitem { $$ = $1; }
@@ -796,7 +816,7 @@ tableitem :
 		int i;
 		for (i = 0; $elist; $elist = $elist->next)
 		{
-			emit(tablesetelem, tmp, newconstnumexpr(i++), $elist, yylineno);
+			emit(tablesetelem ,newconstnumexpr(i++) ,$elist ,tmp ,yylineno);
 		}
 		$$ = tmp;
 	}
@@ -804,10 +824,10 @@ tableitem :
 
 			call : call
 	{
-		flag_func = 0;
+		
 	}
 	LEFT_PARENTHESIS elist RIGHT_PARENTHESIS { $$ = make_call($1, $elist, &table, yylineno, currscope, currfunc); }
-	| lvalue { flag_func = 0; }
+	| lvalue {}
 	callsuffix
 	{
 		$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, yylineno);
@@ -819,7 +839,7 @@ tableitem :
 		}
 		$call = make_call($lvalue, $callsuffix.elist, &table, yylineno, currscope, currfunc);
 	}
-	| LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS { flag_func = 0; }
+	| LEFT_PARENTHESIS funcdef RIGHT_PARENTHESIS { }
 	LEFT_PARENTHESIS elist RIGHT_PARENTHESIS
 	{
 		expr *func = newexpr(programfunc_e, $funcdef);
@@ -851,13 +871,13 @@ methodcall :
 
 // TODO: This also needs boolean backpatching?
 elist : {$$ = NULL;}
-	| expr { flag_func = 0; }
+	| expr {}
 	COMA elist
 	{
 		$expr->next = $4;
 		$$ = $expr;
 	}
-	| expr { flag_func = 0; }
+	| expr {}
 	{
 		$$ = $expr;
 	}
@@ -1178,7 +1198,6 @@ N:
 
 returnstmt : RETURN expr SEMICOLON
 	{
-		flag_func = 0;
 		if (return_flag != 0)
 		{
 			emit(ret, NULL, NULL, $expr, yylineno);
