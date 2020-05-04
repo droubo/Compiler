@@ -434,8 +434,8 @@ expr :
 			emit_jump(jump, NULL, NULL, 0, yylineno);
 
 			if($1->type == retval_e && $4->type == retval_e){
-				$1->truelist = booleanList_makeList(currQuad - 2);
-				$1->falselist = booleanList_makeList(currQuad - 1);
+				$1->truelist = booleanList_makeList(currQuad - 3);
+				$1->falselist = booleanList_makeList(currQuad - 2);
 			}
 			
 			$4->truelist = booleanList_makeList(currQuad);
@@ -505,7 +505,7 @@ expr :
 
 			if($1->type == retval_e && $4->type == retval_e){
 				$1->truelist = booleanList_makeList(currQuad - 2);
-				$1->falselist = booleanList_makeList(currQuad - 1);
+				$1->falselist = booleanList_makeList(currQuad - 3);
 			}
 			
 			$4->truelist = booleanList_makeList(currQuad);

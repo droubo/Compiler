@@ -1,1 +1,1 @@
-x = f() and g() or d();
+x = g() and d();
