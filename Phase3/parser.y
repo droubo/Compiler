@@ -392,7 +392,8 @@ expr :
 	| expr OR M_ expr
 	{
 		flag_op = 1;
-	
+
+		printf("OR\n");
 		if($1->type != boolexpr_e && $4->type == boolexpr_e){
 			$1->truelist = booleanList_makeList(currQuad);
 			$1->falselist = booleanList_makeList(currQuad + 1);
@@ -436,17 +437,14 @@ expr :
 			if($1->type == retval_e && $4->type == retval_e){
 				$1->truelist = booleanList_makeList(currQuad - 4);
 				$1->falselist = booleanList_makeList(currQuad - 3);
+				switch_quads(currQuad - 2, currQuad - 4);
+				switch_quads(currQuad - 1, currQuad - 3);
 			}
 			
 			$4->truelist = booleanList_makeList(currQuad);
 			$4->falselist = booleanList_makeList(currQuad + 1);
 			emit_jump(if_eq, $4, newconstboolexpr(VAR_TRUE), 0, yylineno);
 			emit_jump(jump, NULL, NULL, 0, yylineno);
-
-			if ($1->type == retval_e && $4->type == retval_e){
-				switch_quads(currQuad - 4, currQuad - 6);
-				switch_quads(currQuad - 3, currQuad - 5);
-			}
 
 			backpatch($1->falselist, $M_ + 2);
 		} else if ($1->type == boolexpr_e && $4->type == boolexpr_e){
@@ -461,7 +459,7 @@ expr :
 	| expr AND M_ expr
 	{
 		flag_op = 1;
-	
+		printf("AND\n");
 		if($1->type != boolexpr_e && $4->type == boolexpr_e){
 			$1->truelist = booleanList_makeList(currQuad);
 			$1->falselist = booleanList_makeList(currQuad + 1);
@@ -506,17 +504,14 @@ expr :
 			if($1->type == retval_e && $4->type == retval_e){
 				$1->truelist = booleanList_makeList(currQuad - 4);
 				$1->falselist = booleanList_makeList(currQuad - 3);
+				switch_quads(currQuad - 2, currQuad - 4);
+				switch_quads(currQuad - 1, currQuad - 3);
 			}
 			
 			$4->truelist = booleanList_makeList(currQuad);
 			$4->falselist = booleanList_makeList(currQuad + 1);
 			emit_jump(if_eq, $4, newconstboolexpr(VAR_TRUE), 0, yylineno);
 			emit_jump(jump, NULL, NULL, 0, yylineno);
-
-			if ($1->type == retval_e && $4->type == retval_e){
-				switch_quads(currQuad - 4, currQuad - 6);
-				switch_quads(currQuad - 3, currQuad - 5);
-			}
 
 			backpatch($1->truelist, $M_ + 2);
 		} else if ($1->type == boolexpr_e && $4->type == boolexpr_e){
