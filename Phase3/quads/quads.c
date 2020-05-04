@@ -210,7 +210,7 @@ expr * make_call(expr* lv, expr* elist, SymTable **table, int yyline, int currsc
 		reversed_elist = reversed_elist->next;
 	}
 	emit(call, func, NULL, NULL, 0);
-	expr* result = newexpr(var_e, newtemp((*table), currscope, funcscope));
+	expr* result = newexpr(retval_e, newtemp((*table), currscope, funcscope));
 	emit(getretval, NULL, NULL, result, yyline);
 	return result;
 
@@ -228,6 +228,7 @@ void print_quad_arg(expr * arg, FILE * file){
     if(arg != NULL)
         switch(arg->type){
             case var_e:
+            case retval_e:
             case tableitem_e:
             
             case programfunc_e:

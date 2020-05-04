@@ -34,6 +34,7 @@
 
 typedef enum expr_t {
     var_e,
+    retval_e,
     tableitem_e,
 
     programfunc_e,
