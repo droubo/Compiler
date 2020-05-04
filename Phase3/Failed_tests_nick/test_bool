@@ -22,7 +22,7 @@ function f()
 // f(a = false and true, a = true); // passed
 
 
-x = f() or f() and f(); // failed
+x = f() or f () and f(); // failed
 
 
 
