@@ -5,7 +5,7 @@
  * 
  * Project Phase 3: Intermediate code Generation
  * 
- * Antonis Droubogiannis    csd4014@csd.uoc.gr
+ * Antonis Ntroumpogiannis    csd4014@csd.uoc.gr
  * Georgios Marios Kokiadis csd3962@csd.uoc.gr
  * Nikolaos Gounakis        csd3932@csd.uoc.gr
  * 
@@ -121,7 +121,6 @@ extern int tempcounter;
 %type<express> member
 %type<express> tablemake 
 %type<express> elist 
-%type<express> indexed 
 %type<express> call 
 %type<express> tableitem 
 %type<sym> funcdef 
@@ -148,6 +147,9 @@ extern int tempcounter;
 %type<call_> normcall 
 %type<call_> methodcall
 %type<integer> funcargs
+%type<hashElement> indexed
+%type<hashElement> comaindexedelem
+%type<hashElement> indexedelem
 
 /* priority */
 %right ASSIGN
@@ -177,6 +179,7 @@ extern int tempcounter;
 	iopcode ipc;
 	SymTabEntry *sym;
 	call_struct call_;
+	hashTableElement* hashElement;
 }
 %%
 
@@ -186,10 +189,11 @@ statements
 
 statements: 
 	{ make_stmt(&$$); }
-	| statement statements
-	{
-		$$.breakList = mergelist($2.breakList, $1.breakList);
-		$$.contList = mergelist($2.contList, $1.contList);
+	| statement {resettemp();} statements
+	{	
+		$$.breakList = mergelist($3.breakList, $1.breakList);
+		$$.contList = mergelist($3.contList, $1.contList);
+
 	}
 
 | error_statement statements
@@ -198,10 +202,10 @@ statements:
 error_statement : error statement;
 
 statement : 
-	expr SEMICOLON { make_stmt(&$$); resettemp();}
-	| ifstmt { $$ = $1; resettemp();}
-	| whilestmt { $$ = $1; resettemp();}
-	| forstmt { $$ = $1; resettemp();}
+	expr SEMICOLON { make_stmt(&$$);}
+	| ifstmt { $$ = $1;}
+	| whilestmt {$$ = $1;}
+	| forstmt { $$ = $1; }
 	| returnstmt
 	{
 		if (return_flag == 0)
@@ -210,13 +214,13 @@ statement :
 			fail_icode = 1;
 		}
 		make_stmt(&$$);
-		resettemp();
+		
 	}
-	| break { $$ = $1; resettemp(); }
-	| continue_ { $$ = $1; resettemp(); }
-	| block { $$ = $1;  resettemp();}
-	| funcdef { make_stmt(&$$); resettemp();}
-	| SEMICOLON { make_stmt(&$$); resettemp(); };
+	| break { $$ = $1; }
+	| continue_ { $$ = $1; }
+	| block { $$ = $1; }
+	| funcdef { make_stmt(&$$);}
+	| SEMICOLON { make_stmt(&$$);};
 	;
 
 break : 
@@ -230,7 +234,6 @@ break :
 		make_stmt(&$$);
 		$$.breakList = newlist(currQuad);
 		emit_jump(jump, NULL, NULL, 0, yylineno);
-		printf("break: %d\n\n", $$.breakList);
 	}
 	continue_ : CONTINUE SEMICOLON
 	{
@@ -242,7 +245,6 @@ break :
 		make_stmt(&$$);
 		$$.contList = newlist(currQuad);
 		emit_jump(jump, NULL, NULL, 0, yylineno);
-		printf("continue: %d\n\n", $$.contList);
 	}
 	;
 
@@ -393,7 +395,6 @@ expr :
 	{
 		flag_op = 1;
 
-		printf("OR\n");
 		if($1->type != boolexpr_e && $4->type == boolexpr_e){
 			$1->truelist = booleanList_makeList(currQuad);
 			$1->falselist = booleanList_makeList(currQuad + 1);
@@ -459,7 +460,6 @@ expr :
 	| expr AND M_ expr
 	{
 		flag_op = 1;
-		printf("AND\n");
 		if($1->type != boolexpr_e && $4->type == boolexpr_e){
 			$1->truelist = booleanList_makeList(currQuad);
 			$1->falselist = booleanList_makeList(currQuad + 1);
@@ -622,50 +622,16 @@ assignexpr :
 	}
 	ASSIGN expr
 	{
-		if ($expr->type == boolexpr_e)
-		{
-			expr *temp;
-			temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
-			emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
-			emit_jump(jump, NULL, NULL, currQuad + 3, yylineno);
-			emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
-			backpatch($expr->truelist, currQuad - 2);
-			backpatch($expr->falselist, currQuad);
-			emit(assign, temp, NULL, $1, yylineno);
-		}
-		else if ($1->index != NULL)
-		{
-			emit(tablesetelem, $1->index, $4, $1, yylineno);
-			emit_iftableitem($lvalue, table, currscope, currfunc, yylineno);
-		}
-		else
-		{
-			char name[20];
-			/* temptcounter - 1 is the current tmp variable */
-			sprintf(name,"_t%d",tempcounter-1);
-			SymTabEntry* tmp_entry = lookup_SymTableScope(table, currscope, name);
-			
-			if(tempcounter == 0)
-			{
- 				emit(assign, $4, NULL, $1, yylineno);
- 			}
-			else if(tempcounter > 0 && tmp_entry != NULL)
-			{
-				expr* tmp_expr = newexpr(var_e, tmp_entry);
-				emit(assign, tmp_expr, NULL, $1, yylineno);
+		if($lvalue->type == tableitem_e){
+			emit(tablesetelem, $lvalue, $lvalue->index, $expr, yylineno);
+			$$ = emit_iftableitem($lvalue, table, currscope, currfunc, yylineno);
+			$$->type = assignexpr_e;
 			}
-			else
-			{
-				assert(0);
+		else {
+			emit(assign, $expr, NULL, $lvalue, yylineno);
+			$$ = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+            emit(assign,$lvalue,NULL,$$,yylineno);
 			}
-		}
-		/* second emit if not table */
-		if($1->index == NULL)
-		{
-			expr* temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
-			emit(assign,$lvalue,NULL,temp,yylineno);
-		}
-
 		table_flag = 0;
 	}
 	;
@@ -845,13 +811,24 @@ tableitem :
 		}
 		$$ = tmp;
 	}
-	| LEFT_BRACKET indexed RIGHT_BRACKET
+	| LEFT_BRACKET indexed RIGHT_BRACKET {
+			expr *tmp = newexpr(newtable_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+			emit(tablecreate, tmp, NULL, NULL, yylineno);
+			int i = 0;
+			for (i = 0; $indexed; $indexed = $indexed->next)
+			{
+				emit(tablesetelem ,$indexed->key ,$indexed->value ,tmp ,yylineno);
+			}
+			$$ = tmp;
+	}
+	;
 
-			call : call
+
+	call : call
 	{
 		
 	}
-	LEFT_PARENTHESIS elist RIGHT_PARENTHESIS { $$ = make_call($1, $elist, &table, yylineno, currscope, currfunc); }
+    LEFT_PARENTHESIS elist RIGHT_PARENTHESIS { $$ = make_call($1, $elist, &table, yylineno, currscope, currfunc); }
 	| lvalue {}
 	callsuffix
 	{
@@ -860,7 +837,7 @@ tableitem :
 		{
 			expr *t = $lvalue;
 			$lvalue = emit_iftableitem(member_item(t, $callsuffix.name, table, currscope, currfunc, yylineno), table, currscope, currfunc, yylineno);
-			$callsuffix.elist->next = t;
+			if($callsuffix.elist != NULL) $callsuffix.elist->next = t;
 		}
 		$call = make_call($lvalue, $callsuffix.elist, &table, yylineno, currscope, currfunc);
 	}
@@ -938,12 +915,23 @@ elist : {$$ = NULL;}
 	}
 	;
 
-indexed : indexedelem comaindexedelem;
+indexed : indexedelem comaindexedelem {
+	$$ = $indexedelem;
+	$$->next = $comaindexedelem;
+}
+;
 
-comaindexedelem : | COMA indexedelem comaindexedelem;
+comaindexedelem : {$$ = NULL;} 
+	| COMA indexedelem comaindexedelem {
+	$$ = $indexedelem;
+	$$->next = $3;
+}
+;
 
-indexedelem : LEFT_BRACE expr COLON expr RIGHT_BRACE;
-
+indexedelem : LEFT_BRACE expr COLON expr RIGHT_BRACE {
+	$$ = newHashTableElement($2, $4);
+}
+;
 block : 
 	LEFT_BRACE { currscope++; }
 	statements RIGHT_BRACE
@@ -1129,7 +1117,7 @@ idlist :
 	;
 
 ifstmt : 
-	ifexpr statement { edit_quad((int)$1, NULL, NULL, NULL, currQuad + 1); }
+	ifexpr {resettemp();} statement { edit_quad((int)$1, NULL, NULL, NULL, currQuad + 1); }
 	elseexpr
 	{
 		if (else_flag == -1)
@@ -1179,13 +1167,15 @@ whilestmt :
 	whilestart whilecond loopstmt
 	{
 		loop_flag = 0;
-		emit_jump(jump, NULL, NULL, $whilestart + 1, yylineno);
+		emit_jump(jump, NULL, NULL, $whilestart, yylineno);
 		edit_quad($whilecond, NULL, NULL, NULL, currQuad + 1);
 		patchlist($loopstmt.breakList, currQuad + 1);
-		patchlist($loopstmt.contList, $whilecond);
+		patchlist($loopstmt.contList, $whilestart);
+		$$ = $loopstmt;
+		printf("\n\nWHIILE : %d %d\n\n", $loopstmt.contList, $whilestart);
 	};
 
-whilestart : WHILE { $$ = currQuad; };
+whilestart : WHILE { $$ = currQuad+1; };
 
 whilecond : 
 	LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
@@ -1216,14 +1206,13 @@ forstmt : forprefix N elist RIGHT_PARENTHESIS N { loop_flag = 1; }
 		edit_quad((int)$5, NULL, NULL, NULL, jump_label);
 		edit_quad((int)$8, NULL, NULL, NULL, $2 + 2);
 		patchlist($loopstmt.breakList, currQuad + 1);
-		patchlist($loopstmt.contList, $2 + 1);
+		patchlist($loopstmt.contList, $2 + 2);
 	}
 	;
 
 forprefix : FOR LEFT_PARENTHESIS elist SEMICOLON M_ expr SEMICOLON
 	{
 		jump_label = $M_;
-		$$ = currQuad;
 		expr *temp;
 		if ($expr->type == boolexpr_e)
 		{
@@ -1234,6 +1223,7 @@ forprefix : FOR LEFT_PARENTHESIS elist SEMICOLON M_ expr SEMICOLON
 			backpatch($expr->truelist, currQuad - 2);
 			backpatch($expr->falselist, currQuad);
 		}
+		$$ = currQuad;
 		emit_jump(if_eq, temp, newconstboolexpr(1), 0, yylineno);
 	}
 	;
@@ -1424,7 +1414,7 @@ int main(int argc, char **argv)
 	else if (args == NULL)
 	{
 		//print_SymTable(table);
-		//print_Scopes(table);
+		print_Scopes(table);
 	}
 	else
 		printusage();

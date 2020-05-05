@@ -1,6 +1,6 @@
 // x = 1 and 2; // passed
 // x = 1 or 2;  // passed
-//x = not x;    // failed
+//x = not x;    // passed
 //x = 1 > 2;    // passed
 //x = 3 < 4;    // passed
 //x = -3 > 4;   // passed

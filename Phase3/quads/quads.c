@@ -216,6 +216,15 @@ expr * make_call(expr* lv, expr* elist, SymTable **table, int yyline, int currsc
 
 }
 
+hashTableElement* newHashTableElement(expr* key, expr* value){
+    hashTableElement* temp;
+    temp = (hashTableElement*) malloc(sizeof(hashTableElement));
+    temp->key = key;
+    temp->value = value;
+    temp->next = NULL;
+    return temp;
+
+}
 
 void print_double(double d, FILE * file){
     if((ceilf(d) == d && floor(d) == d) || d == 0.0)

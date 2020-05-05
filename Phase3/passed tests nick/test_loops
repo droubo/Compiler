@@ -1,12 +1,12 @@
-/* failed : 8   IF_EQ _t1 TRUE 0
+/*
 for(i=0;i<10;i++)
 {
 	break;
 	continue;
 }
-*/
 
-/* failed : 9 JUMP 6
+*/
+/*
 while(i < 1)
 {
 	break;
@@ -20,8 +20,7 @@ while(1 and x or (x + y) > 1)
  x = x + 1;
 }
 */
-
-/* failed : 13  IF_EQ _t2 TRUE 0
+/*
 for(i=0;1 and x or (x + y) > 1;i--)
 {
 x = x + 1;

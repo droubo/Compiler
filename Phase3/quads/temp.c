@@ -27,7 +27,7 @@ int tempcounter = 0;
 char * newtempname() {
     char * name = malloc(sizeof(char) * (numPlaces(tempcounter) + 2));
     sprintf(name, "_t%d", tempcounter);
-    printf("tempname = %s\n", name);
+    //printf("tempname = %s\n", name);
     tempcounter++;
     return name;
 }

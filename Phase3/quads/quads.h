@@ -93,6 +93,11 @@ typedef struct call_struct{
 	char* name;
 } call_struct;
 
+typedef struct hashTableElement{
+	expr* key;
+	expr* value;
+        struct hashTableElement* next;
+} hashTableElement;
 
 expr * make_call(expr* lv, expr* elist, SymTable **table, int yyline, int currscope, int funcscope);
 
@@ -128,6 +133,7 @@ void print_quads(FILE * file);
 
 void edit_quad(int index, expr * arg1, expr * arg2, expr * result, unsigned int label);
 
+hashTableElement* newHashTableElement(expr* key, expr* value);
 
 extern quad * quads;
 #endif
