@@ -612,26 +612,60 @@ term :
 
 assignexpr : 
 	lvalue
-	{
-		if ($lvalue->type == programfunc_e || $lvalue->type == libraryfunc_e)
-		{
-			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno);
-			fail_icode = 1;
-		}
-		table_flag = 1;
-	}
+    {
+        if ($lvalue->type == programfunc_e || $lvalue->type == libraryfunc_e)
+        {
+            fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : assignexpr -> lvalue = expr\n", yylineno);
+            fail_icode = 1;
+        }
+        table_flag = 1;
+    }
 	ASSIGN expr
 	{
-		if($lvalue->type == tableitem_e){
-			emit(tablesetelem, $lvalue, $lvalue->index, $expr, yylineno);
-			$$ = emit_iftableitem($lvalue, table, currscope, currfunc, yylineno);
-			$$->type = assignexpr_e;
+		if ($expr->type == boolexpr_e)
+		{
+			expr *temp;
+			temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+			emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
+			emit_jump(jump, NULL, NULL, currQuad + 3, yylineno);
+			emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
+			backpatch($expr->truelist, currQuad - 2);
+			backpatch($expr->falselist, currQuad);
+			emit(assign, temp, NULL, $1, yylineno);
+		}
+		else if ($1->index != NULL)
+		{
+			emit(tablesetelem, $1->index, $4, $1, yylineno);
+			emit_iftableitem($lvalue, table, currscope, currfunc, yylineno);
+		}
+		else
+		{
+			char name[20];
+			/* temptcounter - 1 is the current tmp variable */
+			sprintf(name,"_t%d",tempcounter-1);
+			SymTabEntry* tmp_entry = lookup_SymTableScope(table, currscope, name);
+			
+			if(tempcounter == 0)
+			{
+ 				emit(assign, $4, NULL, $1, yylineno);
+ 			}
+			else if(tempcounter > 0 && tmp_entry != NULL)
+			{
+				expr* tmp_expr = newexpr(var_e, tmp_entry);
+				emit(assign, tmp_expr, NULL, $1, yylineno);
 			}
-		else {
-			emit(assign, $expr, NULL, $lvalue, yylineno);
-			$$ = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
-            emit(assign,$lvalue,NULL,$$,yylineno);
+			else
+			{
+				assert(0);
 			}
+		}
+		/* second emit if not table */
+		if($1->index == NULL)
+		{
+			expr* temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+			emit(assign,$lvalue,NULL,temp,yylineno);
+		}
+
 		table_flag = 0;
 	}
 	;
@@ -1117,7 +1151,7 @@ idlist :
 	;
 
 ifstmt : 
-	ifexpr {resettemp();} statement { edit_quad((int)$1, NULL, NULL, NULL, currQuad + 1); }
+	ifexpr statement { edit_quad((int)$1, NULL, NULL, NULL, currQuad + 1); }
 	elseexpr
 	{
 		if (else_flag == -1)
@@ -1134,7 +1168,7 @@ ifstmt :
 ifexpr : 
 	IF LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
 	{
-		expr *temp;
+		expr *temp = NULL;
 		if ($expr->type == boolexpr_e)
 		{
 			temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
