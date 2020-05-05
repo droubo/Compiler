@@ -645,7 +645,7 @@ assignexpr :
 			sprintf(name,"_t%d",tempcounter-1);
 			SymTabEntry* tmp_entry = lookup_SymTableScope(table, currscope, name);
 			
-			if(tempcounter == 0)
+			if(tempcounter == 0 || (tempcounter > 0 && tmp_entry == NULL))
 			{
  				emit(assign, $4, NULL, $1, yylineno);
  			}
