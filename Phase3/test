@@ -1,1 +1,1 @@
-x = a < b or c < d and e < f;
+x = a or f(b, c);

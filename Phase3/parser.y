@@ -39,7 +39,7 @@ unsigned int flag_op = 0;
 unsigned int fail_icode = 0;
 unsigned int return_flag = 0;
 unsigned int loop_flag = 0;
-unsigned int flag_not = 0;
+unsigned int bool_extra = 0;
 SymTabEntry *global_tmp;
 int table_flag = 0;
 int jump_label = 0;
@@ -374,7 +374,7 @@ expr :
 	| expr EQUAL expr
 	{
 		flag_op = 1;
-	
+
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
@@ -391,28 +391,65 @@ expr :
 		emit_jump(if_noteq, $1, $3, 0, yylineno);
 		emit_jump(jump, NULL, NULL, 0, yylineno);
 	}
-	| expr OR M_ expr
+	| expr OR{
+		flag_op = 1;
+		if($1->type != boolexpr_e){
+			$1->truelist = booleanList_makeList(currQuad);
+			$1->falselist = booleanList_makeList(currQuad + 1);
+			emit_jump(if_eq, $1, newconstboolexpr(VAR_TRUE), 42069, yylineno);
+			emit_jump(jump, NULL, NULL, 0, yylineno);
+		}
+	}
+	M_ { $M_ = currQuad + 1; } expr
 	{
-		backpatch($1->falselist, $3);
-		
+printf("> IN OR M_ = %d\n", $M_);
+		if ($6->type != boolexpr_e) {
+			$6->truelist = booleanList_makeList(currQuad);
+			$6->falselist = booleanList_makeList(currQuad + 1);
+			emit_jump(if_eq, $6, newconstboolexpr(VAR_TRUE), 42069, yylineno);
+			emit_jump(jump, NULL, NULL, 0, yylineno);
+		}
+
+printf("IN OR\n");
+printf("BOOL_EXTRA = %d\n", bool_extra);
+
+		backpatch($1->falselist, $M_);
 		$$ = newexpr(boolexpr_e, NULL);
-		$$->truelist = booleanList_merge($1->truelist, $4->truelist);
-		$$->falselist = $4->falselist;
+		$$->truelist = booleanList_merge($1->truelist, $6->truelist);
+		$$->falselist = $6->falselist;
 	}
 
-	| expr AND M_ expr
+	| expr AND{
+		flag_op = 1;
+		if($1->type != boolexpr_e){
+			$1->truelist = booleanList_makeList(currQuad);
+			$1->falselist = booleanList_makeList(currQuad + 1);
+			emit_jump(if_eq, $1, newconstboolexpr(VAR_TRUE), 420, yylineno);
+			emit_jump(jump, NULL, NULL, 0, yylineno);
+		}
+	}
+	M_ { $M_ = currQuad + 1; } expr
 	{
+printf("> IN AND M_ = %d\n", $M_);
+		if ($6->type != boolexpr_e) {
+			$6->truelist = booleanList_makeList(currQuad);
+			$6->falselist = booleanList_makeList(currQuad + 1);
+			emit_jump(if_eq, $6, newconstboolexpr(VAR_TRUE), 420, yylineno);
+			emit_jump(jump, NULL, NULL, 0, yylineno);
+		}
 
-		backpatch($1->truelist, $3);
+printf("IN AND\n");
+printf("BOOL_EXTRA = %d\n", bool_extra);
+
+		backpatch($1->truelist, $M_);
 		$$ = newexpr(boolexpr_e, NULL);
-		$$->truelist = $4->truelist;
-		$$->falselist = booleanList_merge($1->falselist, $4->falselist);
+		$$->truelist = $6->truelist;
+		$$->falselist = booleanList_merge($1->falselist, $6->falselist);
 	}
 	| NOT expr
 	{
 		flag_op = 1;
 	
-		flag_not = 1;
 		if($2->type != boolexpr_e){
 			$2->truelist = booleanList_makeList(currQuad);
 			$2->falselist = booleanList_makeList(currQuad + 1);

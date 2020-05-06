@@ -52,6 +52,14 @@ void backpatch(booleanList * list, unsigned int label){
     }
 }
 
+void booleanList_print(booleanList * l){
+    while(l != NULL){
+        printf("%d ", l->label);
+        l = l->next;
+    }
+    printf("\n");
+}
+
 /*
 int test(){
     booleanList * list1 = booleanList_makelist(1);

@@ -23,6 +23,7 @@ typedef struct booleanList{
 
 booleanList * booleanList_makeList(int label);
 booleanList * booleanList_merge(booleanList * list1, booleanList * list2);
+void booleanList_print(booleanList * l);
 void backpatch(booleanList * list, unsigned int label);
 
 #endif
