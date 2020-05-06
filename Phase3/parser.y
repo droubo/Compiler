@@ -393,64 +393,7 @@ expr :
 	}
 	| expr OR M_ expr
 	{
-		flag_op = 1;
-
-		if($1->type != boolexpr_e && $4->type == boolexpr_e){
-			$1->truelist = booleanList_makeList(currQuad);
-			$1->falselist = booleanList_makeList(currQuad + 1);
-			emit_jump(if_eq, $1, newconstboolexpr(VAR_TRUE), 0, yylineno);
-			emit_jump(jump, NULL, NULL, 0, yylineno);
-			switch_quads(currQuad - 2, currQuad - 4);
-			switch_quads(currQuad - 1, currQuad - 3);
-			booleanList * temp;
-			if(flag_not == 0) {
-				temp = $1->truelist;
-				$1->truelist = $4->truelist;
-				$4->truelist = temp;
-				temp = $1->falselist;
-				$1->falselist = $4->falselist;
-				$4->falselist = temp;
-			} else {
-				temp = $1->falselist;
-				$1->falselist = $4->truelist;
-				$4->truelist = temp;
-				temp = $1->truelist;
-				$1->truelist = $4->falselist;
-				$4->falselist = temp;
-				flag_not = 0;
-			}
-			backpatch($1->falselist, $M_ + 2);
-			
-		} else if ($1->type == boolexpr_e && $4->type != boolexpr_e) {
-			$4->truelist = booleanList_makeList(currQuad);
-			$4->falselist = booleanList_makeList(currQuad + 1);
-			emit_jump(if_eq, $4, newconstboolexpr(VAR_TRUE), 0, yylineno);
-			emit_jump(jump, NULL, NULL, 0, yylineno);
-
-			backpatch($1->falselist, $M_);
-
-		} else if ($1->type != boolexpr_e && $4->type != boolexpr_e) {
-			$1->truelist = booleanList_makeList(currQuad);
-			$1->falselist = booleanList_makeList(currQuad + 1);
-			emit_jump(if_eq, $1, newconstboolexpr(VAR_TRUE), 0, yylineno);
-			emit_jump(jump, NULL, NULL, 0, yylineno);
-
-			if($1->type == retval_e && $4->type == retval_e){
-				$1->truelist = booleanList_makeList(currQuad - 4);
-				$1->falselist = booleanList_makeList(currQuad - 3);
-				switch_quads(currQuad - 2, currQuad - 4);
-				switch_quads(currQuad - 1, currQuad - 3);
-			}
-			
-			$4->truelist = booleanList_makeList(currQuad);
-			$4->falselist = booleanList_makeList(currQuad + 1);
-			emit_jump(if_eq, $4, newconstboolexpr(VAR_TRUE), 0, yylineno);
-			emit_jump(jump, NULL, NULL, 0, yylineno);
-
-			backpatch($1->falselist, $M_ + 2);
-		} else if ($1->type == boolexpr_e && $4->type == boolexpr_e){
-			backpatch($1->falselist, $3);
-		}
+		backpatch($1->falselist, $3);
 		
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_merge($1->truelist, $4->truelist);
@@ -459,65 +402,8 @@ expr :
 
 	| expr AND M_ expr
 	{
-		flag_op = 1;
-		if($1->type != boolexpr_e && $4->type == boolexpr_e){
-			$1->truelist = booleanList_makeList(currQuad);
-			$1->falselist = booleanList_makeList(currQuad + 1);
-			emit_jump(if_eq, $1, newconstboolexpr(VAR_TRUE), 0, yylineno);
-			emit_jump(jump, NULL, NULL, 0, yylineno);
-			switch_quads(currQuad - 2, currQuad - 4);
-			switch_quads(currQuad - 1, currQuad - 3);
-			booleanList * temp;
-			if(flag_not == 0) {
-				temp = $1->truelist;
-				$1->truelist = $4->truelist;
-				$4->truelist = temp;
-				temp = $1->falselist;
-				$1->falselist = $4->falselist;
-				$4->falselist = temp;
-			} else {
-				temp = $1->falselist;
-				$1->falselist = $4->truelist;
-				$4->truelist = temp;
-				temp = $1->truelist;
-				$1->truelist = $4->falselist;
-				$4->falselist = temp;
-				flag_not = 0;
-			}
-			
-			backpatch($1->truelist, $M_ + 2);
-			
-		} else if ($1->type == boolexpr_e && $4->type != boolexpr_e) {
-			$4->truelist = booleanList_makeList(currQuad);
-			$4->falselist = booleanList_makeList(currQuad + 1);
-			emit_jump(if_eq, $4, newconstboolexpr(VAR_TRUE), 0, yylineno);
-			emit_jump(jump, NULL, NULL, 0, yylineno);
 
-			backpatch($1->truelist, $M_);
-
-		} else if ($1->type != boolexpr_e && $4->type != boolexpr_e) {
-			$1->truelist = booleanList_makeList(currQuad);
-			$1->falselist = booleanList_makeList(currQuad + 1);
-			emit_jump(if_eq, $1, newconstboolexpr(VAR_TRUE), 0, yylineno);
-			emit_jump(jump, NULL, NULL, 0, yylineno);
-
-			if($1->type == retval_e && $4->type == retval_e){
-				$1->truelist = booleanList_makeList(currQuad - 4);
-				$1->falselist = booleanList_makeList(currQuad - 3);
-				switch_quads(currQuad - 2, currQuad - 4);
-				switch_quads(currQuad - 1, currQuad - 3);
-			}
-			
-			$4->truelist = booleanList_makeList(currQuad);
-			$4->falselist = booleanList_makeList(currQuad + 1);
-			emit_jump(if_eq, $4, newconstboolexpr(VAR_TRUE), 0, yylineno);
-			emit_jump(jump, NULL, NULL, 0, yylineno);
-
-			backpatch($1->truelist, $M_ + 2);
-		} else if ($1->type == boolexpr_e && $4->type == boolexpr_e){
-			backpatch($1->truelist, $3);
-		}
-
+		backpatch($1->truelist, $3);
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = $4->truelist;
 		$$->falselist = booleanList_merge($1->falselist, $4->falselist);
