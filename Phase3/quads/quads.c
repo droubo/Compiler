@@ -361,7 +361,7 @@ void print_quads_online(FILE * file){
             case diva:      	{ fprintf(file, "div "); break; }
             case mod:       	{ fprintf(file, "mod "); break; }
 
-            case uminus:    	{ fprintf(file, "umiunus "); break; }
+            case uminus:    	{ fprintf(file, "uminus "); break; }
             case and:    		{ fprintf(file, "and "); break; }
             case or:    		{ fprintf(file, "or "); break; }
 

@@ -1,3 +1,5 @@
-1) parser.y SEGFAULT $callsuffix.elist->next = t; LINE : 680
-2) parsser.y SEGFAULT else if($1->index != NULL) LINE : 491
-3) statement.c SEGFAULT while(quads[i].label) i = quads[i].label; LINE : 34
+1)  multiple assigns doesnt work
+2)  Random.asc ,  wrong quads
+3)  Grammar.asc , wrong quads
+4)  quads.c line 364 uminus is wrong spelled
+5)  test_bool some wrong quads
