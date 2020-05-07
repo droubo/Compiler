@@ -1377,7 +1377,7 @@ int main(int argc, char **argv)
 		printusage();
 
 	if (!fail_icode)
-		print_quads(stdout);
+		print_quads(stdout, yylineno);
 
 	else
 		printf("Errors present. I-Code Generation has failed.\n");

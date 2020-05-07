@@ -129,7 +129,7 @@ expr * member_item(expr * lv, char* name, SymTable * table, int currScope, int f
 
 void print_expr(expr * exp, int indent);
 
-void print_quads(FILE * file);
+void print_quads(FILE * file, int max_lines);
 
 void edit_quad(int index, expr * arg1, expr * arg2, expr * result, unsigned int label);
 

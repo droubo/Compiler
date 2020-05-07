@@ -209,7 +209,7 @@ expr * make_call(expr* lv, expr* elist, SymTable **table, int yyline, int currsc
 		emit(param, reversed_elist, NULL, NULL, yyline);
 		reversed_elist = reversed_elist->next;
 	}
-	emit(call, func, NULL, NULL, 0);
+	emit(call, func, NULL, NULL, yyline);
 	expr* result = newexpr(retval_e, newtemp((*table), currscope, funcscope));
 	emit(getretval, NULL, NULL, result, yyline);
 	return result;
@@ -261,7 +261,7 @@ void print_quad_arg(expr * arg, FILE * file){
     
 }
 
-void print_quads(FILE * file){
+void print_quads(FILE * file, int max_lines){
     int i, j;
     printf("\n>> I CODE\n\n");
     quad curr_quad;
@@ -269,9 +269,15 @@ void print_quads(FILE * file){
         curr_quad = quads[i];
     
         if(file == stdout){
+            fprintf(file, "[line %d]", quads[i].line, i + 1);
+
+            for(j = 0; j < numPlaces(max_lines) - numPlaces(quads[i].line) + 2 ; j++){
+                fprintf(file, " ");
+            }
+
             fprintf(file, "%d", i + 1);
         
-            for(j = 0; j < numPlaces(currQuad) - numPlaces(i + 1) + 2; j++){
+            for(j = 0; j < numPlaces(currQuad) - numPlaces(i + 1) + 2 ; j++){
                 fprintf(file, " ");
             }
         }
