@@ -1376,8 +1376,12 @@ int main(int argc, char **argv)
 	else
 		printusage();
 
-	if (!fail_icode)
+	if (!fail_icode){
 		print_quads(stdout, yylineno);
+		//TODO: Remove online output
+		FILE * online = fopen("online_out.txt", "w");
+		print_quads_online(online);
+	}
 
 	else
 		printf("Errors present. I-Code Generation has failed.\n");

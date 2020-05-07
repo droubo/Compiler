@@ -251,7 +251,7 @@ void print_quad_arg(expr * arg, FILE * file){
 
 
             case constnum_e:    { print_double(arg->numConst, file); break; }
-            case constbool_e:   { if(arg->boolConst == VAR_TRUE) fprintf(file, "TRUE "); else fprintf(file, "FALSE "); break; }
+            case constbool_e:   { if(arg->boolConst == VAR_TRUE) fprintf(file, "'true' "); else fprintf(file, "'false' "); break; }
             case conststring_e: { fprintf(file, "%s ", arg->strConst); break; }
 
             case nil_e:         { fprintf(file, "(nil) "); break; }
@@ -269,19 +269,19 @@ void print_quads(FILE * file, int max_lines){
         curr_quad = quads[i];
     
         if(file == stdout){
-            fprintf(file, "[line %d]", quads[i].line, i + 1);
+            fprintf(file, "\033[0;36m[line %d]\033[0m", quads[i].line, i + 1);
 
             for(j = 0; j < numPlaces(max_lines) - numPlaces(quads[i].line) + 2 ; j++){
                 fprintf(file, " ");
             }
 
-            fprintf(file, "%d", i + 1);
+            fprintf(file, "\033[0;32m%d\033[0m", i + 1);
         
             for(j = 0; j < numPlaces(currQuad) - numPlaces(i + 1) + 2 ; j++){
                 fprintf(file, " ");
             }
         }
-
+        printf("\033[0;33m");
         switch(curr_quad.op){
             case assign:    	{ fprintf(file, "ASSIGN "); break;}
             case add:       	{ fprintf(file, "ADD "); break; }
@@ -319,6 +319,7 @@ void print_quads(FILE * file, int max_lines){
 
             default: { fprintf(file, "*ERROR* "); break; }
         }
+        printf("\033[0m");
         switch(curr_quad.op){
             case if_eq:
             case if_noteq:
@@ -342,4 +343,73 @@ void print_quads(FILE * file, int max_lines){
         fprintf(file, "\n");
     }
     printf("\n>> END\n");
+}
+
+void print_quads_online(FILE * file){
+    int i, j;
+    quad curr_quad;
+    for(i = 0; i < currQuad; i++){
+        curr_quad = quads[i];
+    
+        fprintf(file, "%d: ", i + 1);
+        switch(curr_quad.op){
+            case assign:    	{ fprintf(file, "assign "); break;}
+            case add:       	{ fprintf(file, "add "); break; }
+            case sub:       	{ fprintf(file, "sub "); break; }
+
+            case mul:       	{ fprintf(file, "mul "); break; }
+            case diva:      	{ fprintf(file, "div "); break; }
+            case mod:       	{ fprintf(file, "mod "); break; }
+
+            case uminus:    	{ fprintf(file, "umiunus "); break; }
+            case and:    		{ fprintf(file, "and "); break; }
+            case or:    		{ fprintf(file, "or "); break; }
+
+			case not:    		{ fprintf(file, "not "); break; }
+            case if_eq:    		{ fprintf(file, "if_eq "); break; }
+            case if_noteq:  	{ fprintf(file, "if_noteq "); break; }
+
+			case if_lesseq: 	{ fprintf(file, "if_lesseq "); break; }
+            case if_greatereq:	{ fprintf(file, "if_greatereq "); break; }
+            case if_less:    	{ fprintf(file, "if_less "); break; }
+			
+			case if_greater:    { fprintf(file, "if_greater "); break; }
+            case call:    		{ fprintf(file, "call "); break; }
+            case param:    		{ fprintf(file, "param "); break; }
+			
+			case ret:    		{ fprintf(file, "ret "); break; }
+            case getretval:    	{ fprintf(file, "getretval "); break; }
+            case funcstart:    	{ fprintf(file, "funcstart "); break; }
+
+			case funcend:    	{ fprintf(file, "funcend "); break; }
+            case tablecreate:   { fprintf(file, "tablecreate "); break; }
+            case tablegetelem:  { fprintf(file, "tablegetelem "); break; }
+			case tablesetelem:  { fprintf(file, "tablesetelem "); break; }
+            case jump:          { fprintf(file, "jump "); break; }
+
+            default: { fprintf(file, "*ERROR* "); break; }
+        }
+        switch(curr_quad.op){
+            case if_eq:
+            case if_noteq:
+            case if_lesseq:
+            case if_greatereq:
+            case if_less:
+            case if_greater: {
+                    print_quad_arg(curr_quad.arg1, file);
+                    print_quad_arg(curr_quad.arg2, file);
+                    fprintf(file, "%d ", curr_quad.label);
+                    break;
+            }
+            case jump: { fprintf(file, "%d ", curr_quad.label); break; }
+            default: {
+                print_quad_arg(curr_quad.result, file);
+		        print_quad_arg(curr_quad.arg1, file);
+                print_quad_arg(curr_quad.arg2, file);
+                break;
+            }
+        }
+        fprintf(file, "[line %d]", quads[i].line);
+        fprintf(file, "\n");
+    }
 }
