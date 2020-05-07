@@ -91,6 +91,18 @@ expr * newconststringexpr(char * str){
     return temp;
 }
 
+expr * newconstnullexpr(){
+    expr * temp;
+    temp = (expr*) malloc(sizeof(expr));
+    temp->type = nil_e;
+    temp->sym = NULL;
+    temp->numConst = 0;
+    temp->strConst = NULL;
+    temp->boolConst = (unsigned char) 0;
+    
+    return temp;
+}
+
 expr* lvalue_expr(SymTabEntry* sym){
 	assert(sym);
 	expr* e = (expr*) malloc(sizeof(expr));

@@ -115,6 +115,8 @@ expr * newconstboolexpr(unsigned char bool);
 
 expr * newconststringexpr(char * str);
 
+expr * newconstnullexpr();
+
 expr* lvalue_expr(SymTabEntry* sym);
 
 void emit (iopcode op, expr * arg1, expr * arg2, expr * result, unsigned line);
