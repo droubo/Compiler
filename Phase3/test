@@ -1,4 +1,8 @@
+function IsEven(num) {
+	return num % 2 == 0;
+}
 
+/*
 a1 = a2 = a3 = a4 = nil;
 
 global_var = 0;
@@ -108,4 +112,4 @@ test1().test1f(1, 2);
 print().a = 2;
 
 print(a1.a2.a3.a4, "\n");
-
+*/

@@ -260,6 +260,12 @@ expr :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr + expr\n", yylineno);
 			fail_icode = 1;
 		}
+
+		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
+		{
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fail_icode = 1;
+		}
 		flag_op = 0;
 
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc);
@@ -273,7 +279,13 @@ expr :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr - expr\n", yylineno);
 			fail_icode = 1;
 		}
-	
+
+		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
+		{
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fail_icode = 1;
+		}
+
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc);
 		$$ = newexpr(arithexpr_e, tmp);
 		emit(sub, $1, $3, $$, yylineno);
@@ -285,7 +297,13 @@ expr :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr * expr\n", yylineno);
 			fail_icode = 1;
 		}
-	
+
+		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
+		{
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fail_icode = 1;
+		}
+
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc);
 		$$ = newexpr(arithexpr_e, tmp);
 		emit(mul, $1, $3, $$, yylineno);
@@ -297,7 +315,13 @@ expr :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr / expr\n", yylineno);
 			fail_icode = 1;
 		}
-		
+
+		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
+		{
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fail_icode = 1;
+		}
+
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc);
 		$$ = newexpr(arithexpr_e, tmp);
 		emit(diva, $1, $3, $$, yylineno);
@@ -309,7 +333,13 @@ expr :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr MOD expr\n", yylineno);
 			fail_icode = 1;
 		}
-	
+
+		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
+		{
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fail_icode = 1;
+		}
+
 		SymTabEntry *tmp = (SymTabEntry *)newtemp(table, currscope, currfunc);
 		$$ = newexpr(arithexpr_e, tmp);
 		emit(mod, $1, $3, $$, yylineno);
@@ -321,8 +351,14 @@ expr :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr > expr\n", yylineno);
 			fail_icode = 1;
 		}
+
+		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
+		{
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fail_icode = 1;
+		}
 		flag_op = 1;
-		
+
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
@@ -336,8 +372,14 @@ expr :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr >= expr\n", yylineno);
 			fail_icode = 1;
 		}
+
+		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
+		{
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fail_icode = 1;
+		}
 		flag_op = 1;
-	
+
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
@@ -351,8 +393,14 @@ expr :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr < expr\n", yylineno);
 			fail_icode = 1;
 		}
+		
+		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
+		{
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fail_icode = 1;
+		}
 		flag_op = 1;
-	
+
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
@@ -366,8 +414,14 @@ expr :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : expr -> expr <= expr\n", yylineno);
 			fail_icode = 1;
 		}
-		flag_op = 1;
-	
+
+		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
+		{
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fail_icode = 1;
+		}
+		flag_op = 1;	
+
 		$$ = newexpr(boolexpr_e, NULL);
 		$$->truelist = booleanList_makeList(currQuad);
 		$$->falselist = booleanList_makeList(currQuad + 1);
@@ -396,6 +450,7 @@ expr :
 	}
 	| expr OR{
 		flag_op = 1;
+
 		if($1->type != boolexpr_e){
 			$1->truelist = booleanList_makeList(currQuad);
 			$1->falselist = booleanList_makeList(currQuad + 1);
@@ -405,16 +460,13 @@ expr :
 	}
 	M_ { $M_ = currQuad + 1; } expr
 	{
-printf("> IN OR M_ = %d\n", $M_);
+
 		if ($6->type != boolexpr_e) {
 			$6->truelist = booleanList_makeList(currQuad);
 			$6->falselist = booleanList_makeList(currQuad + 1);
 			emit_jump(if_eq, $6, newconstboolexpr(VAR_TRUE), 42069, yylineno);
 			emit_jump(jump, NULL, NULL, 0, yylineno);
 		}
-
-printf("IN OR\n");
-printf("BOOL_EXTRA = %d\n", bool_extra);
 
 		backpatch($1->falselist, $M_);
 		$$ = newexpr(boolexpr_e, NULL);
@@ -433,16 +485,12 @@ printf("BOOL_EXTRA = %d\n", bool_extra);
 	}
 	M_ { $M_ = currQuad + 1; } expr
 	{
-printf("> IN AND M_ = %d\n", $M_);
 		if ($6->type != boolexpr_e) {
 			$6->truelist = booleanList_makeList(currQuad);
 			$6->falselist = booleanList_makeList(currQuad + 1);
 			emit_jump(if_eq, $6, newconstboolexpr(VAR_TRUE), 420, yylineno);
 			emit_jump(jump, NULL, NULL, 0, yylineno);
 		}
-
-printf("IN AND\n");
-printf("BOOL_EXTRA = %d\n", bool_extra);
 
 		backpatch($1->truelist, $M_);
 		$$ = newexpr(boolexpr_e, NULL);
@@ -1240,7 +1288,18 @@ returnstmt : RETURN expr SEMICOLON
 	{
 		if (return_flag != 0)
 		{
-			emit(ret, NULL, NULL, $expr, yylineno);
+			if ($expr->type == boolexpr_e)
+			{
+				expr *temp;
+				temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+				emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
+				emit_jump(jump, NULL, NULL, currQuad + 3, yylineno);
+				emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
+				backpatch($expr->truelist, currQuad - 2);
+				backpatch($expr->falselist, currQuad);
+				emit(ret, NULL, NULL, temp, yylineno);
+			} else emit(ret, NULL, NULL, $expr, yylineno);
+
 			returnStack* tmp = newReturnStack(return_func_offset, currQuad);
 			if(return_stack != NULL) tmp->next = return_stack;
 			return_stack = tmp;
