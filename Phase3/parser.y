@@ -252,7 +252,7 @@ break :
 	;
 
 expr : 
-	assignexpr
+	assignexpr { $$ = $1; }
 	| expr PLUS expr
 	{
 		if ($1->type == programfunc_e || $1->type == libraryfunc_e || $3->type == programfunc_e || $3->type == libraryfunc_e)
@@ -1106,6 +1106,17 @@ ifexpr :
 			emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
 			backpatch($expr->truelist, currQuad - 2);
 			backpatch($expr->falselist, currQuad);
+		}
+		else{
+			char name[20];
+			/* temptcounter - 1 is the current tmp variable */
+			sprintf(name,"^%d",tempcounter-1);
+			SymTabEntry* tmp_entry = lookup_SymTableScope(table, currscope, name);
+			if(tempcounter > 0 && tmp_entry != NULL)
+			{
+				temp = newexpr(var_e, tmp_entry);
+			}
+			else temp = $expr;
 		}
 		emit_jump(if_eq, temp, newconstboolexpr(VAR_TRUE), currQuad + 3, yylineno);
 		$$ = currQuad;
