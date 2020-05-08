@@ -19,6 +19,7 @@
 #include "temp.h"
 #include "../symtab/symtable.h"
 #include "../symtab/numPlaces.h"
+#include "../offset/offset.h"
 #define INT_MIN -2147483647
 #define INT_MAX 2147483647
 
@@ -41,8 +42,13 @@ SymTabEntry * newtemp(SymTable * table, int currScope, int func_scope) {
     name = newtempname();
     sym = lookup_SymTableScope(table, currScope, name);
     if(sym == NULL)
-        return insert_SymTable(table, new_SymTabEntry(name, -1, 1, NULL, NULL, currScope, func_scope, LOCAL));
-
+    {
+        SymTabEntry *tmp = insert_SymTable(table, new_SymTabEntry(name, -1, 1, NULL, NULL, currScope, func_scope, LOCAL));
+        tmp->offset = currscopeoffset();
+        printf("var : %s | offset : %d\n",tmp->name,tmp->offset);
+        inccurrscopeoffset();
+        return tmp;
+    }
     else
         return sym;
 }
