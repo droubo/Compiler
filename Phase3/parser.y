@@ -20,6 +20,7 @@
 #include <assert.h>
 #include <fcntl.h>
 #include "quads/temp.h"
+#include "quads/return.h"
 #include "offset/offset.h"
 #include "symtab/symtable.h"
 #include "statement/statement.h"
@@ -41,6 +42,8 @@ unsigned int return_flag = 0;
 unsigned int loop_flag = 0;
 unsigned int bool_extra = 0;
 SymTabEntry *global_tmp;
+returnStack* return_stack = NULL;
+int return_func_offset = 0;
 int table_flag = 0;
 int jump_label = 0;
 int loopcounter = 0;
@@ -130,6 +133,7 @@ extern int tempcounter;
 %type<integer> forprefix 
 %type<integer> N 
 %type<integer> M_
+%type<integer> elseprefix
 %type<stmt> statements
 %type<stmt> statement 
 %type<stmt> break 
@@ -139,7 +143,6 @@ extern int tempcounter;
 %type<stmt> ifstmt 
 %type<stmt> whilestmt 
 %type<stmt> forstmt 
-%type<stmt> elseexpr 
 %type<sym> funcprefix 
 %type<integer> funcbody 
 %type<id> funcname 
@@ -916,13 +919,20 @@ funcdef :
 		$$ = $funcprefix;
 		emit(funcend, NULL, NULL, newexpr(programfunc_e, $funcprefix), yylineno);
 		edit_quad($funcprefix->value.funcVal->jump_label, NULL, NULL, NULL, currQuad + 1);
+		while(return_stack != NULL && return_stack->key == return_func_offset){
+				printf("RETU: %d\n\n", return_stack->value);
+			edit_quad(return_stack->value, NULL, NULL, NULL, currQuad);
+			return_stack = return_stack->next;
+		}
 		currfunc--;
+		return_func_offset--;
 	}
 	;
 
 funcprefix : 
 	FUNCTION funcname
 	{
+		return_func_offset++;
 		jump_label = currQuad;
 		emit_jump(jump, NULL, NULL, 0, yylineno);
 
@@ -1074,18 +1084,13 @@ idlist :
 	;
 
 ifstmt : 
-	ifexpr statement { edit_quad((int)$1, NULL, NULL, NULL, currQuad + 1); }
-	elseexpr
-	{
-		if (else_flag == -1)
-		{
-			edit_quad((int)$1, NULL, NULL, NULL, jump_label + 2);
-			edit_quad((int)jump_label, NULL, NULL, NULL, currQuad + 1);
-			else_flag = 0;
-		}
-		else edit_quad((int)$1, NULL, NULL, NULL, currQuad+1);
-		$$.breakList = mergelist($elseexpr.breakList, $statement.breakList);
-		$$.contList = mergelist($elseexpr.contList, $statement.contList);
+	ifexpr statement { edit_quad((int)$1, NULL, NULL, NULL, currQuad + 1);  $$ = $statement;}
+	| ifexpr statement elseprefix statement {
+			edit_quad((int)$1, NULL, NULL, NULL, $elseprefix + 1);
+			edit_quad((int)$elseprefix-1, NULL, NULL, NULL, currQuad + 1);
+			$$.breakList = mergelist($4.breakList, $2.breakList);
+			$$.contList = mergelist($4.contList, $2.contList);
+
 	}
 	;
 
@@ -1107,19 +1112,11 @@ ifexpr :
 		emit_jump(jump, NULL, NULL, 0, yylineno);
 	}
 	;
-elseexpr : 
-	ELSE
-	{
-		jump_label = currQuad;
+
+elseprefix: ELSE {
+		$$ = currQuad+1;
 		emit_jump(jump, NULL, NULL, 0, yylineno);
-	}
-	statement
-	{
-		$$ = $statement;
-		else_flag = -1;
-	}
-	| { make_stmt(&$$); }
-	;
+};
 
 whilestmt : 
 	whilestart whilecond loopstmt
@@ -1204,6 +1201,10 @@ returnstmt : RETURN expr SEMICOLON
 		if (return_flag != 0)
 		{
 			emit(ret, NULL, NULL, $expr, yylineno);
+			returnStack* tmp = newReturnStack(return_func_offset, currQuad);
+			if(return_stack != NULL) tmp->next = return_stack;
+			return_stack = tmp;
+			emit(jump, NULL, NULL, 0, yylineno);
 		}
 	}
 	| RETURN SEMICOLON
@@ -1211,6 +1212,10 @@ returnstmt : RETURN expr SEMICOLON
 		if (return_flag != 0)
 		{
 			emit(ret, NULL, NULL, NULL, yylineno);
+			returnStack* tmp = newReturnStack(return_func_offset, currQuad);
+			if(return_stack != NULL) tmp->next = return_stack;
+			return_stack = tmp;
+			emit(jump, NULL, NULL, 0, yylineno);
 		}
 	}
 	;
