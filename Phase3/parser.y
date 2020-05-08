@@ -797,7 +797,11 @@ tableitem :
 		{
 			expr *t = $lvalue;
 			$lvalue = emit_iftableitem(member_item(t, $callsuffix.name, table, currscope, currfunc, yylineno), table, currscope, currfunc, yylineno);
-			if($callsuffix.elist != NULL) $callsuffix.elist->next = t;
+			if($callsuffix.elist != NULL){
+				t->next = $callsuffix.elist;
+				$callsuffix.elist = t;
+			}
+			else $callsuffix.elist = t;
 		}
 		$call = make_call($lvalue, $callsuffix.elist, &table, yylineno, currscope, currfunc);
 	}
@@ -832,12 +836,14 @@ methodcall :
 	;
 
 elist : {$$ = NULL;}
-	| elist COMA expr {}
+	| elist COMA expr
 	{
 		expr * list_tail;
 		list_tail = $1;
+		printf("T1: \n\n\n");
 		while(list_tail->next != NULL){
 			list_tail = list_tail->next;
+			printf("TT: \n\n\n");
 		}
 
 		
@@ -853,11 +859,10 @@ elist : {$$ = NULL;}
 			$expr = temp;
 			
 		}
-
 		list_tail->next = $expr;
 		$$ = $1;
 	}
-	| expr {}
+	| expr
 	{
 		if ($expr->type == boolexpr_e)
 		{
@@ -1083,7 +1088,7 @@ idlist :
 	}
 	;
 
-ifstmt : 
+ifstmt :
 	ifexpr statement { edit_quad((int)$1, NULL, NULL, NULL, currQuad + 1);  $$ = $statement;}
 	| ifexpr statement elseprefix statement {
 			edit_quad((int)$1, NULL, NULL, NULL, $elseprefix + 1);
@@ -1121,12 +1126,14 @@ ifexpr :
 		emit_jump(if_eq, temp, newconstboolexpr(VAR_TRUE), currQuad + 3, yylineno);
 		$$ = currQuad;
 		emit_jump(jump, NULL, NULL, 0, yylineno);
+		resettemp();
 	}
 	;
 
 elseprefix: ELSE {
 		$$ = currQuad+1;
 		emit_jump(jump, NULL, NULL, 0, yylineno);
+		resettemp();
 };
 
 whilestmt : 
@@ -1156,6 +1163,17 @@ whilecond :
 			emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
 			backpatch($expr->truelist, currQuad - 2);
 			backpatch($expr->falselist, currQuad);
+		}
+		else{
+			char name[20];
+			/* temptcounter - 1 is the current tmp variable */
+			sprintf(name,"^%d",tempcounter-1);
+			SymTabEntry* tmp_entry = lookup_SymTableScope(table, currscope, name);
+			if(tempcounter > 0 && tmp_entry != NULL)
+			{
+				temp = newexpr(var_e, tmp_entry);
+			}
+			else temp = $expr;
 		}
 		emit_jump(if_eq, temp, newconstboolexpr(1), currQuad + 3, yylineno);
 		$$ = currQuad;
@@ -1188,6 +1206,17 @@ forprefix : FOR LEFT_PARENTHESIS elist SEMICOLON M_ expr SEMICOLON
 			emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
 			backpatch($expr->truelist, currQuad - 2);
 			backpatch($expr->falselist, currQuad);
+		}
+		else{
+			char name[20];
+			/* temptcounter - 1 is the current tmp variable */
+			sprintf(name,"^%d",tempcounter-1);
+			SymTabEntry* tmp_entry = lookup_SymTableScope(table, currscope, name);
+			if(tempcounter > 0 && tmp_entry != NULL)
+			{
+				temp = newexpr(var_e, tmp_entry);
+			}
+			else temp = $expr;
 		}
 		$$ = currQuad;
 		emit_jump(if_eq, temp, newconstboolexpr(1), 0, yylineno);

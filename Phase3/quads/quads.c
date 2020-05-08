@@ -266,7 +266,7 @@ void print_quad_arg(expr * arg, FILE * file){
             case constbool_e:   { if(arg->boolConst == VAR_TRUE) fprintf(file, "'true' "); else fprintf(file, "'false' "); break; }
             case conststring_e: { fprintf(file, "\"%s\" ", arg->strConst); break; }
 
-            case nil_e:         { fprintf(file, "(nil) "); break; }
+            case nil_e:         { fprintf(file, "nil "); break; }
 
             default:            { fprintf(file, "*error* "); break; }
         }
