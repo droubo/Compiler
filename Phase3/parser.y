@@ -565,7 +565,7 @@ assignexpr :
 		{
 			char name[20];
 			/* temptcounter - 1 is the current tmp variable */
-			sprintf(name,"_t%d",tempcounter-1);
+			sprintf(name,"^%d",tempcounter-1);
 			SymTabEntry* tmp_entry = lookup_SymTableScope(table, currscope, name);
 			
 			if(tempcounter == 0 || (tempcounter > 0 && tmp_entry == NULL))
@@ -1083,6 +1083,7 @@ ifstmt :
 			edit_quad((int)jump_label, NULL, NULL, NULL, currQuad + 1);
 			else_flag = 0;
 		}
+		else edit_quad((int)$1, NULL, NULL, NULL, currQuad+1);
 		$$.breakList = mergelist($elseexpr.breakList, $statement.breakList);
 		$$.contList = mergelist($elseexpr.contList, $statement.contList);
 	}
