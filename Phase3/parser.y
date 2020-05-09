@@ -51,7 +51,7 @@ loopcounterstack *lcs = NULL;
 int else_flag = 0;
 FILE *errorFile;
 int tmp_args = 0;
-
+int elist_flag = 0;
 extern int tempcounter;
 
 %}
@@ -542,6 +542,7 @@ term :
 		emit(add, $2, newconstnumexpr(1), $2, yylineno);
 		emit(assign, $2, NULL, newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc)), yylineno);
 		$$ = $2;
+		elist_flag++;
 	}
 	| lvalue PLUS_PLUS
 	{
@@ -555,6 +556,7 @@ term :
 		emit(add, $1, newconstnumexpr(1), $1, yylineno);
 
 		$$ = $1;
+		elist_flag++;
 	}
 	| MINUS_MINUS lvalue
 	{
@@ -568,6 +570,7 @@ term :
 		emit(assign, $2, NULL, newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc)), yylineno);
 
 		$$ = $2;
+		elist_flag++;
 	}
 	| lvalue MINUS_MINUS
 	{
@@ -580,6 +583,7 @@ term :
 		emit(assign, $1, NULL, newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc)), yylineno);
 		emit(sub, $1, newconstnumexpr(1), $1, yylineno);
 		$$ = $1;
+		elist_flag++;
 	}
 	| primary { $$ = $1; }
 	;
@@ -619,7 +623,7 @@ assignexpr :
 			sprintf(name,"^%d",tempcounter-1);
 			SymTabEntry* tmp_entry = lookup_SymTableScope(table, currscope, name);
 			
-			if(tempcounter == 0 || (tempcounter > 0 && tmp_entry == NULL))
+			if(tempcounter == 0 || (tempcounter > 0 && tmp_entry == NULL) || elist_flag == 0)
 			{
  				emit(assign, $4, NULL, $1, yylineno);
  			}
@@ -638,10 +642,12 @@ assignexpr :
 		{
 			expr* temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
 			emit(assign,$lvalue,NULL,temp,yylineno);
+			$$ = temp;
 		}
 
 		$$->type = assignexpr_e;
 		table_flag = 0;
+		elist_flag--;
 	}
 	;
 
@@ -885,14 +891,13 @@ methodcall :
 	;
 
 elist : {$$ = NULL;}
-	| elist COMA expr
-	{
+	| elist {elist_flag=0;} COMA expr
+	{	
+		elist_flag++;
 		expr * list_tail;
 		list_tail = $1;
-		printf("T1: \n\n\n");
 		while(list_tail->next != NULL){
 			list_tail = list_tail->next;
-			printf("TT: \n\n\n");
 		}
 		
 		if ($expr->type == boolexpr_e)
@@ -908,6 +913,7 @@ elist : {$$ = NULL;}
 			
 		}
 		list_tail->next = $expr;
+		
 		$$ = $1;
 	}
 	| expr
@@ -1174,7 +1180,8 @@ ifexpr :
 		emit_jump(if_eq, temp, newconstboolexpr(VAR_TRUE), currQuad + 3, yylineno);
 		$$ = currQuad;
 		emit_jump(jump, NULL, NULL, 0, yylineno);
-		resettemp();
+		elist_flag = 0;
+		//resettemp();
 	}
 	;
 
@@ -1193,7 +1200,6 @@ whilestmt :
 		patchlist($loopstmt.breakList, currQuad + 1);
 		patchlist($loopstmt.contList, $whilestart);
 		$$ = $loopstmt;
-		printf("\n\nWHIILE : %d %d\n\n", $loopstmt.contList, $whilestart);
 	};
 
 whilestart : WHILE { $$ = currQuad+1; };
@@ -1240,6 +1246,7 @@ forstmt : forprefix N elist RIGHT_PARENTHESIS N { loop_flag = 1; }
 		edit_quad((int)$8, NULL, NULL, NULL, $2 + 2);
 		patchlist($loopstmt.breakList, currQuad + 1);
 		patchlist($loopstmt.contList, $2 + 2);
+		$$ = $loopstmt;
 	}
 	;
 
