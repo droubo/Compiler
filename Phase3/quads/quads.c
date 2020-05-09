@@ -259,7 +259,7 @@ void print_quad_arg(expr * arg, FILE * file){
             case newtable_e:    { fprintf(file, "%s ", arg->sym->name); break; }
             
             case boolexpr_e:    { fprintf(file, "boolexpr_e "); break; }
-            case assignexpr_e:  { fprintf(file, "assinexpr_e "); break; }
+            case assignexpr_e:  { fprintf(file, "%s ", arg->sym->name); break; }
 
 
             case constnum_e:    { print_double(arg->numConst, file); break; }

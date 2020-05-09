@@ -640,6 +640,7 @@ assignexpr :
 			emit(assign,$lvalue,NULL,temp,yylineno);
 		}
 
+		$$->type = assignexpr_e;
 		table_flag = 0;
 	}
 	;
@@ -893,7 +894,6 @@ elist : {$$ = NULL;}
 			list_tail = list_tail->next;
 			printf("TT: \n\n\n");
 		}
-
 		
 		if ($expr->type == boolexpr_e)
 		{
