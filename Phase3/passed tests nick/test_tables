@@ -1,16 +1,16 @@
-// x = t.a.b.c; // passed
-// t.a.b = x;   // passed
-// x = p[a+b];  // passed
+x = t.a.b.c; // passed
+t.a.b = x;   // passed
+x = p[a+b];  // passed
 
-// y = q.a = x; // passed
+y = q.a = x; // passed
 
-/*
+
 t = [];
 t.x = 1;
 print(t.x,t.y);
-*/ // passed
 
-//t2 = [1, true, "lala", print]; // passed
+
+t2 = [1, true, "lala", print]; // passed
 t3 = [{0:1},{1:true},{2:"lala"},{3:print}]; 
 t4 = [{true:1},{"c":cos},{t2:t3}];
 t2[3](1,2);

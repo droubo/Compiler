@@ -4,25 +4,20 @@ for(i=0;i<10;i++)
 	break;
 	continue;
 }
-
 */
-/*
+
 while(i < 1)
 {
 	break;
 	continue;
 }
-*/
 
-/* passed
 while(1 and x or (x + y) > 1)
 {
  x = x + 1;
 }
-*/
-/*
+
 for(i=0;1 and x or (x + y) > 1;i--)
 {
 x = x + 1;
 }
-*/

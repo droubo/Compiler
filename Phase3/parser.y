@@ -1202,7 +1202,7 @@ whilecond :
 	LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
 	{
 		loop_flag = 1;
-		expr *temp;
+		expr *temp = NULL;
 		if ($expr->type == boolexpr_e)
 		{
 			temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
@@ -1223,6 +1223,7 @@ whilecond :
 			}
 			else temp = $expr;
 		}
+		printf("**%s**\n",temp->sym->name);
 		emit_jump(if_eq, temp, newconstboolexpr(1), currQuad + 3, yylineno);
 		$$ = currQuad;
 		emit_jump(jump, NULL, NULL, 0, yylineno);
@@ -1245,7 +1246,7 @@ forstmt : forprefix N elist RIGHT_PARENTHESIS N { loop_flag = 1; }
 forprefix : FOR LEFT_PARENTHESIS elist SEMICOLON M_ expr SEMICOLON
 	{
 		jump_label = $M_;
-		expr *temp;
+		expr *temp = NULL;
 		if ($expr->type == boolexpr_e)
 		{
 			temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
@@ -1266,6 +1267,7 @@ forprefix : FOR LEFT_PARENTHESIS elist SEMICOLON M_ expr SEMICOLON
 			}
 			else temp = $expr;
 		}
+		printf("**%s**\n",temp->sym->name);
 		$$ = currQuad;
 		emit_jump(if_eq, temp, newconstboolexpr(1), 0, yylineno);
 	}
