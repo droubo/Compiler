@@ -42,7 +42,6 @@ void patchlist(int list, int label){
 		int next = quads[list].label;
 		quads[list].label = label;
 		list = next;
-
 	}
 }
 
