@@ -27,6 +27,9 @@
 
 #define YY_DECL int alpha_yylex(void *yylval)
 
+int yyerror(char *yaccProvidedMessage);
+int yylex();
+
 extern int yylineno;
 extern char *yyval;
 extern char *yytext;
@@ -136,6 +139,8 @@ extern int tempcounter;
 %type<integer> elseprefix
 %type<stmt> statements
 %type<stmt> statement 
+%type<stmt> error_statement
+%type<stmt> error
 %type<stmt> break 
 %type<stmt> continue_ 
 %type<stmt> loopstmt 
@@ -184,6 +189,10 @@ extern int tempcounter;
 	call_struct call_;
 	hashTableElement* hashElement;
 }
+
+
+%expect 1
+
 %%
 
 program : 
@@ -238,7 +247,9 @@ break :
 		$$.breakList = newlist(currQuad);
 		emit_jump(jump, NULL, NULL, 0, yylineno);
 	}
-	continue_ : CONTINUE SEMICOLON
+	;
+
+continue_ : CONTINUE SEMICOLON
 	{
 		if (loopcounter == 0)
 		{
