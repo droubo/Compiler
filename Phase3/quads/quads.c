@@ -333,11 +333,11 @@ void print_quads(FILE * file, int max_lines){
                     printf("\033[0m");
                     break; }
             default: {
-                print_quad_arg(curr_quad.result, file);
                 printf("\033[0;35m");
+                print_quad_arg(curr_quad.result, file);
+                printf("\033[0m");
 		        print_quad_arg(curr_quad.arg1, file);
                 print_quad_arg(curr_quad.arg2, file);
-                printf("\033[0m");
                 break;
             }
         }
