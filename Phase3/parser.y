@@ -192,8 +192,9 @@ statements
 
 statements: 
 	{ make_stmt(&$$); }
+
 	| statement {resettemp();} statements
-	{	
+	{
 		$$.breakList = mergelist($3.breakList, $1.breakList);
 		$$.contList = mergelist($3.contList, $1.contList);
 
@@ -701,7 +702,6 @@ lvalue :
 				tmp->space = currscopespace();
 				tmp->offset = currscopeoffset();
 				inccurrscopeoffset();
-				printf("var : %s | scope : %d | space : %d | offset : %d\n", tmp->name, tmp->scope, tmp->space, tmp->offset);
 			}
 		}
 		else if (tmp == NULL)
@@ -719,7 +719,6 @@ lvalue :
 			tmp->space = currscopespace();
 			tmp->offset = currscopeoffset();
 			inccurrscopeoffset();
-			printf("var : %s | scope : %d | space : %d | offset : %d\n", tmp->name, tmp->scope, tmp->space, tmp->offset);
 		}
 
 		$$ = lvalue_expr(tmp);
@@ -750,7 +749,6 @@ lvalue :
 				tmp->space = currscopespace();
 				tmp->offset = currscopeoffset();
 				inccurrscopeoffset();
-				printf("var : %s | scope : %d | space : %d | offset : %d\n", tmp->name, tmp->scope, tmp->space, tmp->offset);
 			}
 		}
 		/* insert local */
@@ -760,7 +758,6 @@ lvalue :
 			tmp->space = currscopespace();
 			tmp->offset = currscopeoffset();
 			inccurrscopeoffset();
-			printf("var : %s | scope : %d | space : %d | offset : %d\n", tmp->name, tmp->scope, tmp->space, tmp->offset);
 		}
 		$$ = lvalue_expr(tmp);
 	}
@@ -973,13 +970,12 @@ funcdef :
 		$funcprefix->value.funcVal->num_of_args = $funcargs;
 		restorecurroffset(pop());
 
-		printf("function : %s , total args : %d , total locals : %d\n",$funcprefix->name,$funcprefix->value.funcVal->num_of_args,$funcprefix->value.funcVal->num_of_locals);
 
 		$$ = $funcprefix;
 		emit(funcend, NULL, NULL, newexpr(programfunc_e, $funcprefix), yylineno);
 		edit_quad($funcprefix->value.funcVal->jump_label, NULL, NULL, NULL, currQuad + 1);
 		while(return_stack != NULL && return_stack->key == return_func_offset){
-				printf("RETU: %d\n\n", return_stack->value);
+
 			edit_quad(return_stack->value, NULL, NULL, NULL, currQuad);
 			return_stack = return_stack->next;
 		}
@@ -1090,7 +1086,6 @@ idlist :
 				tmp->space = currscopespace();
 				tmp->offset = currscopeoffset();
 				inccurrscopeoffset();
-				printf("var : %s | scope : %d | space : %d | offset : %d\n", tmp->name, tmp->scope, tmp->space, tmp->offset);
 			}
 		}
 		else if (tmp != NULL && !strcmp(SymbolTypeToString(tmp->type), "FORMAL") && tmp->isActive == 1)
@@ -1104,7 +1099,6 @@ idlist :
 			tmp->space = currscopespace();
 			tmp->offset = currscopeoffset();
 			inccurrscopeoffset();
-			printf("var : %s | scope : %d | space : %d | offset : %d\n", tmp->name, tmp->scope, tmp->space, tmp->offset);
 		}
 	}
 	COMA idlist | ID
@@ -1123,7 +1117,6 @@ idlist :
 				tmp->space = currscopespace();
 				tmp->offset = currscopeoffset();
 				inccurrscopeoffset();
-				printf("var : %s | scope : %d | space : %d | offset : %d\n", tmp->name, tmp->scope, tmp->space, tmp->offset);
 			}
 		}
 		else if (tmp != NULL && !strcmp(SymbolTypeToString(tmp->type), "FORMAL") && tmp->isActive == 1)
@@ -1137,7 +1130,7 @@ idlist :
 			tmp->space = currscopespace();
 			tmp->offset = currscopeoffset();
 			inccurrscopeoffset();
-			printf("var : %s | scope : %d | space : %d | offset : %d\n", tmp->name, tmp->scope, tmp->space, tmp->offset);
+		
 		}
 	}
 	;
@@ -1198,11 +1191,11 @@ whilestmt :
 		emit_jump(jump, NULL, NULL, $whilestart, yylineno);
 		edit_quad($whilecond, NULL, NULL, NULL, currQuad + 1);
 		patchlist($loopstmt.breakList, currQuad + 1);
-		patchlist($loopstmt.contList, $whilestart);
-		$$ = $loopstmt;
+		patchlist($loopstmt.contList, (int)$whilestart);
+		make_stmt(&$$);
 	};
 
-whilestart : WHILE { $$ = currQuad+1; };
+whilestart : WHILE { $$ = currQuad+1;};
 
 whilecond : 
 	LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
@@ -1229,7 +1222,6 @@ whilecond :
 			}
 			else temp = $expr;
 		}
-		printf("**%s**\n",temp->sym->name);
 		emit_jump(if_eq, temp, newconstboolexpr(1), currQuad + 3, yylineno);
 		$$ = currQuad;
 		emit_jump(jump, NULL, NULL, 0, yylineno);
@@ -1246,7 +1238,7 @@ forstmt : forprefix N elist RIGHT_PARENTHESIS N { loop_flag = 1; }
 		edit_quad((int)$8, NULL, NULL, NULL, $2 + 2);
 		patchlist($loopstmt.breakList, currQuad + 1);
 		patchlist($loopstmt.contList, $2 + 2);
-		$$ = $loopstmt;
+		make_stmt(&$$);
 	}
 	;
 
@@ -1274,7 +1266,6 @@ forprefix : FOR LEFT_PARENTHESIS elist SEMICOLON M_ expr SEMICOLON
 			}
 			else temp = $expr;
 		}
-		printf("**%s**\n",temp->sym->name);
 		$$ = currQuad;
 		emit_jump(if_eq, temp, newconstboolexpr(1), 0, yylineno);
 	}
