@@ -53,10 +53,10 @@ void print_SymTable(SymTable * table){
     int i;
     SymTabEntry * temp;
 
-    printf(">>> Symbols in Table\n");
+    printf("\n\033[1;32m>>> \033[01;33m Symbols in Table\n\n\033[0m");
 
     for(i = 0; i < TABLE_SIZE; i++){
-        printf("#%d:\n", i);
+        printf("\033[1;31m#%d:\n\033[0m", i);
         if(table->table[i] != NULL){
             temp = table->table[i];
             while(temp != NULL) {
@@ -64,9 +64,9 @@ void print_SymTable(SymTable * table){
                 temp = temp->nextInHash;
             }
         } else
-            printf("(nil)\n");
+            printf("\033[1;32m(nil)\n\033[0m");
     }
-    printf(">>> END\n");
+    printf("\n\033[1;32m>>> \033[01;33mEND\n\033[0m");
 }
 
 SymTabEntry * lookup_SymTable(SymTable * table, const char * name){

@@ -48,5 +48,5 @@ const char * SymbolTypeToString(SymbolType type) {
 }
 
 void print_SymTabEntry(SymTabEntry entry){
-	printf("%s '%s' @line %d scope = %d\n", SymbolTypeToString(entry.type), entry.name, entry.line, entry.scope);
+	printf("\033[1;32m%s  \033[0m'%s' \033[0;36m@line %d \033[0;35mscope = %d\n\033[0m", SymbolTypeToString(entry.type), entry.name, entry.line, entry.scope);
 }

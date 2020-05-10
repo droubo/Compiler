@@ -82,9 +82,9 @@ void print_ScopeList(ScopeList * list){
 	SymTabEntry * currEntry;
 
 	currScope = list->firstScopeEntry;
-	printf(">>> Symbols by scope\n");
+	printf("\n\033[1;32m>>> \033[01;33mSymbols by scope\n\n\033[0m");
 	for(i = 0; i < list->maxScope + 1; i++) {
-		printf("---------- Scope %d ----------\n", i);
+		printf("\033[0;35m---------- Scope %d ----------\n\033[0m", i);
 		currEntry = currScope->firstSymEntry;
 		while(currEntry != NULL){
 			print_SymTabEntry(*currEntry);
@@ -93,7 +93,7 @@ void print_ScopeList(ScopeList * list){
 		printf("\n");
 		currScope = currScope->next;
 	}
-	printf(">>> End\n");
+	printf("\033[1;32m>>> \033[01;33mEND\n\033[0m");
 }
 
 void insert_ScopeList(ScopeList * list, SymTabEntry * node) {

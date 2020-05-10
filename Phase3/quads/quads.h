@@ -135,8 +135,6 @@ void print_expr(expr * exp, int indent);
 
 void print_quads(FILE * file, int max_lines);
 
-void print_quads_online(FILE * file);
-
 void edit_quad(int index, expr * arg1, expr * arg2, expr * result, unsigned int label);
 
 hashTableElement* newHashTableElement(expr* key, expr* value);

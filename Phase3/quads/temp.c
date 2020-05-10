@@ -43,9 +43,8 @@ SymTabEntry * newtemp(SymTable * table, int currScope, int func_scope) {
     sym = lookup_SymTableScope(table, currScope, name);
     if(sym == NULL)
     {
-        SymTabEntry *tmp = insert_SymTable(table, new_SymTabEntry(name, -1, 1, NULL, NULL, currScope, func_scope, LOCAL));
+        SymTabEntry *tmp = insert_SymTable(table, new_SymTabEntry(name, 0, 1, NULL, NULL, currScope, func_scope, LOCAL));
         tmp->offset = currscopeoffset();
-        printf("var : %s | offset : %d\n",tmp->name,tmp->offset);
         inccurrscopeoffset();
         return tmp;
     }

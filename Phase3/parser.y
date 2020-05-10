@@ -1477,16 +1477,12 @@ int main(int argc, char **argv)
 	yyparse();
 
 	if (args != NULL && strcmp(args, "-s") == 0)
-	{
-	}
-	//print_Scopes(table);
+		print_Scopes(table);
 	else if (args != NULL && strcmp(args, "-t") == 0)
-	{
-	}
-	//print_SymTable(table);
+		print_SymTable(table);
 	else if (args == NULL)
 	{
-		//print_SymTable(table);
+		print_SymTable(table);
 		print_Scopes(table);
 	}
 	else
@@ -1494,9 +1490,6 @@ int main(int argc, char **argv)
 
 	if (!fail_icode){
 		print_quads(stdout, yylineno);
-		//TODO: Remove online output
-		FILE * online = fopen("online_out.txt", "w");
-		print_quads_online(online);
 	}
 
 	else
