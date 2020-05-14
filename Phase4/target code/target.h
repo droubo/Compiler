@@ -63,6 +63,73 @@ typedef struct incomplete_jump
 incomplete_jump* ij_head = (incomplete_jump*) 0;
 unsigned int ij_total = 0;
 
+void add_incomplete_jump(unsigned int instrNo, unsigned iaddress);
+
+
+/* generate */
+extern void generate_ADD,
+extern void generate_SUB(*quads);
+extern void generate_MUL(*quads);
+extern void generate_DIV(*quads);
+extern void generate_MOD(*quads);
+extern void generate_NEWTABLE(*quads);
+extern void generate_TABLEGETELEM(*quads);
+extern void generate_TABLESETELEM(*quads);
+extern void generate_ASSIGN(*quads);
+extern void generate_NOP(*quads);
+extern void generate_JUMP(*quads);
+extern void generate_IF_EQ(*quads);
+extern void generate_IF_NOTEQ(*quads);
+extern void generate_IF_GREATER(*quads);
+extern void generate_IF_GREATEREQ(*quads);
+extern void generate_IF_LESS(*quads);
+extern void generate_IF_LESSEQ(*quads);
+extern void generate_NOT(*quads);
+extern void generate_OR(*quads);
+extern void generate_PARAM(*quads);
+extern void generate_CALL(*quads);
+extern void generate_GETRETVAL(*quads);
+extern void generate_FUNCSTART(*quads);
+extern void generate_RETURN(*quads);
+extern void generate_FUNCEND
+
+typedef void (*generator_func_t)(quad*);
+
+generator_func_t generators[] = {  
+    generate_ADD,
+    generate_SUB,
+    generate_MUL,
+    generate_DIV,
+    generate_MOD,
+    generate_NEWTABLE,
+    generate_TABLEGETELEM,
+    generate_TABLESETELEM,
+    generate_ASSIGN,
+    generate_NOP,
+    generate_JUMP,
+    generate_IF_EQ,
+    generate_IF_NOTEQ,
+    generate_IF_GREATER,
+    generate_IF_GREATEREQ,
+    generate_IF_LESS,
+    generate_IF_LESSEQ,
+    generate_NOT,
+    generate_OR,
+    generate_PARAM,
+    generate_CALL,
+    generate_GETRETVAL,
+    generate_FUNCSTART,
+    generate_RETURN,
+    generate_FUNCEND
+};
+
+void generate(void) {
+    unsigned int i;
+    for(i = 0; i < total; ++i){
+        (*generators[quads[i].op])(quads+i);
+    }
+}
+
 /* for vm */
 /*
 double* numConsts;
