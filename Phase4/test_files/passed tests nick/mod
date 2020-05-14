@@ -1,0 +1,7 @@
+// mod
+x = 1 % 1; // 2 const
+x = 1 % y; // const , var
+x = y % 1; // var , const
+x = w % y; // var , var
+
+// passed 

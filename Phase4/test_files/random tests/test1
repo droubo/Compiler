@@ -1,0 +1,4 @@
+while(i < 1){
+	continue;
+	b = 3;
+}
