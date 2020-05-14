@@ -44,6 +44,9 @@ typedef struct SymTabEntry {
 	scopespace_t space;
 	/*------------*/
 
+	/*for target code*/
+	unsigned int taddress;
+
 	enum SymbolType type;
 	struct SymTabEntry * nextInScope;
 	struct SymTabEntry * nextInHash;

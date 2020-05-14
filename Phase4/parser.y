@@ -24,6 +24,7 @@
 #include "offset/offset.h"
 #include "symtab/symtable.h"
 #include "statement/statement.h"
+#include "target_code/target.h"
 
 #define YY_DECL int alpha_yylex(void *yylval)
 
@@ -56,6 +57,7 @@ FILE *errorFile;
 int tmp_args = 0;
 int elist_flag = 0;
 extern int tempcounter;
+extern void generate();
 
 %}
 
@@ -1494,6 +1496,9 @@ int main(int argc, char **argv)
 
 	else
 		printf("Errors present. I-Code Generation has failed.\n");
+
+
+	generate();
 
 	return 0;
 }
