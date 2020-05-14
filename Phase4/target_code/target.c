@@ -28,32 +28,32 @@ void generate_ADD(quad q)
 
 void generate_SUB(quad q)
 {
-
+    generate_op(sub_v,q);
 }
 
 void generate_MUL(quad q)
 {
-
+    generate_op(mul_v,q);
 }
 
 void generate_DIV(quad q)
 {
-
+    generate_op(div_v,q);
 }
 
 void generate_MOD(quad q)
 {
-
+    generate_op(mod_v,q);
 }
 
 void generate_NEWTABLE(quad q)
 {
-
+    generate_op(div_v,q);
 }
 
 void generate_TABLEGETELEM(quad q)
 {
-     
+     generate_op(tablegetelem_v,q);
 }
 
 void generate_TABLESETELEM(quad q)
