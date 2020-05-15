@@ -45,6 +45,7 @@ SymTabEntry * newtemp(SymTable * table, int currScope, int func_scope) {
     {
         SymTabEntry *tmp = insert_SymTable(table, new_SymTabEntry(name, 0, 1, NULL, NULL, currScope, func_scope, LOCAL));
         tmp->offset = currscopeoffset();
+	tmp->space = currscopespace();
         inccurrscopeoffset();
         return tmp;
     }

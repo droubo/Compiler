@@ -659,7 +659,7 @@ assignexpr :
 			$$ = temp;
 		}
 
-		$$->type = assignexpr_e;
+		//$$->type = assignexpr_e;
 		table_flag = 0;
 		elist_flag--;
 	}

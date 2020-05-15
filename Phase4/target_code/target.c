@@ -10,138 +10,139 @@ void emit_target_code(instruction i)
 }
 
 
-void generate_op(vmopcode op,quad q)
+void generate_op(vmopcode op,quad *q)
 {
     instruction t;
     t.opcode = op;
-    make_operand(q.arg1, &t.arg1);
-    make_operand(q.arg2, &t.arg2);
-    make_operand(q.result, &t.result);
+    make_operand(q->arg1, &t.arg1);
+    make_operand(q->arg2, &t.arg2);
+    make_operand(q->result, &t.result);
+    t.srcLine = q->line;
     /*quad.taddress = nextinstructionlabel();*/
     emit_target_code(t); 
 }
 
-void generate_ADD(quad q)
+void generate_ADD(quad *q)
 {
     generate_op(add_v,q);
 }
 
-void generate_SUB(quad q)
+void generate_SUB(quad *q)
 {
     generate_op(sub_v,q);
 }
 
-void generate_MUL(quad q)
+void generate_MUL(quad *q)
 {
     generate_op(mul_v,q);
 }
 
-void generate_DIV(quad q)
+void generate_DIV(quad *q)
 {
     generate_op(div_v,q);
 }
 
-void generate_MOD(quad q)
+void generate_MOD(quad *q)
 {
     generate_op(mod_v,q);
 }
 
-void generate_NEWTABLE(quad q)
+void generate_NEWTABLE(quad *q)
 {
     generate_op(div_v,q);
 }
 
-void generate_TABLEGETELEM(quad q)
+void generate_TABLEGETELEM(quad *q)
 {
      generate_op(tablegetelem_v,q);
 }
 
-void generate_TABLESETELEM(quad q)
+void generate_TABLESETELEM(quad *q)
 {
 
 }
 
-void generate_ASSIGN(quad q)
+void generate_ASSIGN(quad *q)
 {
 
 }
 
-void generate_NOP(quad q)
+void generate_NOP(quad *q)
 {
 
 }
 
-void generate_JUMP(quad q)
+void generate_JUMP(quad *q)
 {
 
 }
 
-void generate_IF_EQ(quad q)
+void generate_IF_EQ(quad *q)
 {
 
 }
 
-void generate_IF_NOTEQ(quad q)
+void generate_IF_NOTEQ(quad *q)
 {
 
 }
 
-void generate_IF_GREATER(quad q)
+void generate_IF_GREATER(quad *q)
 {
 
 }
 
-void generate_IF_GREATEREQ(quad q)
+void generate_IF_GREATEREQ(quad *q)
 {
 
 }
 
-void generate_IF_LESS(quad q)
+void generate_IF_LESS(quad *q)
 {
 
 }
 
-void generate_IF_LESSEQ(quad q)
+void generate_IF_LESSEQ(quad *q)
 {
 
 }
 
-void generate_NOT(quad q)
+void generate_NOT(quad *q)
 {
 
 }
 
-void generate_OR(quad q)
+void generate_OR(quad *q)
 {
 
 }
 
-void generate_PARAM(quad q)
+void generate_PARAM(quad *q)
 {
 
 }
 
-void generate_CALL(quad q)
+void generate_CALL(quad *q)
 {
 
 }
 
-void generate_GETRETVAL(quad q)
+void generate_GETRETVAL(quad *q)
 {
 
 }
 
-void generate_FUNCSTART(quad q)
+void generate_FUNCSTART(quad *q)
 {
 
 }
 
-void generate_RETURN(quad q)
+void generate_RETURN(quad *q)
 {
 
 }
 
-void generate_FUNCEND(quad q)
+void generate_FUNCEND(quad *q)
 {
 
 }
@@ -180,8 +181,9 @@ generator_func_t generators[] = {
 /* generate instructions from quads */
 void generate(void) {
     unsigned int i;
-    for(i = 0; i < total; ++i){
-        (*generators[quads[i].op])(quads+i);
+    for(i = 0; i < currQuad; ++i){
+	//printf("I: %d\n\n\n", i);
+        (*generators[quads[i].op])((quads+i));
     }
 }
 
@@ -209,6 +211,7 @@ void make_operand(expr* e, vmarg* arg){
         case tableitem_e:
         case arithexpr_e:
         case boolexpr_e:
+	case assignexpr_e:
         case newtable_e: {
             arg->val = e->sym->offset;
             switch(e->sym->space){
@@ -248,9 +251,7 @@ void make_operand(expr* e, vmarg* arg){
             arg->val = libfuncs_newused(e->sym->name);
             break;
         }
-        
         default: assert(0);
-
     }
 }
 
