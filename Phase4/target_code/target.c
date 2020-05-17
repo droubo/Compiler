@@ -1,8 +1,38 @@
 #include "target.h"
+#include <string.h>
+#include "stacks.h"
+
+#define true 1
+#define false 0
 
 incomplete_jump* ij_head = (incomplete_jump*) 0;
 unsigned int ij_total = 0;
+StringStack *StringHead=NULL, *StringTail=NULL;
+NumStack *NumHead=NULL, *NumTail=NULL;
+FunctionStack *FunHead=NULL, *FunTail=NULL;
+StringStack *LibHead=NULL, *LibTail=NULL;
 
+
+char* consts_newstring(char *s)
+{
+    char *tmp = malloc(strlen(s));
+    strcat(tmp, s);
+    //free(s);
+    return tmp;
+}
+
+double consts_newnumber(double n)
+{
+    return n;
+}
+
+const char* libfuncs_newused(const char *s)
+{
+    char *tmp = malloc(strlen(s));
+    strcat(tmp, s);
+    //free(s);
+    return tmp;
+}
 
 char* print_vm_opcode(vmopcode opcode)
 {
@@ -46,28 +76,35 @@ void make_operand(expr* e, vmarg* arg){
         case boolexpr_e:
 	case assignexpr_e:
         case newtable_e: {
-            arg->val = e->sym->offset;
+            arg->num_val = e->sym->offset;
+            //arg->str_val = e->sym->name;
             switch(e->sym->space){
                 case programvar: arg->type = global_a; break;
                 case functionlocal: arg->type = local_a; break;
                 case formalarg: arg->type = formal_a; break;
                 default: assert(0);
             }
+            break;
         }
         
         case constbool_e: {
-            arg->val = e->boolConst;
+            arg->bool_val = e->boolConst;
+            arg->str_val = NULL;
             arg->type = bool_a; break;
         }
 
 
         case conststring_e: {
-            arg->val = consts_newstring(e->strConst);
+            arg->str_val = consts_newstring(e->strConst);
+            pushStringStack(&StringHead, &StringTail, arg->str_val);
+            printf("STRRR \n\n\n\n", arg->str_val);
             arg->type = string_a; break;
         }
 
         case constnum_e: {
-            arg->val = consts_newnumber(e->numConst);
+            arg->num_val = consts_newnumber(e->numConst);
+            pushNumStack(&NumHead, &NumTail, arg->num_val);
+            arg->str_val = NULL;
             arg->type = number_a; break;
         }
 
@@ -75,23 +112,49 @@ void make_operand(expr* e, vmarg* arg){
 
         case programfunc_e: {
             arg->type = userfunc_a;
-            arg->val = e->sym->taddress;
+            arg->num_val = e->sym->taddress;
+            arg->str_val = NULL;
+            pushFunctionStack(&FunHead, &FunTail, e->sym->name, e->sym->value.funcVal->iaddress, e->sym->value.funcVal->num_of_locals);
             break;
         }
 
         case libraryfunc_e: {
             arg->type = libfunc_a;
-            arg->val = libfuncs_newused(e->sym->name);
+            arg->str_val = libfuncs_newused(e->sym->name);
+            pushStringStack(&LibHead, &LibTail, arg->str_val);
             break;
         }
         default: assert(0);
     }
 }
-
+void make_numberoperand(vmarg *arg, double val){
+    arg->num_val = val;
+    arg->type = number_a;
+}
+void make_booloperand(vmarg* arg, unsigned int val){
+    arg->bool_val = val;
+    arg->type = bool_a;
+}
+void make_retvaloperand(vmarg *arg){
+    arg->type = retval_a;
+}
 /* generate */
 void emit_target_code(instruction i)
 {
-    printf("LINE %d | vmopcode : %s | result : %d | arg1 : %d | arg2 : %d\n",i.srcLine,print_vm_opcode(i.opcode),i.result.val,i.arg1.val,i.arg2.val);
+    printf("LINE %d ", i.srcLine);
+    printf("| %s ", print_vm_opcode(i.opcode));
+
+    if(i.result.num_val <  100000){
+        printf("| %f ", i.result.num_val);
+    }
+    if(i.arg1.num_val <  100000){
+        printf("| %f ", i.arg1.num_val);
+    }
+    if(i.arg2.num_val <  100000){
+        printf("| %f ", i.arg2.num_val);
+    }
+    //printf("LINE %d | vmopcode : %s | result : %d | arg1 : %d | arg2 : %d\n",i.srcLine,print_vm_opcode(i.opcode),i.result.val,i.arg1.val,i.arg2.val);
+    printf("\n");
 }
 
 
@@ -103,22 +166,25 @@ void generate_op(vmopcode op,quad *q, int flag)
     if(flag == 0) make_operand(q->arg2, &t.arg2);
     make_operand(q->result, &t.result);
     t.srcLine = q->line;
-    /*quad.taddress = nextinstructionlabel();*/
+    /*quad->taddress = nextinstructionlabel();*/
     emit_target_code(t); 
 }
 
-generate_relational(op, *quad) {
+generate_relational(vmopcode op, quad* q) {
     instruction t;
     t.opcode = op;
-    make_operand(quad->arg1, &t.arg1);
-    make_operand(quad->arg2, &t.arg2);
+    make_operand(q->arg1, &t.arg1);
+    make_operand(q->arg2, &t.arg2);
     t.result.type = label_a;
-    if quad.label jump target < currprocessedquad() then
+    t.srcLine = q->line;
+    /*
+    if quad->label jump target < currprocessedquad() then
     t.result.value = quads[quad->label]->taddress;
     else
     add_incomplete_jump(nextinstructionlabel(), quad->label);
-    quad->taddress = nextinstructionlabel();
-    emit(t);
+    //quad->taddress = nextinstructionlabel();
+    */
+    emit_target_code(t);
 } 
 
 void generate_ADD(quad *q)
@@ -169,13 +235,14 @@ void generate_ASSIGN(quad *q)
 void generate_NOP(quad *q)
 {
     instruction t;
-    t.opcode=nop;
-    emit(t); 
+    t.opcode=nop_v;
+    t.srcLine = q->line;
+    emit_target_code(t); 
 }
 
 void generate_JUMP(quad *q)
 {
-    generate_relational(jump_v, q);
+    generate_relational(jeq_v, q);
 }
 
 void generate_IF_EQ(quad *q)
@@ -208,95 +275,103 @@ void generate_IF_LESSEQ(quad *q)
     generate_relational(jle_v, q);
 }
 
-generate_NOT (quad) {
-    quad.taddress = nextinstructionlabel();
+void generate_NOT (quad *q) {
+    /*
+    //quad->taddress = nextinstructionlabel();
     instruction t;
-    t.opcode = jeq;
-    make_operand(quad.arg1, &t.arg1);
+    t.opcode = jeq_v;
+    make_operand(q->arg1, &t.arg1);
     make_booloperand(&t.arg2, false);
     t.result.type = label_a;
-    t.result.value = nextinstructionlabel()+3;
-    emit(t);
+    //t.result.value = nextinstructionlabel()+3;
+    emit_target_code(t);
     t.opcode = assign;
     make_booloperand(&t.arg1, false);
-    reset_operand(&t.arg2);
-    make_operand(quad.result, &t.result);
-    emit(t);
+    //reset_operand(&t.arg2);
+    make_operand(q->result, &t.result);
+    emit_target_code(t);
     t.opcode = jump;
-    reset_operand (&t.arg1);
-    reset_operand(&t.arg2);
+    //reset_operand (&t.arg1);
+    //reset_operand(&t.arg2);
     t.result.type = label_a;
-    t.result.value = nextinstructionlabel()+2;
-    emit(t);
-    t.opcode = assign;
+    //t.result.value = nextinstructionlabel()+2;
+    emit_target_code(t);
+    t.opcode = assign_v;
     make_booloperand(&t.arg1, true);
-    reset_operand(&t.arg2);
-    make_operand(quad.result, &t.result);
-    emit(t);
+    //reset_operand(&t.arg2);
+    make_operand(q->result, &t.result);
+    emit_target_code(t);
+    */
 } 
 
-generate_OR (quad) {
-    quad.taddress = nextinstructionlabel();
+void generate_OR (quad *q) {
+    /*
+    //quad->taddress = nextinstructionlabel();
     instruction t;
-    t.opcode = jeq;
-    make_operand(quad.arg1, &t.arg1);
+    t.opcode = jeq_v;
+    make_operand(q->arg1, &t.arg1);
     make_booloperand(&t.arg2, true);
     t.result.type = label_a;
-    t.result.value = nextinstructionlabel()+4;
-    emit(t);
-    make_operand(quad.arg2, &t.arg1);
-    t.result.value = nextinstructionlabel()+3;
-    emit(t); 
+    //t.result.value = nextinstructionlabel()+4;
+    emit_target_code(t);
+    make_operand(q->arg2, &t.arg1);
+    //t.result.value = nextinstructionlabel()+3;
+    emit_target_code(t); 
     t.opcode = assign;
     make_booloperand(&t.arg1, false);
-    reset_operand(&t.arg2);
-    make_operand(quad.result, &t.result);
-    emit(t);
+    //reset_operand(&t.arg2);
+    make_operand(q->result, &t.result);
+    emit_target_code(t);
     t.opcode = jump;
-    reset_operand (&t.arg1);
-    reset_operand(&t.arg2);
+    //reset_operand (&t.arg1);
+    //reset_operand(&t.arg2);
     t.result.type = label_a;
-    t.result.value = nextinstructionlabel()+2;
-    emit(t);
+    //t.result.value = nextinstructionlabel()+2;
+    emit_target_code(t);
     t.opcode = assign;
     make_booloperand(&t.arg1, true);
-    reset_operand(&t.arg2);
-    make_operand(quad.result, &t.result);
-    emit(t);
+    //reset_operand(&t.arg2);
+    make_operand(q->result, &t.result);
+    emit_target_code(t);
+    */
 } 
 
-generate_PARAM(quad) {
-    quad.taddress = nextinstructionlabel();
+void generate_PARAM(quad *q) {
+    //quad->taddress = nextinstructionlabel();
     instruction t;
-    t.opcode = pusharg;
-    make_operand(quad.arg1, &t.arg1);
-    emit(t);
+    t.opcode = pusharg_v;
+    make_operand(q->arg1, &t.arg1);
+    t.srcLine = q->line;
+    emit_target_code(t);
 }
-generate_CALL(quad) {
-    quad.taddress = nextinstructionlabel();
+void generate_CALL(quad *q) {
+    //quad->taddress = nextinstructionlabel();
     instruction t;
-    t.opcode = callfunc;
-    make_operand(quad.arg1, &t.arg1);
-    emit(t);
+    t.opcode = call_v;
+    make_operand(q->arg1, &t.arg1);
+    t.srcLine = q->line;
+    emit_target_code(t);
 }
-generate_GETRETVAL(quad) {
-    quad.taddress = nextinstructionlabel();
+void generate_GETRETVAL(quad *q) {
+    //quad->taddress = nextinstructionlabel();
     instruction t;
     t.opcode = assign;
-    make_operand(quad.result, &t.result);
+    make_operand(q->result, &t.result);
     make_retvaloperand(&t.arg1);
-    emit(t);
+    t.srcLine = q->line;
+    emit_target_code(t);
 } 
 
 void generate_FUNCSTART(quad *q)
 {
-    f = quad->result->sym;
-    userfunctions.add(f->id, f->taddress, f->totallocals);
-    push(funcstack, f);
+    //SymTabEntry *f = quad->result->sym;
+    //userfunctions.add(f->id, f->taddress, f->totallocals);
+    //push(funcstack, f);
     instruction t;
-    t.opcode = enterfunc;
-    make_operand(quad->result, &t.result);
-    emit(t);
+    t.opcode = funcenter_v;
+    make_operand(q->result, &t.result);
+    t.srcLine = q->line;
+    emit_target_code(t);
 }
 
 void generate_RETURN(quad *q)
@@ -304,26 +379,28 @@ void generate_RETURN(quad *q)
     instruction t;
     t.opcode = assign_v;
     make_retvaloperand(&t.result);
-    make_operand(quad->arg1, &t.arg1);
-    emit(t);
-    f = top(funcstack);
-    append(f.retunList, nexrinstructionlabel());
-    t.opcode = jump_v;
-    reset_operand(&t.arg1);
-    reset_operand(&t.arg1);
+    make_operand(q->arg1, &t.arg1);
+    emit_target_code(t);
+    //SymTabEntry f = top(funcstack);
+    //append(f.retunList, nexrinstructionlabel());
+    t.opcode = jeq_v;
+    //reset_operand(&t.arg1);
+    //reset_operand(&t.arg1);
     t.result.type = label_a;
-    emit(t);
+    t.srcLine = q->line;
+    emit_target_code(t);
 }
 
 void generate_FUNCEND(quad *q)
 {
-    f = pop(funcstack);
-    backpatch(f.returnList, nexrinstructionlabel());
-    quad->taddress = nextinstructionlabel();
+    //SymTabEntry f = pop(funcstack);
+    //backpatch(f.returnList, nexrinstructionlabel());
+    //quad->taddress = nextinstructionlabel();
     instruction t;
-    t.opcode = exitfunc;
-    make_operand(quad->result, &t.result);
-    emit(t);
+    t.opcode = funcexit_v;
+    make_operand(q->result, &t.result);
+    t.srcLine = q->line;
+    emit_target_code(t);
 }
 
 void generate_AND(quad *q)
@@ -368,22 +445,12 @@ void generate(void) {
 	//printf("I: %d\n\n\n", quads[i].op);
         (*generators[quads[i].op])((quads+i));
     }
+    print_LibraryStack(LibHead);
+    print_StringStack(StringHead);
+    print_NumStack(NumHead);
+    print_FuncStack(FunHead);
 }
 
-unsigned consts_newstring(char *s)
-{
-    return 0;
-}
-
-unsigned consts_newnumber(double n)
-{
-    return (unsigned)n;
-}
-
-unsigned libfuncs_newused(const char *s)
-{
-    return 0;
-}
 
 
 /*

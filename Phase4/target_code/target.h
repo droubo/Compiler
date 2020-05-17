@@ -34,7 +34,9 @@ typedef enum vmarg_t
 typedef struct vmarg
 {
     vmarg_t type;
-    unsigned int val;
+    unsigned int bool_val;
+    double num_val;
+    char *str_val;
 }vmarg;
 
 typedef struct instruction 
@@ -88,9 +90,9 @@ userfunc* userFuncs;
 unsinged int totalUserFuncs;
 */
 
-unsigned consts_newstring(char *s);
-unsigned consts_newnumber(double n);
-unsigned libfuncs_newused(const char *s);
+char* consts_newstring(char *s);
+double consts_newnumber(double n);
+const char* libfuncs_newused(const char *s);
 
 
 void produce_target_code();
