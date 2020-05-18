@@ -7,10 +7,6 @@
 
 incomplete_jump* ij_head = (incomplete_jump*) 0;
 unsigned int ij_total = 0;
-StringStack *StringHead=NULL, *StringTail=NULL;
-NumStack *NumHead=NULL, *NumTail=NULL;
-FunctionStack *FunHead=NULL, *FunTail=NULL;
-StringStack *LibHead=NULL, *LibTail=NULL;
 
 
 char* consts_newstring(char *s)
@@ -34,37 +30,7 @@ const char* libfuncs_newused(const char *s)
     return tmp;
 }
 
-char* print_vm_opcode(vmopcode opcode)
-{
-    switch(opcode)
-    {
-        case assign_v : return "assign";
-        case add_v : return "add";
-        case sub_v : return "sub";
-        case mul_v : return "mul";
-        case div_v : return "div";
-        case mod_v : return "mod";
-        case uminus_v :  return "uminus";
-        case and_v : return "and";
-        case or_v : return "or";
-        case not_v : return "not";
-        case jeq_v : return "jeq";
-        case jne_v : return "jne";
-        case jle_v : return "jle";
-        case jge_v : return "jge";
-        case jlt_v : return "jlt";
-        case jgt_v : return "jgt";
-        case call_v: return "call";
-        case pusharg_v : return "pusharg";
-        case funcenter_v : return "funcenter";
-        case funcexit_v : return "funcexit";
-        case newtable_v : "newtable";
-        case tablegetelem_v : return "tablegetelem";
-        case tablesetelem_v : return "table";
-        case nop_v : return "nop";
-        default : printf("opcode : %d\n");
-    };
-}
+
 void make_operand(expr* e, vmarg* arg){
 
     if(e == NULL) return;
@@ -77,7 +43,7 @@ void make_operand(expr* e, vmarg* arg){
 	case assignexpr_e:
         case newtable_e: {
             arg->num_val = e->sym->offset;
-            //arg->str_val = e->sym->name;
+            arg->str_val = e->sym->name;
             switch(e->sym->space){
                 case programvar: arg->type = global_a; break;
                 case functionlocal: arg->type = local_a; break;
@@ -139,7 +105,8 @@ void make_retvaloperand(vmarg *arg){
     arg->type = retval_a;
 }
 /* generate */
-void emit_target_code(instruction i)
+/*
+void emit_instruction(instruction i)
 {
     printf("LINE %d ", i.srcLine);
     printf("| %s ", print_vm_opcode(i.opcode));
@@ -156,7 +123,7 @@ void emit_target_code(instruction i)
     //printf("LINE %d | vmopcode : %s | result : %d | arg1 : %d | arg2 : %d\n",i.srcLine,print_vm_opcode(i.opcode),i.result.val,i.arg1.val,i.arg2.val);
     printf("\n");
 }
-
+*/
 
 void generate_op(vmopcode op,quad *q, int flag)
 {
@@ -167,7 +134,7 @@ void generate_op(vmopcode op,quad *q, int flag)
     make_operand(q->result, &t.result);
     t.srcLine = q->line;
     /*quad->taddress = nextinstructionlabel();*/
-    emit_target_code(t); 
+    emit_instruction(&t); 
 }
 
 generate_relational(vmopcode op, quad* q) {
@@ -184,7 +151,7 @@ generate_relational(vmopcode op, quad* q) {
     add_incomplete_jump(nextinstructionlabel(), quad->label);
     //quad->taddress = nextinstructionlabel();
     */
-    emit_target_code(t);
+    emit_instruction(&t);
 } 
 
 void generate_ADD(quad *q)
@@ -234,10 +201,12 @@ void generate_ASSIGN(quad *q)
 
 void generate_NOP(quad *q)
 {
+    /*
     instruction t;
     t.opcode=nop_v;
     t.srcLine = q->line;
-    emit_target_code(t); 
+    emit_instruction(&t);
+    */ 
 }
 
 void generate_JUMP(quad *q)
@@ -284,23 +253,23 @@ void generate_NOT (quad *q) {
     make_booloperand(&t.arg2, false);
     t.result.type = label_a;
     //t.result.value = nextinstructionlabel()+3;
-    emit_target_code(t);
+    emit_instruction(&t);
     t.opcode = assign;
     make_booloperand(&t.arg1, false);
     //reset_operand(&t.arg2);
     make_operand(q->result, &t.result);
-    emit_target_code(t);
+    emit_instruction(&t);
     t.opcode = jump;
     //reset_operand (&t.arg1);
     //reset_operand(&t.arg2);
     t.result.type = label_a;
     //t.result.value = nextinstructionlabel()+2;
-    emit_target_code(t);
+    emit_instruction(&t);
     t.opcode = assign_v;
     make_booloperand(&t.arg1, true);
     //reset_operand(&t.arg2);
     make_operand(q->result, &t.result);
-    emit_target_code(t);
+    emit_instruction(&t);
     */
 } 
 
@@ -313,26 +282,26 @@ void generate_OR (quad *q) {
     make_booloperand(&t.arg2, true);
     t.result.type = label_a;
     //t.result.value = nextinstructionlabel()+4;
-    emit_target_code(t);
+    emit_instruction(&t);
     make_operand(q->arg2, &t.arg1);
     //t.result.value = nextinstructionlabel()+3;
-    emit_target_code(t); 
+    emit_instruction(&t); 
     t.opcode = assign;
     make_booloperand(&t.arg1, false);
     //reset_operand(&t.arg2);
     make_operand(q->result, &t.result);
-    emit_target_code(t);
+    emit_instruction(&t);
     t.opcode = jump;
     //reset_operand (&t.arg1);
     //reset_operand(&t.arg2);
     t.result.type = label_a;
     //t.result.value = nextinstructionlabel()+2;
-    emit_target_code(t);
+    emit_instruction(&t);
     t.opcode = assign;
     make_booloperand(&t.arg1, true);
     //reset_operand(&t.arg2);
     make_operand(q->result, &t.result);
-    emit_target_code(t);
+    emit_instruction(&t);
     */
 } 
 
@@ -342,7 +311,7 @@ void generate_PARAM(quad *q) {
     t.opcode = pusharg_v;
     make_operand(q->arg1, &t.arg1);
     t.srcLine = q->line;
-    emit_target_code(t);
+    emit_instruction(&t);
 }
 void generate_CALL(quad *q) {
     //quad->taddress = nextinstructionlabel();
@@ -350,7 +319,7 @@ void generate_CALL(quad *q) {
     t.opcode = call_v;
     make_operand(q->arg1, &t.arg1);
     t.srcLine = q->line;
-    emit_target_code(t);
+    emit_instruction(&t);
 }
 void generate_GETRETVAL(quad *q) {
     //quad->taddress = nextinstructionlabel();
@@ -359,7 +328,7 @@ void generate_GETRETVAL(quad *q) {
     make_operand(q->result, &t.result);
     make_retvaloperand(&t.arg1);
     t.srcLine = q->line;
-    emit_target_code(t);
+    emit_instruction(&t);
 } 
 
 void generate_FUNCSTART(quad *q)
@@ -371,7 +340,7 @@ void generate_FUNCSTART(quad *q)
     t.opcode = funcenter_v;
     make_operand(q->result, &t.result);
     t.srcLine = q->line;
-    emit_target_code(t);
+    emit_instruction(&t);
 }
 
 void generate_RETURN(quad *q)
@@ -380,7 +349,7 @@ void generate_RETURN(quad *q)
     t.opcode = assign_v;
     make_retvaloperand(&t.result);
     make_operand(q->arg1, &t.arg1);
-    emit_target_code(t);
+    emit_instruction(&t);
     //SymTabEntry f = top(funcstack);
     //append(f.retunList, nexrinstructionlabel());
     t.opcode = jeq_v;
@@ -388,7 +357,7 @@ void generate_RETURN(quad *q)
     //reset_operand(&t.arg1);
     t.result.type = label_a;
     t.srcLine = q->line;
-    emit_target_code(t);
+    emit_instruction(&t);
 }
 
 void generate_FUNCEND(quad *q)
@@ -400,7 +369,7 @@ void generate_FUNCEND(quad *q)
     t.opcode = funcexit_v;
     make_operand(q->result, &t.result);
     t.srcLine = q->line;
-    emit_target_code(t);
+    emit_instruction(&t);
 }
 
 void generate_AND(quad *q)

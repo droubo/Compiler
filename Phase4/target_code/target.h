@@ -2,6 +2,12 @@
 #define _TARGET_H
 
 #include "../quads/quads.h"
+#include "stacks.h"
+
+StringStack *StringHead=NULL, *StringTail=NULL;
+NumStack *NumHead=NULL, *NumTail=NULL;
+FunctionStack *FunHead=NULL, *FunTail=NULL;
+StringStack *LibHead=NULL, *LibTail=NULL;
 
 typedef enum vmopcode
 {
@@ -12,7 +18,7 @@ typedef enum vmopcode
     jle_v, jge_v, jlt_v, 
     jgt_v, call_v, pusharg_v,
     funcenter_v, funcexit_v, newtable_v,
-    tablegetelem_v, tablesetelem_v, nop_v
+    tablegetelem_v, tablesetelem_v, jump_v
 
 }vmopcode;
 
