@@ -1076,7 +1076,7 @@ funcblockend: {};
 const : 
 	REALCONST { $$ = newconstnumexpr((double)$1); }
 	| INTCONST { $$ = newconstnumexpr((double)$1); }
-	| STRING { $$ = newconststringexpr($1); }
+	| STRING { $$ = newconststringexpr($1);}
 	| NIL { $$ = newconstnullexpr(); }
 	| TRUE { $$ = newconstboolexpr(VAR_TRUE); }
 	| FALSE { $$ = newconstboolexpr(VAR_FALSE); }

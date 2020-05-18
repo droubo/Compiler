@@ -55,12 +55,11 @@ typedef enum expr_t {
 typedef enum iopcode {
     assign, add, sub, 
     mul, diva, mod, 
-    uminus, and, or, 
-    not, if_eq, if_noteq, 
+    uminus, and, or, if_eq, if_noteq, 
     if_lesseq, if_greatereq, if_less, 
     if_greater, call, param,
     ret, getretval, funcstart,
-    funcend, tablecreate, tablegetelem, tablesetelem, jump
+    funcend, tablecreate, tablegetelem, tablesetelem, jump, not
 } iopcode;
 
 typedef struct M {
