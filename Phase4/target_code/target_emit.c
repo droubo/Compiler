@@ -17,6 +17,15 @@ instruction* instructions = (instruction *) 0;
 unsigned total_Instructions = 0;
 unsigned int currInstruction = 0;
 
+instruction* make_new_instruction()
+{
+    instruction *t = (instruction*) malloc(sizeof(instruction));
+    t->arg1 = malloc(sizeof(vmarg));
+    t->arg2 = malloc(sizeof(vmarg));
+    t->result = malloc(sizeof(vmarg));
+
+    return t;
+}
 
 void expand_instruction (void){
     assert(total_Instructions == currInstruction);
@@ -36,8 +45,10 @@ void emit_instruction(instruction* i) {
     instruction * p = instructions + currInstruction++;
     p->arg1 = i->arg1;
     p->arg2 = i->arg2;
-    p->opcode = i->opcode;
     p->result = i->result;
+    p->label = i->label;
+    p->opcode = i->opcode;
+    printf("\nopcode %d:\n",p->opcode);
     p->srcLine = i->srcLine;
 }
 
@@ -45,25 +56,25 @@ void print_instruction_arg(vmarg * arg, FILE * file){
     if(arg != NULL)
         switch(arg->type)
         {
-           case label_a : fprintf(file,"00 "); fprintf(file,", %d:%s",arg->num_val,arg->str_val);
-           case global_a : fprintf(file,"01 "); fprintf(file,", %d:%s",arg->num_val,arg->str_val);
-           case formal_a : fprintf(file,"02 "); fprintf(file,", %d:%s",arg->num_val,arg->str_val);
-           case local_a : fprintf(file,"03 "); fprintf(file,", %d:%s",arg->num_val,arg->str_val);
-           case number_a : fprintf(file,"04 "); fprintf(file,", %d:%f",FindNumStackIndex(NumHead,arg->num_val),arg->num_val);
-           case string_a : fprintf(file,"05 "); fprintf(file,", %d:%s",FindStringStackIndex(StringHead,arg->str_val),arg->str_val);
-           case bool_a : fprintf(file,"06 "); fprintf(file,", %d",arg->bool_val);
-           case nil_a : fprintf(file,"07 "); fprintf(file,", NULL");
-           case userfunc_a : fprintf(file,"08 "); fprintf(file,", %d:%s",FindFunctionStackIndex(FunHead,arg->str_val),arg->str_val);
-           case libfunc_a : fprintf(file,"09 "); fprintf(file,", %d:%s",FindStringStackIndex(StringHead,arg->str_val),arg->str_val);
-           case retval_a : fprintf(file,"10 ");
-           default : printf("\nPRINT INSTRUCTION ASSERT FAILED\n"); assert(0);
+           case label_a : fprintf(file,"00 "); fprintf(file,", %d : %s    ",arg->num_val,arg->str_val); break;
+           case global_a : fprintf(file,"01 "); fprintf(file,", %d : %s   ",arg->num_val,arg->str_val); break;
+           case formal_a : fprintf(file,"02 "); fprintf(file,", %d : %s   ",arg->num_val,arg->str_val); break;
+           case local_a : fprintf(file,"03 "); fprintf(file,", %d : %s    ",arg->num_val,arg->str_val); break;
+           case number_a : fprintf(file,"04 "); fprintf(file,", %d : %f   ",FindNumStackIndex(NumHead,arg->num_val),arg->num_val); break;
+           case string_a : fprintf(file,"05 "); fprintf(file,", %d : %s   ",FindStringStackIndex(StringHead,arg->str_val),arg->str_val); break;
+           case bool_a : fprintf(file,"06 "); fprintf(file,", %d    ",arg->bool_val); break;
+           case nil_a : fprintf(file,"07 "); fprintf(file,", NULL   "); break;
+           case userfunc_a : fprintf(file,"08 "); fprintf(file,", %d : %s  ",FindFunctionStackIndex(FunHead,arg->str_val),arg->str_val); break;
+           case libfunc_a : fprintf(file,"09 "); fprintf(file,", %d : %s  ",FindStringStackIndex(StringHead,arg->str_val),arg->str_val); break;
+           case retval_a : fprintf(file,"10     "); break;
+           default : printf("\nPRINT INSTRUCTION ASSERT FAILED : %d\n",arg->type); assert(0);
         }
     
 }
 
 void print_instructions(FILE * file, int max_lines){
     int i, j;
-    printf("\n\033[1;32m>> \033[01;33mI CODE\n\n\033[0m");
+    printf("\n\033[1;32m>> \033[01;33mTARGET CODE\n\n\033[0m");
     instruction curr_instruction;
     for(i = 0; i < currInstruction; i++){
         curr_instruction = instructions[i];
@@ -117,38 +128,45 @@ void print_instructions(FILE * file, int max_lines){
 
             default: { fprintf(file, "*ERROR* "); break; }
         }
-        /*
         printf("\033[0m");
         switch(curr_instruction.opcode){
-            case if_eq:
-            case if_noteq:
-            case if_lesseq:
-            case if_greatereq:
-            case if_less:
-            case if_greater: {
-                    print_quad_arg(curr_instruction.arg1, file);
-                    print_quad_arg(curr_instruction.arg2, file);
+            case jeq_v:
+            case jne_v:
+            case jle_v:
+            case jge_v:
+            case jlt_v:
+            case jgt_v: {
+                    print_instruction_arg(curr_instruction.arg1, file);
+                    print_instruction_arg(curr_instruction.arg2, file);
                     printf("\033[0;32m");
-                    fprintf(file, "%d", curr_instruction.label);
+                    fprintf(file, "00, %d", curr_instruction.label);
                     printf("\033[0m");
                     break;
             }
-            case jump: {    
+            case jump_v: {    
                     printf("\033[0;32m"); 
-                    fprintf(file, "%d", curr_instruction.label);
+                    fprintf(file, "00, %d", curr_instruction.label);
                     printf("\033[0m");
                     break; }
+            case assign_v:
+            {
+                printf("\033[0;35m");
+                print_instruction_arg(curr_instruction.result, file);
+                printf("\033[0m");
+		        print_instruction_arg(curr_instruction.arg1, file);
+                break;
+            }
             default: {
                 printf("\033[0;35m");
-                print_quad_arg(curr_instruction.result, file);
+                print_instruction_arg(curr_instruction.result, file);
                 printf("\033[0m");
-		        print_quad_arg(curr_instruction.arg1, file);
-                print_quad_arg(curr_instruction.arg2, file);
+		        print_instruction_arg(curr_instruction.arg1, file);
+                print_instruction_arg(curr_instruction.arg2, file);
                 break;
             }
             
         }
-        */
+        
         fprintf(file, "\n");
     }
     printf("\n\033[1;32m>>> \033[01;33mEND\n\033[0m");

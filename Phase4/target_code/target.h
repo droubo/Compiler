@@ -48,10 +48,11 @@ typedef struct vmarg
 typedef struct instruction 
 {
     vmopcode opcode;
-    vmarg result;
-    vmarg arg1;
-    vmarg arg2;
+    vmarg* result;
+    vmarg* arg1;
+    vmarg* arg2;
     unsigned int srcLine;
+    unsigned int label;
 }instruction;
 
 typedef struct userfunc
@@ -78,7 +79,6 @@ void add_incomplete_jump(unsigned int instrNo, unsigned iaddress);
 
 /* generate target code , put this in parser*/
 void generate();
-
 
 
 /* for vm */

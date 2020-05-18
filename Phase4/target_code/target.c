@@ -132,23 +132,24 @@ void emit_instruction(instruction i)
 
 void generate_op(vmopcode op,quad *q, int flag)
 {
-    instruction t;
-    t.opcode = op;
-    make_operand(q->arg1, &t.arg1);
-    if(flag == 0) make_operand(q->arg2, &t.arg2);
-    make_operand(q->result, &t.result);
-    t.srcLine = q->line;
+    instruction *t = make_new_instruction();
+    t->opcode = op;
+    make_operand(q->arg1, t->arg1);
+    if(flag == 0) make_operand(q->arg2, t->arg2);
+    make_operand(q->result, t->result);
+    t->srcLine = q->line;
     /*quad->taddress = nextinstructionlabel();*/
-    emit_instruction(&t); 
+    emit_instruction(t); 
 }
 
 generate_relational(vmopcode op, quad* q) {
-    instruction t;
-    t.opcode = op;
-    make_operand(q->arg1, &t.arg1);
-    make_operand(q->arg2, &t.arg2);
-    t.result.type = label_a;
-    t.srcLine = q->line;
+    instruction *t = make_new_instruction();
+    t->opcode = op;
+    make_operand(q->arg1, t->arg1);
+    make_operand(q->arg2, t->arg2);
+    t->result->type = label_a;
+    t->srcLine = q->line;
+    t->label = q->label;
     /*
     if quad->label jump target < currprocessedquad() then
     t.result.value = quads[quad->label]->taddress;
@@ -156,7 +157,7 @@ generate_relational(vmopcode op, quad* q) {
     add_incomplete_jump(nextinstructionlabel(), quad->label);
     //quad->taddress = nextinstructionlabel();
     */
-    emit_instruction(&t);
+    emit_instruction(t);
 } 
 
 void generate_ADD(quad *q)
@@ -216,7 +217,7 @@ void generate_NOP(quad *q)
 
 void generate_JUMP(quad *q)
 {
-    generate_relational(jeq_v, q);
+    generate_relational(jump_v, q);
 }
 
 void generate_IF_EQ(quad *q)
@@ -312,28 +313,28 @@ void generate_OR (quad *q) {
 
 void generate_PARAM(quad *q) {
     //quad->taddress = nextinstructionlabel();
-    instruction t;
-    t.opcode = pusharg_v;
-    make_operand(q->arg1, &t.arg1);
-    t.srcLine = q->line;
-    emit_instruction(&t);
+    instruction *t = make_new_instruction();
+    t->opcode = pusharg_v;
+    make_operand(q->arg1, t->arg1);
+    t->srcLine = q->line;
+    emit_instruction(t);
 }
 void generate_CALL(quad *q) {
     //quad->taddress = nextinstructionlabel();
-    instruction t;
-    t.opcode = call_v;
-    make_operand(q->arg1, &t.arg1);
-    t.srcLine = q->line;
-    emit_instruction(&t);
+    instruction *t = make_new_instruction();
+    t->opcode = call_v;
+    make_operand(q->arg1, t->arg1);
+    t->srcLine = q->line;
+    emit_instruction(t);
 }
 void generate_GETRETVAL(quad *q) {
     //quad->taddress = nextinstructionlabel();
-    instruction t;
-    t.opcode = assign;
-    make_operand(q->result, &t.result);
-    make_retvaloperand(&t.arg1);
-    t.srcLine = q->line;
-    emit_instruction(&t);
+    instruction *t = make_new_instruction();
+    t->opcode = assign;
+    make_operand(q->result, t->result);
+    make_retvaloperand(t->arg1);
+    t->srcLine = q->line;
+    emit_instruction(t);
 } 
 
 void generate_FUNCSTART(quad *q)
@@ -341,28 +342,29 @@ void generate_FUNCSTART(quad *q)
     //SymTabEntry *f = quad->result->sym;
     //userfunctions.add(f->id, f->taddress, f->totallocals);
     //push(funcstack, f);
-    instruction t;
-    t.opcode = funcenter_v;
-    make_operand(q->result, &t.result);
-    t.srcLine = q->line;
-    emit_instruction(&t);
+    instruction *t = make_new_instruction();
+    t->opcode = funcenter_v;
+    make_operand(q->result, t->result);
+    t->srcLine = q->line;
+    emit_instruction(t);
 }
 
 void generate_RETURN(quad *q)
 {
-    instruction t;
-    t.opcode = assign_v;
-    make_retvaloperand(&t.result);
-    make_operand(q->arg1, &t.arg1);
-    emit_instruction(&t);
+    instruction *t = make_new_instruction();
+    instruction *t2 = make_new_instruction();
+    t->opcode = assign_v;
+    make_retvaloperand(t->result);
+    make_operand(q->arg1, t->arg1);
+    emit_instruction(t);
     //SymTabEntry f = top(funcstack);
     //append(f.retunList, nexrinstructionlabel());
-    t.opcode = jeq_v;
+    t2->opcode = jump_v;
     //reset_operand(&t.arg1);
     //reset_operand(&t.arg1);
-    t.result.type = label_a;
-    t.srcLine = q->line;
-    emit_instruction(&t);
+    t2->result->type = label_a;
+    t2->srcLine = q->line;
+    emit_instruction(t);
 }
 
 void generate_FUNCEND(quad *q)
@@ -370,11 +372,11 @@ void generate_FUNCEND(quad *q)
     //SymTabEntry f = pop(funcstack);
     //backpatch(f.returnList, nexrinstructionlabel());
     //quad->taddress = nextinstructionlabel();
-    instruction t;
-    t.opcode = funcexit_v;
-    make_operand(q->result, &t.result);
-    t.srcLine = q->line;
-    emit_instruction(&t);
+    instruction* t = make_new_instruction();
+    t->opcode = funcexit_v;
+    make_operand(q->result, t->result);
+    t->srcLine = q->line;
+    emit_instruction(t);
 }
 
 void generate_AND(quad *q)
