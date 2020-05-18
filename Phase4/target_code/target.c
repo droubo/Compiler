@@ -1,9 +1,14 @@
 #include "target.h"
 #include <string.h>
-#include "stacks.h"
 
 #define true 1
 #define false 0
+
+StringStack *StringHead=NULL, *StringTail=NULL;
+NumStack *NumHead=NULL, *NumTail=NULL;
+FunctionStack *FunHead=NULL, *FunTail=NULL;
+StringStack *LibHead=NULL, *LibTail=NULL;
+
 
 incomplete_jump* ij_head = (incomplete_jump*) 0;
 unsigned int ij_total = 0;

@@ -18,7 +18,6 @@ unsigned total_Instructions = 0;
 unsigned int currInstruction = 0;
 
 
-
 void expand_instruction (void){
     assert(total_Instructions == currInstruction);
     instruction * p = (instruction *) malloc(NEW_SIZE_I);

@@ -25,6 +25,8 @@
 #include "symtab/symtable.h"
 #include "statement/statement.h"
 #include "target_code/target.h"
+#include "target_code/target_emit.h"
+
 
 #define YY_DECL int alpha_yylex(void *yylval)
 
@@ -1499,6 +1501,7 @@ int main(int argc, char **argv)
 
 
 	generate();
+	print_instructions(stdout, yylineno);
 
 	return 0;
 }

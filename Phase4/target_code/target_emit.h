@@ -29,5 +29,4 @@
 #define CURR_SIZE_I (total*sizeof(instruction))
 #define NEW_SIZE_I (EXPAND_SIZE * sizeof(instruction) + CURR_SIZE)
 
-
 #endif

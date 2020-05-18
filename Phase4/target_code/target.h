@@ -4,10 +4,10 @@
 #include "../quads/quads.h"
 #include "stacks.h"
 
-StringStack *StringHead=NULL, *StringTail=NULL;
-NumStack *NumHead=NULL, *NumTail=NULL;
-FunctionStack *FunHead=NULL, *FunTail=NULL;
-StringStack *LibHead=NULL, *LibTail=NULL;
+extern StringStack *StringHead, *StringTail;
+extern NumStack *NumHead, *NumTail;
+extern FunctionStack *FunHead, *FunTail;
+extern StringStack *LibHead, *LibTail;
 
 typedef enum vmopcode
 {

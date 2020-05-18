@@ -3,7 +3,7 @@
 
 void pushStringStack(StringStack **head, StringStack **tail, char *s){
 	StringStack *temp = (StringStack *)malloc(sizeof(StringStack));
-	
+
 	if(FindStringStackIndex(*head, s) != - 1) return;
 
 	temp->s = s;
@@ -120,4 +120,4 @@ void print_NumStack(NumStack *head){
 		printf("NUM: %f\n", temp->num);
 		temp = temp->next;
 	}
-}
+} 
