@@ -1,0 +1,48 @@
+** ARGUMENTS FORMAT **
+    <TYPE>, <OFFSET>:<ID>
+
+    Example:
+    01, 0:x  ->  (global), offset 0, name x
+
+    ** COMMANDS FORMAT **
+    * ASSIGN
+    ASSIGN RES ARG1
+
+    * MATH
+    OPCODE RES ARG1 ARG2
+
+    * JUMP
+    OPCODE ARG1 ARG2 RES
+    JUMP RES
+
+    * FUNC
+    CALL RES
+    PUSHARG RES
+    FUNCENTER RES
+    FUNCEXIT RES
+
+    * TABLE
+    idfk pls fill this in
+
+** FILE FORMAT **
+
+    <MAGIC NUMBER>
+
+    CONST_STRINGS <SIZE>
+    STRING1
+    STRING2
+
+    CONST_NUMS <SIZE>
+    NUM1
+    NUM2
+
+    USER_FUNCS <SIZE>
+    <ADDRESS1>, <LOCAL SIZE1>, <ID1>
+    <ADDRESS2>, <LOCAL SIZE1>, <ID2>
+
+    GLOBAL_VARS <SIZE>
+    <TYPE>, <ID>
+
+    <CODE>
+
+    
