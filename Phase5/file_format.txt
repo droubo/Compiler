@@ -22,7 +22,12 @@
     FUNCEXIT RES
 
     * TABLE
-    idfk pls fill this in
+    NEWTABLE RES
+    TABLESETELEM RES ARG1 ARG2
+    TABLEGETELEM RES ARG1 ARG2
+
+    * NOP
+    NOPE.JPG
 
 ** FILE FORMAT **
 
@@ -45,4 +50,3 @@
 
     <CODE>
 
-    
