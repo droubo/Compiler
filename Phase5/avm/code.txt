@@ -1,0 +1,6 @@
+42069
+
+CONST_STRING 3
+"string1"
+"string 2"
+"string 3"

@@ -3,6 +3,9 @@
 #include "../command_impl/command_impl.h"
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
+
+#define MAGICNUMBER 42069
 
 #define AVM_STACKENV_SIZE 4
 #define AVM_STACK_SIZE 2048
@@ -80,18 +83,6 @@ void execute_cycle(void) {
         
 }
 
-double consts_getNumber (unsigned index){
-    
-}
-
-char * consts_getString (unsigned index){
-
-}
-
-char * libfuncs_getUsed (unsigned index){
-
-}
-
 void memclear_string(avm_memcell* m){
     assert(m->data.strVal);
     free(m->data.strVal);
@@ -112,19 +103,16 @@ void avm_memcellclear(avm_memcell * m){
     }
 }
 
-int main() {
-	/* ASSIGN x 10 */
-   	init_memcell_array(1, &const_nums);
-	init_instruction_array(1, &code);
-	const_nums[0].data.numVal = 10;
-	codeSize = 1;
-	code[0].opcode = assign_v;
-	code[0].result.type = global_a;
-	code[0].result.val = 0;
-	code[0].arg1.type = number_a;
-	code[0].arg1.val = 0;
+void parse_error(char * message){
+	printf("\033[0;31mERROR WHEN LOADING MACHINE CODE: %s\n", message);
+}
 
-	execute_cycle();
+void initialize_VM(char * filename){
+	
+}
+
+int main() {
+	initialize_VM("code.txt");
 }
 
 

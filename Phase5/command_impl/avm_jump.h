@@ -27,4 +27,8 @@ void execute_jgt (avm_instruction * instr){
     
 }
 
+void execute_jump (avm_instruction * instr){
+    
+}
+
 #endif

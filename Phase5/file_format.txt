@@ -33,7 +33,7 @@
 
     <MAGIC NUMBER>
 
-    CONST_STRINGS <SIZE>
+    CONST_STRING <SIZE>
     STRING1
     STRING2
 
@@ -45,8 +45,18 @@
     <ADDRESS1>, <LOCAL SIZE1>, <ID1>
     <ADDRESS2>, <LOCAL SIZE1>, <ID2>
 
+    LIB_FUNCS <SIZE>
+    <ID1>
+    <ID2>
+
     GLOBAL_VARS <SIZE>
     <TYPE>, <ID>
 
+    CODE <SIZE>
     <CODE>
 
+
+* Random notes *
+    Function names go in strval
+    Function addresses go in numval
+    magicnumber is 42069 and you know why that is the case bby <3
