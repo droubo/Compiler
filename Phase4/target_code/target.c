@@ -1,6 +1,6 @@
 #include "target.h"
 #include <string.h>
-
+#include <stdio.h>
 #define true 1
 #define false 0
 
@@ -45,7 +45,8 @@ void make_operand(expr* e, vmarg* arg){
         case tableitem_e:
         case arithexpr_e:
         case boolexpr_e:
-	case assignexpr_e:
+	    case assignexpr_e:
+        case retval_e:
         case newtable_e: {
             arg->num_val = e->sym->offset;
             arg->str_val = e->sym->name;
@@ -68,7 +69,6 @@ void make_operand(expr* e, vmarg* arg){
         case conststring_e: {
             arg->str_val = consts_newstring(e->strConst);
             pushStringStack(&StringHead, &StringTail, arg->str_val);
-            printf("STRRR \n\n\n\n", arg->str_val);
             arg->type = string_a; break;
         }
 
@@ -84,7 +84,7 @@ void make_operand(expr* e, vmarg* arg){
         case programfunc_e: {
             arg->type = userfunc_a;
             arg->num_val = e->sym->taddress;
-            arg->str_val = NULL;
+            arg->str_val = e->sym->name;
             pushFunctionStack(&FunHead, &FunTail, e->sym->name, e->sym->value.funcVal->iaddress, e->sym->value.funcVal->num_of_locals);
             break;
         }
@@ -331,8 +331,8 @@ void generate_GETRETVAL(quad *q) {
     //quad->taddress = nextinstructionlabel();
     instruction *t = make_new_instruction();
     t->opcode = assign;
-    make_operand(q->result, t->result);
-    make_retvaloperand(t->arg1);
+    make_operand(q->result, t->arg1);
+    make_retvaloperand(t->result);
     t->srcLine = q->line;
     emit_instruction(t);
 } 
@@ -355,16 +355,17 @@ void generate_RETURN(quad *q)
     instruction *t2 = make_new_instruction();
     t->opcode = assign_v;
     make_retvaloperand(t->result);
-    make_operand(q->arg1, t->arg1);
+    printf("STRRR %s %d\n\n\n\n", q->result->sym->name, q->result->type);
+    make_operand(q->result, t->arg1);
     emit_instruction(t);
     //SymTabEntry f = top(funcstack);
     //append(f.retunList, nexrinstructionlabel());
-    t2->opcode = jump_v;
+    //t2->opcode = jump_v;
     //reset_operand(&t.arg1);
     //reset_operand(&t.arg1);
-    t2->result->type = label_a;
-    t2->srcLine = q->line;
-    emit_instruction(t);
+    //t2->result->type = label_a;
+    //t2->srcLine = q->line;
+    //emit_instruction(t2);
 }
 
 void generate_FUNCEND(quad *q)
