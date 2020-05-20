@@ -1,11 +1,10 @@
 #include "avm.h"
 #include "../arrays/arrays.h"
 #include "../command_impl/command_impl.h"
+#include "../parser/parser.h"
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-
-#define MAGICNUMBER 42069
 
 #define AVM_STACKENV_SIZE 4
 #define AVM_STACK_SIZE 2048
@@ -51,13 +50,13 @@ avm_memcell * avm_translate_operand(vmarg * arg, avm_memcell * reg){
 
         case userfunc_a: {
             reg->type = userfunc_m;
-            reg->data.funcVal = arg->val;
+            reg->data.funcVal.address = arg->val;
             return reg;
         }
 
         case libfunc_a: {
             reg->type = libfunc_m;
-            reg->data.funcVal = arg->val;
+            reg->data.funcVal.address = arg->val;
             return reg;
         }
     }
@@ -112,7 +111,39 @@ void initialize_VM(char * filename){
 }
 
 int main() {
-	initialize_VM("code.txt");
+	FILE * file;
+    file = fopen("code.txt", "r");
+    do_magic(file);
+    read_const_strings(file);
+    int i;
+    printf("\nCONST_STRINGS\n");
+    for(i = 0; i < const_strings.size; i++){
+        printf("%s\n", const_strings.array[i].data.strVal);
+    }
+
+    read_const_nums(file);
+    printf("\nCONST_NUMS\n");
+    for(i = 0; i < const_nums.size; i++){
+        printf("%f\n", const_nums.array[i].data.numVal);
+    }
+
+    read_user_funcs(file);
+    printf("\nUSER_FUNCS\n");
+    for(i = 0; i < user_funcs.size; i++){
+        printf("%d %d %s\n",    user_funcs.array[i].data.funcVal.address, 
+                                user_funcs.array[i].data.funcVal.locals,
+                                user_funcs.array[i].data.funcVal.ID);
+    }
+
+    read_lib_funcs(file);
+    printf("\nLIB_FUNCS\n");
+    for(i = 0; i < lib_funcs.size; i++){
+        printf("%s\n", lib_funcs.array[i].data.libfuncVal);
+    }
+
+    read_globals(file);
+    printf("\nGLOBALS\n");
+    for(i = 0; i < globals.size; i++){
+        printf("%s\n", globals.array[i].data.strVal);
+    }
 }
-
-

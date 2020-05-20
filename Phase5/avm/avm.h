@@ -1,6 +1,9 @@
 #ifndef AVM_H
 #define AVM_H
 
+#define MAGICNUMBER "42069"
+#define MAGICNUMBERSIZE 5
+
 #include <stdlib.h>
 
 typedef enum vmarg_t 
@@ -57,6 +60,12 @@ typedef struct avm_table {
 	int a;
 } avm_table;
 
+typedef struct avm_user_func{
+    unsigned address;
+    unsigned locals;
+    char * ID;
+} avm_user_func;
+
 typedef struct avm_memcell {
 	avm_memcell_t type;
 	union {
@@ -64,7 +73,7 @@ typedef struct avm_memcell {
 		char * strVal;
 		unsigned char boolVal;
 		avm_table* tableVal;
-		unsigned funcVal;
+		avm_user_func funcVal;
 		char * libfuncVal;
 	} data;
 } avm_memcell;
@@ -76,22 +85,6 @@ typedef struct avm_instruction{
 	vmarg arg2;
 	vmarg result;
 } avm_instruction;
-
-avm_memcell * avm_memcell_create(avm_memcell_t type, double numVal, char * strVal,
-                                    unsigned char boolVal, avm_table * tableVal,
-                                    unsigned funcVal, char * libfuncVal){
-    avm_memcell * t;
-    t = malloc(sizeof(avm_memcell));
-    t->type = type;
-    t->data.numVal = numVal;
-    t->data.strVal = strVal;
-    t->data.boolVal = boolVal;
-    t->data.funcVal = funcVal;
-    t->data.libfuncVal = libfuncVal;
-
-    return t;
-
-}
 
 avm_memcell * avm_translate_operand(vmarg * arg, avm_memcell * reg);
 void execute_cycle(void);

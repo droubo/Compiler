@@ -1,6 +1,26 @@
 42069
-
-CONST_STRING 3
-"string1"
+3
+"stri 
+ng1"
 "string 2"
 "string 3"
+3
+4
+20
+394
+2
+4
+1
+"f1"
+13
+2
+"f2"
+3
+"cos"
+"tan"
+"print"
+4
+"x"
+"y"
+"z"
+"blazeit"

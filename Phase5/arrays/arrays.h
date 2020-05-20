@@ -16,12 +16,17 @@ memcell_array const_strings;
 memcell_array const_nums;
 memcell_array user_funcs;
 memcell_array lib_funcs;
+memcell_array globals;
 avm_instruction * code;
 
-memcell_array init_memcell_array(int size){
+memcell_array init_memcell_array(int size, avm_memcell_t type){
     memcell_array temp;
+    int i;
     temp.array = (avm_memcell*) malloc(sizeof(avm_memcell) * size);  
     temp.size = size;
+    for(i = 0; i < const_strings.size; i++){
+        temp.array[i].type = string_m;
+    }
     return temp;
 }
 
@@ -45,6 +50,10 @@ char * lib_funcs_getUsed (unsigned index){
 
 unsigned user_funcs_getUsed_addr (unsigned index){
    return user_funcs.array[index].data.numVal;
+}
+
+char * user_funcs_getUsed_name (unsigned index){
+   return user_funcs.array[index].data.strVal;
 }
 
 #endif

@@ -32,31 +32,31 @@
 ** FILE FORMAT **
 
     <MAGIC NUMBER>
-
-    CONST_STRING <SIZE>
-    STRING1
-    STRING2
-
-    CONST_NUMS <SIZE>
+    <SIZE>
+    "STRING1"
+    "STRING2"
+    <SIZE>
     NUM1
     NUM2
-
-    USER_FUNCS <SIZE>
-    <ADDRESS1>, <LOCAL SIZE1>, <ID1>
-    <ADDRESS2>, <LOCAL SIZE1>, <ID2>
-
-    LIB_FUNCS <SIZE>
-    <ID1>
-    <ID2>
-
-    GLOBAL_VARS <SIZE>
-    <TYPE>, <ID>
-
-    CODE <SIZE>
+    <SIZE>
+    <ADDRESS1>
+    <LOCAL SIZE1>
+    "<ID1>"
+    <ADDRESS2>
+    <LOCAL SIZE2>
+    "<ID2>"
+    <SIZE>
+    "<ID1>"
+    "<ID2>"
+    <SIZE>
+    "<ID1>"
+    "<ID2>"
+    CODE 
+    <SIZE>
     <CODE>
 
+// Const strings, const nums, user funcs, lib funcs, global vars
 
 * Random notes *
-    Function names go in strval
-    Function addresses go in numval
+    global names go in strVal and then go to stack
     magicnumber is 42069 and you know why that is the case bby <3
