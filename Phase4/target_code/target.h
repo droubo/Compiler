@@ -63,20 +63,6 @@ typedef struct userfunc
 }userfunc;
 
 
-typedef struct incomplete_jump
-{
-    unsigned int instrNo; /* jump instruction number*/
-    unsigned int iaddress;/*i-code jump target address*/
-    struct incomplete_jump* next;/*linked list*/
-}incomplete_jump;
-
-extern incomplete_jump* ij_head;
-extern unsigned int ij_total;
-
-void add_incomplete_jump(unsigned int instrNo, unsigned iaddress);
-
-
-
 /* generate target code , put this in parser*/
 void generate();
 

@@ -9,11 +9,6 @@ NumStack *NumHead=NULL, *NumTail=NULL;
 FunctionStack *FunHead=NULL, *FunTail=NULL;
 StringStack *LibHead=NULL, *LibTail=NULL;
 
-
-incomplete_jump* ij_head = (incomplete_jump*) 0;
-unsigned int ij_total = 0;
-
-
 char* consts_newstring(char *s)
 {
     char *tmp = malloc(strlen(s));
@@ -109,30 +104,10 @@ void make_booloperand(vmarg* arg, unsigned int val){
 void make_retvaloperand(vmarg *arg){
     arg->type = retval_a;
 }
-/* generate */
-/*
-void emit_instruction(instruction i)
-{
-    printf("LINE %d ", i.srcLine);
-    printf("| %s ", print_vm_opcode(i.opcode));
-
-    if(i.result.num_val <  100000){
-        printf("| %f ", i.result.num_val);
-    }
-    if(i.arg1.num_val <  100000){
-        printf("| %f ", i.arg1.num_val);
-    }
-    if(i.arg2.num_val <  100000){
-        printf("| %f ", i.arg2.num_val);
-    }
-    //printf("LINE %d | vmopcode : %s | result : %d | arg1 : %d | arg2 : %d\n",i.srcLine,print_vm_opcode(i.opcode),i.result.val,i.arg1.val,i.arg2.val);
-    printf("\n");
-}
-*/
 
 void generate_op(vmopcode op,quad *q, int flag)
 {
-    instruction *t = make_new_instruction();
+    instruction *t = (instruction*) make_new_instruction();
     t->opcode = op;
     make_operand(q->arg1, t->arg1);
     if(flag == 0) make_operand(q->arg2, t->arg2);
@@ -143,7 +118,7 @@ void generate_op(vmopcode op,quad *q, int flag)
 }
 
 generate_relational(vmopcode op, quad* q) {
-    instruction *t = make_new_instruction();
+    instruction *t = (instruction*) make_new_instruction();
     t->opcode = op;
     make_operand(q->arg1, t->arg1);
     make_operand(q->arg2, t->arg2);
@@ -313,7 +288,7 @@ void generate_OR (quad *q) {
 
 void generate_PARAM(quad *q) {
     //quad->taddress = nextinstructionlabel();
-    instruction *t = make_new_instruction();
+    instruction *t = (instruction*) make_new_instruction();
     t->opcode = pusharg_v;
     make_operand(q->arg1, t->arg1);
     t->srcLine = q->line;
@@ -321,7 +296,7 @@ void generate_PARAM(quad *q) {
 }
 void generate_CALL(quad *q) {
     //quad->taddress = nextinstructionlabel();
-    instruction *t = make_new_instruction();
+    instruction *t = (instruction*) make_new_instruction();
     t->opcode = call_v;
     make_operand(q->arg1, t->arg1);
     t->srcLine = q->line;
@@ -329,7 +304,7 @@ void generate_CALL(quad *q) {
 }
 void generate_GETRETVAL(quad *q) {
     //quad->taddress = nextinstructionlabel();
-    instruction *t = make_new_instruction();
+    instruction *t = (instruction*) make_new_instruction();
     t->opcode = assign;
     make_operand(q->result, t->arg1);
     make_retvaloperand(t->result);
@@ -342,7 +317,7 @@ void generate_FUNCSTART(quad *q)
     //SymTabEntry *f = quad->result->sym;
     //userfunctions.add(f->id, f->taddress, f->totallocals);
     //push(funcstack, f);
-    instruction *t = make_new_instruction();
+    instruction *t = (instruction*) make_new_instruction();
     t->opcode = funcenter_v;
     make_operand(q->result, t->result);
     t->srcLine = q->line;
@@ -351,8 +326,8 @@ void generate_FUNCSTART(quad *q)
 
 void generate_RETURN(quad *q)
 {
-    instruction *t = make_new_instruction();
-    instruction *t2 = make_new_instruction();
+    instruction *t = (instruction*) make_new_instruction();
+    instruction *t2 = (instruction*) make_new_instruction();
     t->opcode = assign_v;
     make_retvaloperand(t->result);
     printf("STRRR %s %d\n\n\n\n", q->result->sym->name, q->result->type);
@@ -373,7 +348,7 @@ void generate_FUNCEND(quad *q)
     //SymTabEntry f = pop(funcstack);
     //backpatch(f.returnList, nexrinstructionlabel());
     //quad->taddress = nextinstructionlabel();
-    instruction* t = make_new_instruction();
+    instruction* t = (instruction*) make_new_instruction();
     t->opcode = funcexit_v;
     make_operand(q->result, t->result);
     t->srcLine = q->line;
