@@ -39,7 +39,7 @@ typedef enum vmopcode
     jump_v,
 
     call_v, pusharg_v, funcenter_v, 
-    uncexit_v, 
+    funcexit_v, 
 
     newtable_v, tablegetelem_v, tablesetelem_v,
     nop_v
@@ -63,7 +63,6 @@ typedef struct avm_table {
 typedef struct avm_user_func{
     unsigned address;
     unsigned locals;
-    char * ID;
 } avm_user_func;
 
 typedef struct avm_memcell {
@@ -86,7 +85,7 @@ typedef struct avm_instruction{
 	vmarg result;
 } avm_instruction;
 
-avm_memcell * avm_translate_operand(vmarg * arg, avm_memcell * reg);
+avm_memcell * avm_translate_operand(vmarg arg, avm_memcell * reg);
 void execute_cycle(void);
 
 /** Command execution functions **/

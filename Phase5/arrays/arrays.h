@@ -3,9 +3,8 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
 #include "../avm/avm.h"
-
-int const_strings_size, const_nums_size, user_funcs_size, lib_funcs_size;
 
 typedef struct memcell_array {
     avm_memcell * array;
@@ -36,11 +35,11 @@ void init_instruction_array(int size, int * codeSize){
 }
 
 double consts_getNumber (unsigned index){
-    assert(index < const_strings_size);
     return const_nums.array[index].data.numVal;
 }
 
 char * consts_getString (unsigned index){
+    assert(index <= const_strings.size);
 	return const_strings.array[index].data.strVal;
 }
 

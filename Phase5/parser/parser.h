@@ -2,6 +2,7 @@
 #define PARSER_H
 
 #include "../avm/avm.h"
+#include "../memory/memory.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -39,9 +40,18 @@ double read_double(FILE * file){
 unsigned read_unsigned(FILE * file){
     char * buf;
     int i;
+    char in;
     buf = (char *) malloc(sizeof(char) * 11);
 
-    fgets(buf, 11, file);
+    buf = malloc(sizeof(char) * 11);
+	i = 0;
+	in = fgetc(file);
+	while(in != ' ' && in != EOF && in != '\n'){
+		buf[i] = in;
+		i++;
+		in = fgetc(file);
+	}
+	buf[i] = '\0';
     return atoi(buf);
 }
 
@@ -87,12 +97,8 @@ void read_user_funcs(FILE * file){
 
     user_funcs = init_memcell_array(size, userfunc_m);
     for(i = 0; i < size; i++){
-        // Addr
         user_funcs.array[i].data.funcVal.address = read_unsigned(file);
-        // Localsize
         user_funcs.array[i].data.funcVal.locals = read_unsigned(file);
-        // ID
-        user_funcs.array[i].data.funcVal.ID = read_string(file);
     }
 }
 
@@ -106,13 +112,147 @@ void read_lib_funcs(FILE * file){
     }
 }
 
-void read_globals(FILE * file){
+void read_globals(FILE * file, avm_memory * memory){
     int i;
     int size = read_unsigned(file);
 
     globals = init_memcell_array(size, number_m);
     for(i = 0; i < size; i++){
         globals.array[i].data.strVal = read_string(file);
+        push_stack(memory, globals.array[i]);
+    }
+}
+
+vmopcode read_op(FILE * file){
+    char * buf;
+    char in;
+    int i;
+    buf = malloc(sizeof(char) * 20);
+
+    in = fgetc(file);
+    i = 0;
+    while(in != ' ' && in != EOF){
+        buf[i] = in;
+        i++;
+        in = fgetc(file);
+    }
+    buf[i] = '\0';
+    if(strcmp(buf, "ASSIGN") == 0)      		return assign_v;
+
+    else if(strcmp(buf, "ADD") == 0)    		return add_v;
+    else if(strcmp(buf, "SUB") == 0)    		return sub_v;
+    else if(strcmp(buf, "MUL") == 0)    		return mul_v;
+    else if(strcmp(buf, "DIV") == 0)    		return div_v;
+    else if(strcmp(buf, "MOD") == 0)    		return mod_v;
+
+    else if(strcmp(buf, "JEQ") == 0)    		return jeq_v;
+    else if(strcmp(buf, "JNE") == 0)    		return jne_v;
+    else if(strcmp(buf, "JLE") == 0)    		return jle_v;
+    else if(strcmp(buf, "JGE") == 0)    		return jge_v;
+    else if(strcmp(buf, "JLT") == 0)    		return jlt_v;
+    else if(strcmp(buf, "JGT") == 0)    		return jgt_v;
+    else if(strcmp(buf, "JUMP") == 0)   		return jump_v;
+
+    else if(strcmp(buf, "CALL") == 0)       	return call_v;
+    else if(strcmp(buf, "PUSHARG") == 0)    	return pusharg_v;
+    else if(strcmp(buf, "FUNCENTER") == 0)  	return funcenter_v;
+    else if(strcmp(buf, "UNCEXIT") == 0)    	return funcexit_v;
+
+    else if(strcmp(buf, "NEWTABLE") == 0)    	return newtable_v;
+    else if(strcmp(buf, "TABLEGETELEM") == 0)	return tablegetelem_v;
+    else if(strcmp(buf, "TABLESETELEM") == 0)	return tablesetelem_v;
+	else  		 								return nop_v;
+	
+}
+
+vmarg read_vmarg(FILE * file){
+	char * buf;
+	int type;
+	int i;
+	char in;
+	vmarg res;
+
+	buf = malloc(sizeof(char) * 2);
+	buf[0] = fgetc(file);
+	buf[1] = fgetc(file);
+	buf[3] = '\0';
+
+	type = atoi(buf);
+	assert(type <= 10);
+	res.type = type;
+
+	buf[0] = fgetc(file);
+	assert(buf[0] == ':');
+
+	res.val = read_unsigned(file);
+	return res;
+}
+
+void read_code(FILE * file, int * codeSize){
+    int i;
+    int size = read_unsigned(file);
+
+    init_instruction_array(size, codeSize);
+    for(i = 0; i < size; i++){
+        code[i].srcLine = read_unsigned(file);
+        code[i].opcode = read_op(file);
+        printf("%d [%d] %d ", i,  code[i].srcLine, code[i].opcode);
+        switch(code[i].opcode){
+            case assign_v: {
+                code[i].result = read_vmarg(file);
+                code[i].arg1 = read_vmarg(file);
+                printf("%d:%d %d:%d\n", code[i].result.type, code[i].result.val,
+                                        code[i].arg1.type, code[i].arg1.val);
+                break;
+            }
+            case add_v:
+            case sub_v:
+            case mul_v:
+            case div_v:
+            case mod_v: 
+            case tablegetelem_v:
+            case tablesetelem_v: {
+                code[i].result = read_vmarg(file);
+                code[i].arg1 = read_vmarg(file);
+                code[i].arg2 = read_vmarg(file);
+                printf("%d:%d %d:%d %d:%d\n", code[i].result.type, code[i].result.val,
+                                        code[i].arg1.type, code[i].arg1.val,
+                                        code[i].arg2.type, code[i].arg2.val);
+                break;
+            }
+            case jeq_v:
+            case jne_v:
+            case jle_v:
+            case jge_v:
+            case jlt_v:
+            case jgt_v: {
+                code[i].arg1 = read_vmarg(file);
+                code[i].arg2 = read_vmarg(file);
+                code[i].result.val = read_unsigned(file);
+            printf("%d:%d %d:%d %d\n", code[i].result.type, code[i].result.val,
+                                        code[i].arg1.type, code[i].arg1.val,
+                                        code[i].arg2.val);
+                break;
+            }
+
+            case jump_v: {
+                code[i].result.val = read_unsigned(file);
+                printf("%d\n", code[i].result.val);
+                break;
+            }
+            case call_v: 
+            case pusharg_v: 
+            case funcenter_v:
+            case funcexit_v: 
+            case newtable_v: {
+                code[i].result = read_vmarg(file);
+                printf("%d:%d\n", code[i].result.type, code[i].result.val);
+                break;
+            }
+            case nop_v:{ break; }
+        }
+
+		fgetc(file);
     }
 }
 

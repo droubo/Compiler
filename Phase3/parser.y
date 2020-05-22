@@ -212,7 +212,7 @@ statements:
 | error_statement statements
 ;
 
-error_statement : error statement;
+error_statement : error  { fail_icode = 1; } statement;
 
 statement : 
 	expr SEMICOLON { make_stmt(&$$);}
