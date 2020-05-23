@@ -3,19 +3,19 @@
 
 #include "../avm/avm.h"
 
-void execute_call (avm_instruction * instr) {
+void execute_call (avm_instruction * instr, avm_memory * memory) {
 
 }
 
-void execute_pusharg (avm_instruction * instr) {
+void execute_pusharg (avm_instruction * instr, avm_memory * memory) {
 
 }
 
-void execute_funcenter (avm_instruction * instr) {
+void execute_funcenter (avm_instruction * instr, avm_memory * memory) {
 
 }
 
-void execute_funcexit (avm_instruction * instr) {
+void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
 
 }
 

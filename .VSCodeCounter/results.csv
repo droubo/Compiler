@@ -1,0 +1,13 @@
+"filename", "language", "C++", "C", "comment", "blank", "total"
+"c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\avm\avm.h", "C++", 144, 0, 9, 38, 191
+"c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\avm\avm_controller.c", "C", 0, 152, 0, 32, 184
+"c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\command_impl\avm_assign.h", "C++", 17, 0, 0, 4, 21
+"c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\command_impl\avm_func.h", "C++", 12, 0, 0, 11, 23
+"c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\command_impl\avm_jump.h", "C++", 18, 0, 0, 16, 34
+"c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\command_impl\avm_math.h", "C++", 14, 0, 0, 12, 26
+"c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\command_impl\avm_table.h", "C++", 12, 0, 0, 10, 22
+"c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\command_impl\command_impl.h", "C++", 8, 0, 0, 2, 10
+"c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\memory\memory.h", "C++", 57, 0, 0, 12, 69
+"c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\parser\parser.h", "C++", 223, 0, 0, 36, 259
+"c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\table\table.h", "C++", 10, 0, 0, 4, 14
+"Total", "-", 515, 152, 9, 177, 853

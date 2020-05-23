@@ -3,23 +3,23 @@
 
 #include "../avm/avm.h"
 
-void execute_add (avm_instruction * instr){
+void execute_add (avm_instruction * instr, avm_memory * memory){
 
 }
 
-void execute_sub (avm_instruction * instr){
+void execute_sub (avm_instruction * instr, avm_memory * memory){
 
 }
 
-void execute_mul (avm_instruction * instr){
+void execute_mul (avm_instruction * instr, avm_memory * memory){
 
 }
 
-void execute_div (avm_instruction * instr){
+void execute_div (avm_instruction * instr, avm_memory * memory){
 
 }
 
-void execute_mod (avm_instruction * instr){
+void execute_mod (avm_instruction * instr, avm_memory * memory){
 
 }
 

@@ -1,5 +1,4 @@
 #include "avm.h"
-#include "../arrays/arrays.h"
 #include "../command_impl/command_impl.h"
 #include "../parser/parser.h"
 #include "../memory/memory.h"
@@ -13,21 +12,21 @@
 
 avm_memory memory;
 
-
-unsigned int executionFinished = 0;
+unsigned executionFinished = 0;
 unsigned currLine = 0;
 unsigned codeSize = 0; 
+unsigned executionStarted = 0;
 
 avm_memcell * avm_translate_operand(vmarg arg, avm_memcell * reg){
     switch(arg.type){
-        case global_a:  return &(memory.stack)[AVM_STACK_SIZE - 1 - (unsigned int) arg.val];
+        case global_a:  return &(memory.stack[AVM_STACK_SIZE - 1 - (unsigned int) arg.val]);
         case local_a:   return &(memory.stack[memory.topsp - (unsigned int) arg.val]);
         case formal_a:  return &(memory.stack[memory.topsp + AVM_STACKENV_SIZE + 1 + (unsigned int) arg.val]);
 
         case retval_a:  return &(memory.retval);
         case number_a: {
             reg->type = number_m;
-            reg->data.numVal = 5;
+            reg->data.numVal = consts_getNumber(arg.val);
             return reg;
         }
 
@@ -72,7 +71,7 @@ void execute_cycle(void) {
         if(instr->srcLine)
             currLine = instr->srcLine;
         unsigned oldPC = memory.pc;
-        (*executeFuncs[instr->opcode])(instr);
+        (*executeFuncs[instr->opcode])(instr, &memory);
         if(memory.pc == oldPC)
             ++memory.pc;
     }
@@ -86,21 +85,42 @@ void memclear_string(avm_memcell* m){
 
 void memclear_table(avm_memcell* m){
     assert(m->data.tableVal);
-    // Decrease refrence counter of the table
-    //avm_tablecrefcounter(m->data.tableVal);
+    avm_refcounter_decr(m->data.tableVal);
 }
 
 void avm_memcellclear(avm_memcell * m){
     if(m->type != undef_m) {
+        printf("mmm %d %s\n", m->type, m->data.strVal);  
         memclear_func_t f = memclearFuncs[m->type];
+              
         if(f)
             (*f)(m);
         m->type = undef_m;
     }
 }
 
+void avm_assign(avm_memcell * lv, avm_memcell * rv){
+    if(lv == rv)
+        return;
+    if(lv->type == table_m && rv->type == table_m &&
+        lv->data.tableVal == rv->data.tableVal) return;
+    if(rv->type == undef_m && executionStarted)
+        avm_warning("ASSIGNMENT FROM UNDEFINED CONTENT");
+    avm_memcellclear(lv);
+    memcpy(lv, rv, sizeof(avm_memcell));
+
+    if(lv->type == string_m)
+        lv->data.strVal = strdup(rv->data.strVal);
+    else if (lv->type == table_m)
+        avm_refcounter_incr(lv->data.tableVal);
+}
+
 void parse_error(char * message){
 	printf("\033[0;31mERROR WHEN LOADING MACHINE CODE: %s\n", message);
+}
+
+void avm_warning(char * message){
+    printf("RUNTIME WARNING: %s\n", message);
 }
 
 void initialize_VM(char * filename){
@@ -115,38 +135,50 @@ int main() {
     do_magic(file);
     read_const_strings(file);
     int i;
-    printf("\nCONST_STRINGS\n");
+    printf(">> LOADING ALPHA FILE");
+    printf("\n  > CONST_STRINGS\n");
     for(i = 0; i < const_strings.size; i++){
-        printf("%s\n", const_strings.array[i].data.strVal);
+        printf("    [%d] %s\n", i, const_strings.array[i].data.strVal);
     }
 
     read_const_nums(file);
-    printf("\nCONST_NUMS\n");
+    printf("\n  > CONST_NUMS\n");
     for(i = 0; i < const_nums.size; i++){
-        printf("%f\n", const_nums.array[i].data.numVal);
+        printf("    [%d] %f\n", i, const_nums.array[i].data.numVal);
     }
 
     read_user_funcs(file);
-    printf("\nUSER_FUNCS\n");
+    printf("\n  > USER_FUNCS\n");
     for(i = 0; i < user_funcs.size; i++){
-        printf("%d %d\n",    user_funcs.array[i].data.funcVal.address, 
-                                user_funcs.array[i].data.funcVal.locals);
+        printf("    [%d] %d %d\n", i, user_funcs.array[i].data.funcVal.address, 
+                                    user_funcs.array[i].data.funcVal.locals);
     }
 
     read_lib_funcs(file);
-    printf("\nLIB_FUNCS\n");
+    printf("\n  > LIB_FUNCS\n");
     for(i = 0; i < lib_funcs.size; i++){
-        printf("%s\n", lib_funcs.array[i].data.libfuncVal);
+        printf("    [%d] %s\n", i, lib_funcs.array[i].data.libfuncVal);
     }
 
     read_globals(file, &memory);
-    printf("\nGLOBALS\n");
+    printf("\n  > GLOBALS\n");
     for(i = 0; i < globals.size; i++){
-        printf("%s\n", globals.array[i].data.strVal);
+        printf("    [%d] %s\n", i, globals.array[i].data.strVal);
     }
 
-    printf("\nCODE\n");
+    printf("\n  > CODE\n");
     read_code(file, &codeSize);
-    printf("\n\nFILE LOADED.\n");
-    execute_cycle();
+
+    printf("\n>> FILE LOADED\n");
+    
+    executionStarted = 1;
+    printf("\n>> EXECUTING CODE...\n");
+    for(i = 0; i < codeSize; i++){
+        execute_cycle();
+    }
+
+    if(executionFinished && memory.pc != AVM_ENDING_PC)
+        printf("RUNTIME ERROR.\nPC = %d\n", memory.pc);
+
+    printf("\n>> DONE\n");
 }

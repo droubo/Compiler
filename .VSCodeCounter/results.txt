@@ -1,0 +1,41 @@
+Date : 2020-05-23 14:45:16
+Directory : c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5
+Total : 11 files,  667 codes, 9 comments, 177 blanks, all 853 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| C++      |         10 |        515 |          9 |        145 |        669 |
+| C        |          1 |        152 |          0 |         32 |        184 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++-----------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                        | files      | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                           |         11 |        667 |          9 |        177 |        853 |
+| avm                                                                         |          2 |        296 |          9 |         70 |        375 |
+| command_impl                                                                |          6 |         81 |          0 |         55 |        136 |
+| memory                                                                      |          1 |         57 |          0 |         12 |         69 |
+| parser                                                                      |          1 |        223 |          0 |         36 |        259 |
+| table                                                                       |          1 |         10 |          0 |          4 |         14 |
++-----------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-----------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                    | language | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\avm\avm.h                   | C++      |        144 |          9 |         38 |        191 |
+| c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\avm\avm_controller.c        | C        |        152 |          0 |         32 |        184 |
+| c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\command_impl\avm_assign.h   | C++      |         17 |          0 |          4 |         21 |
+| c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\command_impl\avm_func.h     | C++      |         12 |          0 |         11 |         23 |
+| c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\command_impl\avm_jump.h     | C++      |         18 |          0 |         16 |         34 |
+| c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\command_impl\avm_math.h     | C++      |         14 |          0 |         12 |         26 |
+| c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\command_impl\avm_table.h    | C++      |         12 |          0 |         10 |         22 |
+| c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\command_impl\command_impl.h | C++      |          8 |          0 |          2 |         10 |
+| c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\memory\memory.h             | C++      |         57 |          0 |         12 |         69 |
+| c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\parser\parser.h             | C++      |        223 |          0 |         36 |        259 |
+| c:\Users\ZiKok\Documents\GitHub\Compiler\Phase5\table\table.h               | C++      |         10 |          0 |          4 |         14 |
+| Total                                                                       |          |        667 |          9 |        177 |        853 |
++-----------------------------------------------------------------------------+----------+------------+------------+------------+------------+

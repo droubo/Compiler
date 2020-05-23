@@ -3,31 +3,31 @@
 
 #include "../avm/avm.h"
 
-void execute_jeq (avm_instruction * instr){
+void execute_jeq (avm_instruction * instr, avm_memory * memory){
     
 }
 
-void execute_jne (avm_instruction * instr){
+void execute_jne (avm_instruction * instr, avm_memory * memory){
     
 }
 
-void execute_jle (avm_instruction * instr){
+void execute_jle (avm_instruction * instr, avm_memory * memory){
     
 }
 
-void execute_jge (avm_instruction * instr){
+void execute_jge (avm_instruction * instr, avm_memory * memory){
     
 }
 
-void execute_jlt (avm_instruction * instr){
+void execute_jlt (avm_instruction * instr, avm_memory * memory){
     
 }
 
-void execute_jgt (avm_instruction * instr){
+void execute_jgt (avm_instruction * instr, avm_memory * memory){
     
 }
 
-void execute_jump (avm_instruction * instr){
+void execute_jump (avm_instruction * instr, avm_memory * memory){
     
 }
 

@@ -3,6 +3,7 @@
 
 #define MAGICNUMBER "42069"
 #define MAGICNUMBERSIZE 5
+#define AVM_STACK_SIZE 2048
 
 #include <stdlib.h>
 
@@ -56,10 +57,6 @@ typedef enum avm_memcell_t {
 	undef_m		= 7
 } avm_memcell_t;
 
-typedef struct avm_table {
-	int a;
-} avm_table;
-
 typedef struct avm_user_func{
     unsigned address;
     unsigned locals;
@@ -71,11 +68,33 @@ typedef struct avm_memcell {
 		double numVal;
 		char * strVal;
 		unsigned char boolVal;
-		avm_table* tableVal;
+		void * tableVal;
 		avm_user_func funcVal;
 		char * libfuncVal;
 	} data;
+    // Used for tables
+    struct avm_memcell * next;
 } avm_memcell;
+
+typedef struct avm_table {
+	avm_memcell * index;
+    avm_memcell * content;
+    unsigned refcounter;
+} avm_table;
+
+typedef struct avm_memory {
+    unsigned top;
+    unsigned topsp;
+    unsigned pc;
+    avm_memcell stack[AVM_STACK_SIZE];
+    avm_memcell ax, bx, cx;
+    avm_memcell retval;
+} avm_memory;
+
+typedef struct memcell_array {
+    avm_memcell * array;
+    int size;
+} memcell_array;
 
 typedef struct avm_instruction{
 	vmopcode opcode;
@@ -86,44 +105,45 @@ typedef struct avm_instruction{
 } avm_instruction;
 
 avm_memcell * avm_translate_operand(vmarg arg, avm_memcell * reg);
+void avm_warning(char * message);
 void execute_cycle(void);
 
 /** Command execution functions **/
 
-typedef void (*execute_func_t)(avm_instruction *);
+typedef void (*execute_func_t)(avm_instruction *, avm_memory *);
 
 // TODO: These in the appropriate files
 
 // avm_assign.h
-void execute_assign (avm_instruction * instr);
+void execute_assign (avm_instruction * instr, avm_memory * memory);
 
 // avm_math.h
-void execute_add (avm_instruction * instr);
-void execute_sub (avm_instruction * instr);
-void execute_mul (avm_instruction * instr);
-void execute_div (avm_instruction * instr);
-void execute_mod (avm_instruction * instr);
+void execute_add (avm_instruction * instr, avm_memory * memory);
+void execute_sub (avm_instruction * instr, avm_memory * memory);
+void execute_mul (avm_instruction * instr, avm_memory * memory);
+void execute_div (avm_instruction * instr, avm_memory * memory);
+void execute_mod (avm_instruction * instr, avm_memory * memory);
 
 // avm_jump.h
-void execute_jeq (avm_instruction * instr);
-void execute_jne (avm_instruction * instr);
-void execute_jle (avm_instruction * instr);
-void execute_jge (avm_instruction * instr);
-void execute_jlt (avm_instruction * instr);
-void execute_jgt (avm_instruction * instr);
-void execute_jump (avm_instruction * instr);
+void execute_jeq (avm_instruction * instr, avm_memory * memory);
+void execute_jne (avm_instruction * instr, avm_memory * memory);
+void execute_jle (avm_instruction * instr, avm_memory * memory);
+void execute_jge (avm_instruction * instr, avm_memory * memory);
+void execute_jlt (avm_instruction * instr, avm_memory * memory);
+void execute_jgt (avm_instruction * instr, avm_memory * memory);
+void execute_jump (avm_instruction * instr, avm_memory * memory);
 
 // avm_func.h
-void execute_call (avm_instruction * instr);
-void execute_pusharg (avm_instruction * instr);
-void execute_funcenter (avm_instruction * instr);
-void execute_funcexit (avm_instruction * instr);
+void execute_call (avm_instruction * instr, avm_memory * memory);
+void execute_pusharg (avm_instruction * instr, avm_memory * memory);
+void execute_funcenter (avm_instruction * instr, avm_memory * memory);
+void execute_funcexit (avm_instruction * instr, avm_memory * memory);
 
 // avm_table.h
-void execute_newtable (avm_instruction * instr);
-void execute_tablegetelem (avm_instruction * instr);
-void execute_tablesetelem (avm_instruction * instr);
-void execute_nop (avm_instruction * instr);
+void execute_newtable (avm_instruction * instr, avm_memory * memory);
+void execute_tablegetelem (avm_instruction * instr, avm_memory * memory);
+void execute_tablesetelem (avm_instruction * instr, avm_memory * memory);
+void execute_nop (avm_instruction * instr, avm_memory * memory);
 
 execute_func_t executeFuncs[] = {
 	execute_assign,
@@ -142,8 +162,6 @@ execute_func_t executeFuncs[] = {
     execute_nop
 };
 
-
-// TODO: This
 double consts_getNumber (unsigned index);
 char * consts_getString (unsigned index);
 char * libfuncs_getUsed (unsigned index);
@@ -155,6 +173,8 @@ void memclear_string(avm_memcell * m);
 void memclear_table(avm_memcell * m);
 void avm_memcellclear(avm_memcell * m);
 
+void avm_assign(avm_memcell * lv, avm_memcell * rv);
+
 memclear_func_t memclearFuncs[] = {
     0,
     memclear_string,
@@ -165,5 +185,7 @@ memclear_func_t memclearFuncs[] = {
     0,
     0
 };
+
+
 
 #endif

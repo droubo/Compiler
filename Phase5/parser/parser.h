@@ -116,10 +116,10 @@ void read_globals(FILE * file, avm_memory * memory){
     int i;
     int size = read_unsigned(file);
 
-    globals = init_memcell_array(size, number_m);
+    globals = init_memcell_array(size, undef_m);
     for(i = 0; i < size; i++){
         globals.array[i].data.strVal = read_string(file);
-        push_stack(memory, globals.array[i]);
+        push_stack(memory, &(globals.array[i]));
     }
 }
 
@@ -172,10 +172,10 @@ vmarg read_vmarg(FILE * file){
 	char in;
 	vmarg res;
 
-	buf = malloc(sizeof(char) * 2);
+	buf = malloc(sizeof(char) * 3);
 	buf[0] = fgetc(file);
 	buf[1] = fgetc(file);
-	buf[3] = '\0';
+	buf[2] = '\0';
 
 	type = atoi(buf);
 	assert(type <= 10);
@@ -196,7 +196,7 @@ void read_code(FILE * file, int * codeSize){
     for(i = 0; i < size; i++){
         code[i].srcLine = read_unsigned(file);
         code[i].opcode = read_op(file);
-        printf("%d [%d] %d ", i,  code[i].srcLine, code[i].opcode);
+        printf("    %d [%d] %d ", i,  code[i].srcLine, code[i].opcode);
         switch(code[i].opcode){
             case assign_v: {
                 code[i].result = read_vmarg(file);

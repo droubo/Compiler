@@ -2,15 +2,20 @@
 #define AVM_ASSIGN_H
 
 #include "../avm/avm.h"
+#include "../memory/memory.h"
+#include "../table/table.h"
+#include <string.h>
 #include <stdio.h>
 
-void execute_assign (avm_instruction * instr){
-    avm_memcell * cell_res, * cell_arg1;
-    cell_res = malloc(sizeof(avm_memcell));
-    cell_arg1 = malloc(sizeof(avm_memcell));
-    cell_res = avm_translate_operand(instr->result, cell_res);
-    cell_arg1 = avm_translate_operand(instr->arg1, cell_arg1);
-    cell_res->data = cell_arg1->data;
+void execute_assign (avm_instruction * instr, avm_memory * memory) {
+    avm_memcell * lv = avm_translate_operand(instr->result, (avm_memcell *) 0);
+    avm_memcell * rv = avm_translate_operand(instr->arg1, &(memory->ax)); 
+    assert(lv && (&(memory->stack[AVM_STACK_SIZE - 1]) >= lv && lv > &(memory->stack[memory->top])) 
+            || lv == &(memory->retval));
+    assert(rv && (&(memory->stack[AVM_STACK_SIZE - 1]) >= rv && rv > &(memory->stack[memory->top])) 
+            || rv == &(memory->retval) || rv == &(memory->ax));
+    
+    avm_assign(lv, rv);
 }
 
 #endif
