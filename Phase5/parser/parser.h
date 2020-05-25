@@ -237,6 +237,7 @@ void read_code(FILE * file, int * codeSize){
 
             case jump_v: {
                 code[i].result.val = read_unsigned(file);
+                code[i].result.type = label_a;
                 printf("%d\n", code[i].result.val);
                 break;
             }

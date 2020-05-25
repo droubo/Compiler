@@ -62,30 +62,30 @@ typedef struct avm_user_func{
     unsigned locals;
 } avm_user_func;
 
+typedef struct avm_table {
+    unsigned refcounter;
+} avm_table;
+
 typedef struct avm_memcell {
 	avm_memcell_t type;
 	union {
 		double numVal;
 		char * strVal;
 		unsigned char boolVal;
-		void * tableVal;
+		avm_table * tableVal;
 		avm_user_func funcVal;
 		char * libfuncVal;
 	} data;
-    // Used for tables
-    struct avm_memcell * next;
 } avm_memcell;
-
-typedef struct avm_table {
-	avm_memcell * index;
-    avm_memcell * content;
-    unsigned refcounter;
-} avm_table;
 
 typedef struct avm_memory {
     unsigned top;
     unsigned topsp;
     unsigned pc;
+    unsigned executionFinished;
+    unsigned currLine;
+    unsigned codeSize; 
+    unsigned executionStarted;
     avm_memcell stack[AVM_STACK_SIZE];
     avm_memcell ax, bx, cx;
     avm_memcell retval;
@@ -105,7 +105,8 @@ typedef struct avm_instruction{
 } avm_instruction;
 
 avm_memcell * avm_translate_operand(vmarg arg, avm_memcell * reg);
-void avm_warning(char * message);
+void avm_warning(char * format,...);
+void avm_error(char * format,...);
 void execute_cycle(void);
 
 /** Command execution functions **/
@@ -116,6 +117,7 @@ typedef void (*execute_func_t)(avm_instruction *, avm_memory *);
 
 // avm_assign.h
 void execute_assign (avm_instruction * instr, avm_memory * memory);
+void avm_assign(avm_memcell * lv, avm_memcell * rv);
 
 // avm_math.h
 void execute_add (avm_instruction * instr, avm_memory * memory);
@@ -162,6 +164,7 @@ execute_func_t executeFuncs[] = {
     execute_nop
 };
 
+/** Constants fetch functions **/
 double consts_getNumber (unsigned index);
 char * consts_getString (unsigned index);
 char * libfuncs_getUsed (unsigned index);
@@ -172,8 +175,6 @@ typedef void (*memclear_func_t) (avm_memcell*);
 void memclear_string(avm_memcell * m);
 void memclear_table(avm_memcell * m);
 void avm_memcellclear(avm_memcell * m);
-
-void avm_assign(avm_memcell * lv, avm_memcell * rv);
 
 memclear_func_t memclearFuncs[] = {
     0,

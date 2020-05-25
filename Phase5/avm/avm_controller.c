@@ -8,14 +8,10 @@
 
 #define AVM_STACKENV_SIZE 4
 #define AVM_MAX_INSTRUCTIONS 2048
-#define AVM_ENDING_PC codeSize
 
 avm_memory memory;
 
-unsigned executionFinished = 0;
-unsigned currLine = 0;
-unsigned codeSize = 0; 
-unsigned executionStarted = 0;
+#define AVM_ENDING_PC memory.codeSize
 
 avm_memcell * avm_translate_operand(vmarg arg, avm_memcell * reg){
     switch(arg.type){
@@ -59,17 +55,17 @@ avm_memcell * avm_translate_operand(vmarg arg, avm_memcell * reg){
 }
 
 void execute_cycle(void) {
-    if(executionFinished)
+    if(memory.executionFinished)
         return;
     else if (memory.pc == AVM_ENDING_PC) {
-        executionFinished = 1;
+        memory.executionFinished = 1;
         return;
     } else {
         assert(memory.pc < AVM_ENDING_PC);
         avm_instruction * instr = code + memory.pc;
         assert(instr->opcode >= 0 && instr->opcode <= AVM_MAX_INSTRUCTIONS);
         if(instr->srcLine)
-            currLine = instr->srcLine;
+            memory.currLine = instr->srcLine;
         unsigned oldPC = memory.pc;
         (*executeFuncs[instr->opcode])(instr, &memory);
         if(memory.pc == oldPC)
@@ -104,7 +100,7 @@ void avm_assign(avm_memcell * lv, avm_memcell * rv){
         return;
     if(lv->type == table_m && rv->type == table_m &&
         lv->data.tableVal == rv->data.tableVal) return;
-    if(rv->type == undef_m && executionStarted)
+    if(rv->type == undef_m && memory.executionStarted)
         avm_warning("ASSIGNMENT FROM UNDEFINED CONTENT");
     avm_memcellclear(lv);
     memcpy(lv, rv, sizeof(avm_memcell));
@@ -115,12 +111,17 @@ void avm_assign(avm_memcell * lv, avm_memcell * rv){
         avm_refcounter_incr(lv->data.tableVal);
 }
 
-void parse_error(char * message){
-	printf("\033[0;31mERROR WHEN LOADING MACHINE CODE: %s\n", message);
+void parse_error(char * format,...){
+	printf("\033[0;31mERROR WHEN LOADING MACHINE CODE: %s\n", format);
 }
 
-void avm_warning(char * message){
-    printf("RUNTIME WARNING: %s\n", message);
+void avm_warning(char * format,...){
+    printf("\033[01;33mRUNTIME WARNING: %s\033[0m\n", format);
+}
+
+void avm_error(char * format,...){
+    printf("\033[1;31mRUNTIME ERROR: %s\033[0m\n", format);
+    memory.executionFinished = 1;
 }
 
 void initialize_VM(char * filename){
@@ -167,17 +168,17 @@ int main() {
     }
 
     printf("\n  > CODE\n");
-    read_code(file, &codeSize);
+    read_code(file, &(memory.codeSize));
 
     printf("\n>> FILE LOADED\n");
     
-    executionStarted = 1;
+    memory.executionStarted = 1;
     printf("\n>> EXECUTING CODE...\n");
-    for(i = 0; i < codeSize; i++){
+    for(i = 0; i < memory.codeSize; i++){
         execute_cycle();
     }
 
-    if(executionFinished && memory.pc != AVM_ENDING_PC)
+    if(memory.executionFinished && memory.pc != AVM_ENDING_PC)
         printf("RUNTIME ERROR.\nPC = %d\n", memory.pc);
 
     printf("\n>> DONE\n");

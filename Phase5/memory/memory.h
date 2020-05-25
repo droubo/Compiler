@@ -19,6 +19,10 @@ avm_memory init_memory(){
     ret.top = AVM_STACK_SIZE - 1;
     ret.topsp = AVM_STACK_SIZE - 1;
     ret.pc = 0;
+    ret.executionFinished = 0;
+    ret.currLine = 0;
+    ret.codeSize = 0; 
+    ret.executionStarted = 0;
     for(i = 0; i < AVM_STACK_SIZE; i++)
         ret.stack[i].type = undef_m;
     return ret;
