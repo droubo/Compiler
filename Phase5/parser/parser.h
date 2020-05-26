@@ -1,3 +1,13 @@
+/**
+ * CS-340 Compilers
+ * Spring 2020
+ * 
+ * Project Phase 5: AVM Implementation
+ * 
+ * Antonis Droubogiannis    csd4014@csd.uoc.gr
+ * Georgios Marios Kokiadis csd3962@csd.uoc.gr
+ * Nikolaos Gounakis        csd3932@csd.uoc.gr
+ */ 
 #ifndef PARSER_H
 #define PARSER_H
 
@@ -105,10 +115,10 @@ void read_user_funcs(FILE * file){
 void read_lib_funcs(FILE * file){
     int i;
     int size = read_unsigned(file);
-
+    char * name;
     lib_funcs = init_avm_memcell_array(size, libfunc_m);
-    for(i = 0; i < size; i++){
-        lib_funcs.array[i].data.libfuncVal = read_string(file);
+    for(i = 0; i < size; i++){        
+        lib_funcs.array[i].data.libfuncVal = read_unsigned(file);
     }
 }
 
@@ -123,7 +133,7 @@ void read_globals(FILE * file, avm_memory * memory){
     }
 }
 
-vmopcode read_op(FILE * file){
+avm_opcode read_op(FILE * file){
     char * buf;
     char in;
     int i;
@@ -183,8 +193,8 @@ vmarg read_vmarg(FILE * file){
 
 	buf[0] = fgetc(file);
 	assert(buf[0] == ':');
-
-	res.val = read_unsigned(file);
+    if(type != retval_a)
+	    res.val = read_unsigned(file);
 	return res;
 }
 

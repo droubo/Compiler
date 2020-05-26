@@ -1,3 +1,13 @@
+/**
+ * CS-340 Compilers
+ * Spring 2020
+ * 
+ * Project Phase 5: AVM Implementation
+ * 
+ * Antonis Droubogiannis    csd4014@csd.uoc.gr
+ * Georgios Marios Kokiadis csd3962@csd.uoc.gr
+ * Nikolaos Gounakis        csd3932@csd.uoc.gr
+ */ 
 #include "avm.h"
 #include "../command_impl/command_impl.h"
 #include "../parser/parser.h"
@@ -48,7 +58,7 @@ avm_memcell * avm_translate_operand(vmarg arg, avm_memcell * reg){
 
         case libfunc_a: {
             reg->type = libfunc_m;
-            reg->data.funcVal.address = arg.val;
+            reg->data.libfuncVal = lib_funcs_getUsed(arg.val);
             return reg;
         }
     }

@@ -9,7 +9,7 @@ extern NumStack *NumHead, *NumTail;
 extern FunctionStack *FunHead, *FunTail;
 extern StringStack *LibHead, *LibTail;
 
-typedef enum vmopcode
+typedef enum avm_opcode
 {
     assign_v, add_v, sub_v, 
     mul_v, div_v, mod_v, 
@@ -20,7 +20,7 @@ typedef enum vmopcode
     funcenter_v, funcexit_v, newtable_v,
     tablegetelem_v, tablesetelem_v, jump_v
 
-}vmopcode;
+}avm_opcode;
 
 typedef enum vmarg_t 
 {
@@ -47,7 +47,7 @@ typedef struct vmarg
 
 typedef struct instruction 
 {
-    vmopcode opcode;
+    avm_opcode opcode;
     vmarg* result;
     vmarg* arg1;
     vmarg* arg2;

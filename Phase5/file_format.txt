@@ -46,8 +46,8 @@
     <LOCAL SIZE2>
     "<ID2>"
     <SIZE>
-    "<ID1>"
-    "<ID2>"
+    <INDEX>
+    <INDEX>
     <SIZE>
     "<ID1>"
     "<ID2>"
@@ -60,3 +60,7 @@
 * Random notes *
     global names go in strVal and then go to stack
     magicnumber is 42069 and you know why that is the case bby <3
+    when talking about indexes in libfuncs follow this table:
+    0 = print
+    1 = typeof
+    // more will be added

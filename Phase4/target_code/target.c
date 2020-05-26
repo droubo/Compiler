@@ -105,7 +105,7 @@ void make_retvaloperand(vmarg *arg){
     arg->type = retval_a;
 }
 
-void generate_op(vmopcode op,quad *q, int flag)
+void generate_op(avm_opcode op,quad *q, int flag)
 {
     instruction *t = (instruction*) make_new_instruction();
     t->opcode = op;
@@ -117,7 +117,7 @@ void generate_op(vmopcode op,quad *q, int flag)
     emit_instruction(t); 
 }
 
-generate_relational(vmopcode op, quad* q) {
+generate_relational(avm_opcode op, quad* q) {
     instruction *t = (instruction*) make_new_instruction();
     t->opcode = op;
     make_operand(q->arg1, t->arg1);

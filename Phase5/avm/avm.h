@@ -1,3 +1,13 @@
+/**
+ * CS-340 Compilers
+ * Spring 2020
+ * 
+ * Project Phase 5: AVM Implementation
+ * 
+ * Antonis Droubogiannis    csd4014@csd.uoc.gr
+ * Georgios Marios Kokiadis csd3962@csd.uoc.gr
+ * Nikolaos Gounakis        csd3932@csd.uoc.gr
+ */ 
 #ifndef AVM_H
 #define AVM_H
 
@@ -28,7 +38,7 @@ typedef struct vmarg
     unsigned int val;
 } vmarg;
 
-typedef enum vmopcode
+typedef enum avm_opcode
 {
     assign_v, 
     
@@ -44,7 +54,7 @@ typedef enum vmopcode
 
     newtable_v, tablegetelem_v, tablesetelem_v,
     nop_v
-}vmopcode;
+}avm_opcode;
 
 typedef enum avm_memcell_t {
     number_m 	= 0, 
@@ -74,7 +84,7 @@ typedef struct avm_memcell {
 		unsigned char boolVal;
 		avm_table * tableVal;
 		avm_user_func funcVal;
-		char * libfuncVal;
+		unsigned libfuncVal;
 	} data;
 } avm_memcell;
 
@@ -97,12 +107,16 @@ typedef struct avm_memcell_array {
 } avm_memcell_array;
 
 typedef struct avm_instruction{
-	vmopcode opcode;
+	avm_opcode opcode;
 	unsigned int srcLine;
 	vmarg arg1;
 	vmarg arg2;
 	vmarg result;
 } avm_instruction;
+
+typedef enum avm_lib_funcs_t {
+    print
+} avm_lib_funcs_t;
 
 /** Controller Functions **/
 // avm_controller.c
