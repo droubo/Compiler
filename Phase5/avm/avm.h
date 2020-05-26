@@ -91,10 +91,10 @@ typedef struct avm_memory {
     avm_memcell retval;
 } avm_memory;
 
-typedef struct memcell_array {
+typedef struct avm_memcell_array {
     avm_memcell * array;
     int size;
-} memcell_array;
+} avm_memcell_array;
 
 typedef struct avm_instruction{
 	vmopcode opcode;
@@ -104,13 +104,14 @@ typedef struct avm_instruction{
 	vmarg result;
 } avm_instruction;
 
+/** Controller Functions **/
+// avm_controller.c
 avm_memcell * avm_translate_operand(vmarg arg, avm_memcell * reg);
 void avm_warning(char * format,...);
 void avm_error(char * format,...);
-void execute_cycle(void);
+void avm_execute_cycle(void);
 
 /** Command execution functions **/
-
 typedef void (*execute_func_t)(avm_instruction *, avm_memory *);
 
 // TODO: These in the appropriate files
@@ -165,6 +166,7 @@ execute_func_t executeFuncs[] = {
 };
 
 /** Constants fetch functions **/
+// memory.h
 double consts_getNumber (unsigned index);
 char * consts_getString (unsigned index);
 char * libfuncs_getUsed (unsigned index);
@@ -172,15 +174,19 @@ char * libfuncs_getUsed (unsigned index);
 /** Mem clear functions **/
 typedef void (*memclear_func_t) (avm_memcell*);
 
-void memclear_string(avm_memcell * m);
-void memclear_table(avm_memcell * m);
+// memory.h
+void avm_memclear_string(avm_memcell * m);
+void avm_memclear_table(avm_memcell * m);
 void avm_memcellclear(avm_memcell * m);
 
+/* Stack functions */
+// memory.h
+void avm_dec_top(avm_memory * memory);
 memclear_func_t memclearFuncs[] = {
     0,
-    memclear_string,
+    avm_memclear_string,
     0,
-    memclear_table,
+    avm_memclear_table,
     0,
     0,
     0,

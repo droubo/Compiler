@@ -54,7 +54,7 @@ avm_memcell * avm_translate_operand(vmarg arg, avm_memcell * reg){
     }
 }
 
-void execute_cycle(void) {
+void avm_execute_cycle(void) {
     if(memory.executionFinished)
         return;
     else if (memory.pc == AVM_ENDING_PC) {
@@ -74,26 +74,6 @@ void execute_cycle(void) {
         
 }
 
-void memclear_string(avm_memcell* m){
-    assert(m->data.strVal);
-    free(m->data.strVal);
-}
-
-void memclear_table(avm_memcell* m){
-    assert(m->data.tableVal);
-    avm_refcounter_decr(m->data.tableVal);
-}
-
-void avm_memcellclear(avm_memcell * m){
-    if(m->type != undef_m) {
-        memclear_func_t f = memclearFuncs[m->type];
-              
-        if(f)
-            (*f)(m);
-        m->type = undef_m;
-    }
-}
-
 void avm_assign(avm_memcell * lv, avm_memcell * rv){
     if(lv == rv)
         return;
@@ -110,7 +90,7 @@ void avm_assign(avm_memcell * lv, avm_memcell * rv){
         avm_refcounter_incr(lv->data.tableVal);
 }
 
-void parse_error(char * format,...){
+void avm_parse_error(char * format,...){
 	printf("\033[0;31mERROR WHEN LOADING MACHINE CODE: %s\n", format);
 }
 
@@ -123,8 +103,8 @@ void avm_error(char * format,...){
     memory.executionFinished = 1;
 }
 
-void initialize_VM(char * filename){
-	memory = init_memory();
+void avm_init(char * filename){
+	memory = avm_init_memory();
 
 	FILE * file;
     file = fopen(filename, "r");
@@ -174,12 +154,12 @@ int main(int argv, char * argc[]) {
         printf("\033[1;31mINVALID PARAMETERS PROVIDED.\n\033[01;33mUSAGE: ALPHA <FILENAME>\033[0m\n");
         return 1;
     }
-    initialize_VM(argc[1]);
+    avm_init(argc[1]);
     
     memory.executionStarted = 1;
     printf("\n\033[01;33m>> EXECUTING CODE...\033[0m\n");
     for(i = 0; i < memory.codeSize; i++){
-        execute_cycle();
+        avm_execute_cycle();
     }
 
     if(memory.executionFinished && memory.pc != AVM_ENDING_PC)

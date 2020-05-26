@@ -75,7 +75,7 @@ void read_const_strings(FILE * file){
 
     int size = read_unsigned(file);
 
-    const_strings = init_memcell_array(size, string_m);
+    const_strings = init_avm_memcell_array(size, string_m);
     for(i = 0; i < size; i++){
         const_strings.array[i].data.strVal = read_string(file);
     }
@@ -85,7 +85,7 @@ void read_const_nums(FILE * file){
     int i;
     int size = read_unsigned(file);
 
-    const_nums = init_memcell_array(size, number_m);
+    const_nums = init_avm_memcell_array(size, number_m);
     for(i = 0; i < size; i++) {
         const_nums.array[i].data.numVal = read_double(file);
     }
@@ -95,7 +95,7 @@ void read_user_funcs(FILE * file){
     int i;
     int size = read_unsigned(file);
 
-    user_funcs = init_memcell_array(size, userfunc_m);
+    user_funcs = init_avm_memcell_array(size, userfunc_m);
     for(i = 0; i < size; i++){
         user_funcs.array[i].data.funcVal.address = read_unsigned(file);
         user_funcs.array[i].data.funcVal.locals = read_unsigned(file);
@@ -106,7 +106,7 @@ void read_lib_funcs(FILE * file){
     int i;
     int size = read_unsigned(file);
 
-    lib_funcs = init_memcell_array(size, libfunc_m);
+    lib_funcs = init_avm_memcell_array(size, libfunc_m);
     for(i = 0; i < size; i++){
         lib_funcs.array[i].data.libfuncVal = read_string(file);
     }
@@ -116,7 +116,7 @@ void read_globals(FILE * file, avm_memory * memory){
     int i;
     int size = read_unsigned(file);
 
-    globals = init_memcell_array(size, undef_m);
+    globals = init_avm_memcell_array(size, undef_m);
     for(i = 0; i < size; i++){
         globals.array[i].data.strVal = read_string(file);
         push_stack(memory, &(globals.array[i]));
@@ -192,7 +192,7 @@ void read_code(FILE * file, int * codeSize){
     int i;
     int size = read_unsigned(file);
 
-    init_instruction_array(size, codeSize);
+    init_avm_instruction_array(size, codeSize);
     for(i = 0; i < size; i++){
         code[i].srcLine = read_unsigned(file);
         code[i].opcode = read_op(file);
