@@ -19,6 +19,10 @@ typedef struct NumStack {
 } NumStack;
 
 
+int FindStringStackSize(StringStack *head);
+int FindNumStackSize(NumStack *head);
+int FindFunStackSize(FunctionStack *head);
+
 void pushStringStack(StringStack **head, StringStack **tail, char *s);
 int FindStringStackIndex(StringStack *head, char *s);
 

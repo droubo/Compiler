@@ -1,6 +1,35 @@
 #include "stacks.h"
 #include <string.h>
 
+
+int FindStringStackSize(StringStack *head){
+	int i=0;
+	StringStack *tmp = head;
+	while(tmp != NULL){
+		i++;
+		tmp = tmp->next;
+	}
+	return i;
+}
+int FindNumStackSize(NumStack *head){
+	int i=0;
+	NumStack *tmp = head;
+	while(tmp != NULL){
+		i++;
+		tmp = tmp->next;
+	}
+	return i;
+}
+int FindFunStackSize(FunctionStack *head){
+	int i=0;
+	FunctionStack *tmp = head;
+	while(tmp != NULL){
+		i++;
+		tmp = tmp->next;
+	}
+	return i;
+}
+
 void pushStringStack(StringStack **head, StringStack **tail, char *s){
 	StringStack *temp = (StringStack *)malloc(sizeof(StringStack));
 

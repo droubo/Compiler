@@ -57,27 +57,61 @@ void emit_instruction(instruction* i) {
     p->srcLine = i->srcLine;
 }
 
+print_tables(FILE *file, StringStack *StringHead, StringStack *LibHead, FunctionStack *FunHead, NumStack *NumHead){
+    int i;
+    printf("ssss\n");
+    fprintf(file, "42069\n");
+
+
+    fprintf(file, "%d\n", FindStringStackSize(StringHead));
+    StringStack *StringTmp = StringHead;
+    for(i = 0; i < FindStringStackSize(StringHead); i++){
+        fprintf(file, "\"%s\"\n", StringTmp->s);
+        StringTmp = StringTmp->next;
+    }
+
+    fprintf(file, "%d\n", FindNumStackSize(NumHead));
+    NumStack *NumTmp = NumHead;
+    for(i = 0; i < FindNumStackSize(NumHead); i++){
+        fprintf(file, "%.3f\n", NumTmp->num);
+        NumTmp = NumTmp->next;
+    }
+    fprintf(file, "%d\n", FindFunStackSize(FunHead));
+    FunctionStack *FunTmp = FunHead;
+    for(i = 0; i < FindFunStackSize(FunHead); i++){
+        fprintf(file, "%d\n%d\n", FunTmp->address, FunTmp->local_size, FunTmp->id);
+        FunTmp = FunTmp->next;
+    }
+
+    fprintf(file, "%d\n", FindStringStackSize(LibHead));
+    StringStack *LibTmp = LibHead;
+    for(i = 0; i < FindStringStackSize(LibHead); i++){
+        fprintf(file, "\"%s\"\n", LibTmp->s);
+        LibTmp = LibTmp->next;
+    }
+
+}
 void print_instruction_arg(vmarg * arg, FILE * file){
     if(arg != NULL){
         switch(arg->type)
         {
-           case label_a : fprintf(file,"00(label) "); fprintf(file,"%.0f:%s",arg->num_val,arg->str_val); break;
-           case global_a : fprintf(file,"01(global) "); fprintf(file," %.0f:%s",arg->num_val,arg->str_val); break;
-           case formal_a : fprintf(file,"02(formal)"); fprintf(file," %.0f:%s",arg->num_val,arg->str_val); break;
-           case local_a : fprintf(file,"03(local) "); fprintf(file," %.0f:%s",arg->num_val,arg->str_val); break;
+           case label_a : fprintf(file,"%.0f",arg->num_val); break;
+           case global_a : fprintf(file,"01:"); fprintf(file,"%.0f",arg->num_val); break;
+           case formal_a : fprintf(file,"02:"); fprintf(file,"%.0f",arg->num_val); break;
+           case local_a : fprintf(file,"03:"); fprintf(file,"%.0f",arg->num_val); break;
            case number_a : {
-               fprintf(file,"04(num) ");
-               if(!isInteger(arg->num_val)) fprintf(file,"%d:%f",FindNumStackIndex(NumHead,arg->num_val),arg->num_val);
-               else fprintf(file,"%d:%.0f",FindNumStackIndex(NumHead,arg->num_val),arg->num_val);
+               fprintf(file,"04:");
+               if(!isInteger(arg->num_val)) fprintf(file,"%d",FindNumStackIndex(NumHead,arg->num_val));
+               else fprintf(file,"%d",FindNumStackIndex(NumHead,arg->num_val));
                
                break;
            }
-           case string_a : fprintf(file,"05(string) "); fprintf(file,"%d:%s",FindStringStackIndex(StringHead,arg->str_val),arg->str_val); break;
-           case bool_a : fprintf(file,"06(bool) "); fprintf(file,"%d",arg->bool_val); break;
-           case nil_a : fprintf(file,"07(nil) "); fprintf(file,"NULL"); break;
-           case userfunc_a : fprintf(file,"08(userfunc) "); fprintf(file,"%d:%s",FindFunctionStackIndex(FunHead,arg->str_val),arg->str_val); break;
-           case libfunc_a : fprintf(file,"09(libfunc) "); fprintf(file,"%d:%s",FindStringStackIndex(LibHead,arg->str_val),arg->str_val); break;
-           case retval_a : fprintf(file,"10(retval)"); break;
+           case string_a : fprintf(file,"05:"); fprintf(file,"%d",FindStringStackIndex(StringHead,arg->str_val)); break;
+           case bool_a : fprintf(file,"06:"); fprintf(file,"%d",arg->bool_val); break;
+           case nil_a : fprintf(file,"07:"); fprintf(file,"NULL"); break;
+           case userfunc_a : fprintf(file,"08:"); fprintf(file,"%d",FindFunctionStackIndex(FunHead,arg->str_val)); break;
+           case libfunc_a : fprintf(file,"09:"); fprintf(file,"%d",FindStringStackIndex(LibHead,arg->str_val)); break;
+           case retval_a : fprintf(file,"10:"); break;
            default : printf("\nPRINT INSTRUCTION ASSERT FAILED : %d\n",arg->type); assert(0);
         }
     }
@@ -86,25 +120,22 @@ void print_instruction_arg(vmarg * arg, FILE * file){
 
 void print_instructions(FILE * file, int max_lines){
     int i, j;
-    printf("\n\033[1;32m>> \033[01;33mTARGET CODE\n\n\033[0m");
+    print_tables(file, StringHead, LibHead, FunHead, NumHead);
     instruction curr_instruction;
     for(i = 0; i < currInstruction; i++){
         curr_instruction = instructions[i];
     
         if(file == stdout){
-            fprintf(file, "\033[0;36m[line %d]\033[0m", instructions[i].srcLine, i + 1);
+            fprintf(file, "%d", instructions[i].srcLine, i + 1);
 
             for(j = 0; j < numPlaces(max_lines) - numPlaces(instructions[i].srcLine) + 2 ; j++){
                 fprintf(file, " ");
             }
-
-            fprintf(file, "\033[0;32m%d\033[0m", i + 1);
         
             for(j = 0; j < numPlaces(currInstruction) - numPlaces(i + 1) + 2 ; j++){
-                fprintf(file, " ");
+                fprintf(file, "");
             }
         }
-        printf("\033[0;33m");
         switch(curr_instruction.opcode){
             case assign_v:    	{ fprintf(file, "ASSIGN "); break;}
             case add_v:       	{ fprintf(file, "ADD "); break; }
@@ -114,11 +145,11 @@ void print_instructions(FILE * file, int max_lines){
             case div_v:      	{ fprintf(file, "DIV "); break; }
             case mod_v:       	{ fprintf(file, "MOD "); break; }
 
-            case uminus_v:    	{ fprintf(file, "UMINUS "); break; }
-            case and_v:    		{ fprintf(file, "AND "); break; }
-            case or_v:    		{ fprintf(file, "OR "); break; }
+            case uminus_v:    	{ fprintf(file, "%d ", uminus_v); break; }
+            case and_v:    		{ fprintf(file, "%d ", and_v); break; }
+            case or_v:    		{ fprintf(file, "%d ", or_v); break; }
 
-			case not_v:    		{ fprintf(file, "NOT "); break; }
+			case not_v:    		{ fprintf(file, "%d ", not_v); break; }
             case jeq_v:    		{ fprintf(file, "JEQ "); break; }
             case jne_v:  	{ fprintf(file, "JNE "); break; }
 
@@ -149,49 +180,39 @@ void print_instructions(FILE * file, int max_lines){
             case jlt_v:
             case jgt_v: {
                     print_instruction_arg(curr_instruction.arg1, file);
-                    fprintf(file,", ");
+                    fprintf(file," ");
                     print_instruction_arg(curr_instruction.arg2, file);
                     printf("\033[0;32m");
-                    fprintf(file,", ");
-                    fprintf(file, "00, %d", curr_instruction.label);
+                    fprintf(file," ");
+                    fprintf(file, "%d", curr_instruction.label);
                     printf("\033[0m");
                     break;
             }
             case jump_v: {    
-                    printf("\033[0;32m"); 
-                    fprintf(file, "00, %d", curr_instruction.label);
-                    printf("\033[0m");
+                    fprintf(file, "%d", curr_instruction.label);
                     break; }
             case assign_v:
             {
-                printf("\033[0;35m");
                 print_instruction_arg(curr_instruction.result, file);
-                fprintf(file,", ");
-                printf("\033[0m");
+                fprintf(file," ");
 		        print_instruction_arg(curr_instruction.arg1, file);
                 break;
             }
             case funcenter_v:
             case funcexit_v: {
-                printf("\033[0;35m");
                 print_instruction_arg(curr_instruction.result, file);
-                printf("\033[0m");
                 break;
             }
             case call_v:
             case pusharg_v: {
-                printf("\033[0;35m");
                 print_instruction_arg(curr_instruction.arg1, file);
-                printf("\033[0m");
                 break;                
             }
             default: {
-                printf("\033[0;35m");
                 print_instruction_arg(curr_instruction.result, file);
-                fprintf(file,", ");
-                printf("\033[0m");
+                fprintf(file," ");
 		        print_instruction_arg(curr_instruction.arg1, file);
-                fprintf(file,", ");
+                fprintf(file," ");
                 print_instruction_arg(curr_instruction.arg2, file);
                 break;
             }
@@ -199,6 +220,4 @@ void print_instructions(FILE * file, int max_lines){
         }
         
         fprintf(file, "\n");
-    }
-    printf("\n\033[1;32m>>> \033[01;33mEND\n\033[0m");
-}
+    }}
