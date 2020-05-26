@@ -94,7 +94,7 @@ typedef struct avm_memory {
     unsigned pc;
     unsigned executionFinished;
     unsigned currLine;
-    unsigned codeSize; 
+    unsigned codeSize;
     unsigned executionStarted;
     avm_memcell stack[AVM_STACK_SIZE];
     avm_memcell ax, bx, cx;

@@ -171,7 +171,6 @@ void print_instructions(FILE * file, int max_lines){
 
             default: { fprintf(file, "*ERROR* "); break; }
         }
-        printf("\033[0m");
         switch(curr_instruction.opcode){
             case jeq_v:
             case jne_v:
@@ -182,10 +181,8 @@ void print_instructions(FILE * file, int max_lines){
                     print_instruction_arg(curr_instruction.arg1, file);
                     fprintf(file," ");
                     print_instruction_arg(curr_instruction.arg2, file);
-                    printf("\033[0;32m");
                     fprintf(file," ");
                     fprintf(file, "%d", curr_instruction.label);
-                    printf("\033[0m");
                     break;
             }
             case jump_v: {    

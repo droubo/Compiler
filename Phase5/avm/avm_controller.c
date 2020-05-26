@@ -168,9 +168,8 @@ int main(int argv, char * argc[]) {
     
     memory.executionStarted = 1;
     printf("\n\033[01;33m>> EXECUTING CODE...\033[0m\n");
-    for(i = 0; i < memory.codeSize; i++){
+    for(i = 0; i < memory.codeSize; i++)
         avm_execute_cycle();
-    }
 
     if(memory.executionFinished && memory.pc != AVM_ENDING_PC)
         printf("RUNTIME ERROR.\nPC = %d\n", memory.pc);
