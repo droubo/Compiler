@@ -86,7 +86,6 @@ void memclear_table(avm_memcell* m){
 
 void avm_memcellclear(avm_memcell * m){
     if(m->type != undef_m) {
-        printf("mmm %d %s\n", m->type, m->data.strVal);  
         memclear_func_t f = memclearFuncs[m->type];
               
         if(f)
@@ -132,41 +131,41 @@ void initialize_VM(char * filename){
     do_magic(file);
     read_const_strings(file);
     int i;
-    printf(">> LOADING ALPHA FILE");
-    printf("\n  > CONST_STRINGS\n");
+    printf("\033[01;33m>> LOADING ALPHA FILE\033[0m");
+    printf("\n  \033[0;33m> CONST_STRINGS\033[0m\n");
     for(i = 0; i < const_strings.size; i++){
         printf("    [%d] %s\n", i, const_strings.array[i].data.strVal);
     }
 
     read_const_nums(file);
-    printf("\n  > CONST_NUMS\n");
+    printf("\n  \033[0;33m> CONST_NUMS\033[0m\n");
     for(i = 0; i < const_nums.size; i++){
         printf("    [%d] %f\n", i, const_nums.array[i].data.numVal);
     }
 
     read_user_funcs(file);
-    printf("\n  > USER_FUNCS\n");
+    printf("\n  \033[0;33m> USER_FUNCS\033[0m\n");
     for(i = 0; i < user_funcs.size; i++){
         printf("    [%d] %d %d\n", i, user_funcs.array[i].data.funcVal.address, 
                                     user_funcs.array[i].data.funcVal.locals);
     }
 
     read_lib_funcs(file);
-    printf("\n  > LIB_FUNCS\n");
+    printf("\n  \033[0;33m> LIB_FUNCS\033[0m\n");
     for(i = 0; i < lib_funcs.size; i++){
         printf("    [%d] %s\n", i, lib_funcs.array[i].data.libfuncVal);
     }
 
     read_globals(file, &memory);
-    printf("\n  > GLOBALS\n");
+    printf("\n  \033[0;33m> GLOBALS\033[0m\n");
     for(i = 0; i < globals.size; i++){
         printf("    [%d] %s\n", i, globals.array[i].data.strVal);
     }
 
-    printf("\n  > CODE\n");
+    printf("\n  \033[0;33m> CODE\033[0m\n");
     read_code(file, &(memory.codeSize));
 
-    printf("\n>> FILE LOADED\n");
+    printf("\n\033[01;33m>> FILE LOADED\n\033[0m");
 }
 
 int main(int argv, char * argc[]) {
@@ -178,7 +177,7 @@ int main(int argv, char * argc[]) {
     initialize_VM(argc[1]);
     
     memory.executionStarted = 1;
-    printf("\n>> EXECUTING CODE...\n");
+    printf("\n\033[01;33m>> EXECUTING CODE...\033[0m\n");
     for(i = 0; i < memory.codeSize; i++){
         execute_cycle();
     }
@@ -186,5 +185,5 @@ int main(int argv, char * argc[]) {
     if(memory.executionFinished && memory.pc != AVM_ENDING_PC)
         printf("RUNTIME ERROR.\nPC = %d\n", memory.pc);
 
-    printf("\n>> DONE\n");
+    printf("\n\033[01;33m>> DONE\033[0m\n");
 }
