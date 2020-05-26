@@ -126,13 +126,9 @@ void avm_error(char * format,...){
 
 void initialize_VM(char * filename){
 	memory = init_memory();
-}
-
-int main() {
-    memory = init_memory();
 
 	FILE * file;
-    file = fopen("code.txt", "r");
+    file = fopen(filename, "r");
     do_magic(file);
     read_const_strings(file);
     int i;
@@ -171,6 +167,15 @@ int main() {
     read_code(file, &(memory.codeSize));
 
     printf("\n>> FILE LOADED\n");
+}
+
+int main(int argv, char * argc[]) {
+    int i;
+    if(argv != 2) {
+        printf("\033[1;31mINVALID PARAMETERS PROVIDED.\n\033[01;33mUSAGE: ALPHA <FILENAME>\033[0m\n");
+        return 1;
+    }
+    initialize_VM(argc[1]);
     
     memory.executionStarted = 1;
     printf("\n>> EXECUTING CODE...\n");

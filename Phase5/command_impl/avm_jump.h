@@ -40,13 +40,14 @@ void execute_jeq (avm_instruction * instr, avm_memory * memory){
     unsigned char result = 0;
 
     if(rv1->type == undef_m || rv2->type == undef_m)
-        avm_error("UNDEFINED VALUE IN INEQUALITY");
+        avm_error("UNDEFINED VALUE IN INEQUALITY. I HAVE TO KNOW WHAT THEY ARE TO COMPARE THEM.");
     else if (rv1->type == nil_m || rv2->type == nil_m)
         result = rv1->type == nil_m && rv2->type == nil_m;
     else if (rv1->type == bool_m || rv2->type == bool_m)
         result = (avm_tobool(rv1) == avm_tobool(rv2));
     else if (rv1->type != rv2->type)
-        avm_error("ILLEGAL COMPARISON OF DIFFERENT TYPED VALUES (%d comp %d)\n", rv1->type, rv2->type);
+        avm_error("ILLEGAL COMPARISON OF DIFFERENT TYPED VALUES (%d comp %d).\n" 
+        "YOUR MATH TEACHER TOLD YOU TO COMPARE APPLES WITH APPLES.\n", rv1->type, rv2->type);
     else {
         switch(rv1->type){
             case number_m:  { result = rv1->data.numVal == rv2->data.numVal; break; }
@@ -55,7 +56,7 @@ void execute_jeq (avm_instruction * instr, avm_memory * memory){
             case table_m:
             case userfunc_m:
             case libfunc_m:   { result = 1; break; }
-            default: { avm_error("UNKNOWN ERROR WHEN COMPARING VALUES"); }
+            default: { avm_error("UNKNOWN ERROR WHEN COMPARING VALUES. MY BAD."); }
         }
     }
 
@@ -72,13 +73,14 @@ void execute_jne (avm_instruction * instr, avm_memory * memory){
     unsigned char result = 0;
 
     if(rv1->type == undef_m || rv2->type == undef_m)
-        avm_error("UNDEFINED VALUE IN INEQUALITY");
+        avm_error("UNDEFINED VALUE IN INEQUALITY. I HAVE TO KNOW WHAT THEY ARE TO COMPARE THEM.");
     else if (rv1->type == nil_m || rv2->type == nil_m)
         result = rv1->type == nil_m && rv2->type == nil_m;
     else if (rv1->type == bool_m || rv2->type == bool_m)
         result = (avm_tobool(rv1) != avm_tobool(rv2));
     else if (rv1->type != rv2->type)
-        avm_error("ILLEGAL COMPARISON OF DIFFERENT TYPED VALUES (%d comp %d)\n", rv1->type, rv2->type);
+        avm_error("ILLEGAL COMPARISON OF DIFFERENT TYPED VALUES (%d comp %d)." 
+        "YOUR MATH TEACHER TOLD YOU TO COMPARE APPLES WITH APPLES.\n", rv1->type, rv2->type);
     else {
         switch(rv1->type){
             case number_m:  { result = rv1->data.numVal != rv2->data.numVal; break; }
@@ -87,7 +89,7 @@ void execute_jne (avm_instruction * instr, avm_memory * memory){
             case table_m:
             case userfunc_m:
             case libfunc_m:   { result = 0; break; }
-            default: { avm_error("UNKNOWN ERROR WHEN COMPARING VALUES"); }
+            default: { avm_error("UNKNOWN ERROR WHEN COMPARING VALUES. MY BAD."); }
         }
     }
 
@@ -98,7 +100,7 @@ void execute_jne (avm_instruction * instr, avm_memory * memory){
 void execute_jle (avm_instruction * instr, avm_memory * memory){
     assert(instr->result.type == label_a);
     if(instr->arg1.type != number_a || instr->arg2.type != number_a){
-        avm_error("COMPARISON OPERATION WITHOUT THE USAGE OF NUMBER VALUES");
+        avm_error("COMPARISON OPERATION WITHOUT THE USAGE OF NUMBER VALUES. I NEED NUMBERS PLS.");
     }
     
     avm_memcell * rv1 = avm_translate_operand(instr->arg1, &(memory->ax));
@@ -115,7 +117,7 @@ void execute_jle (avm_instruction * instr, avm_memory * memory){
 void execute_jge (avm_instruction * instr, avm_memory * memory){
     assert(instr->result.type == label_a);
     if(instr->arg1.type != number_a || instr->arg2.type != number_a){
-        avm_error("COMPARISON OPERATION WITHOUT THE USAGE OF NUMBER VALUES");
+        avm_error("COMPARISON OPERATION WITHOUT THE USAGE OF NUMBER VALUES. I NEED NUMBERS PLS.");
     }
     
     avm_memcell * rv1 = avm_translate_operand(instr->arg1, &(memory->ax));
@@ -132,7 +134,7 @@ void execute_jge (avm_instruction * instr, avm_memory * memory){
 void execute_jlt (avm_instruction * instr, avm_memory * memory){
     assert(instr->result.type == label_a);
     if(instr->arg1.type != number_a || instr->arg2.type != number_a){
-        avm_error("COMPARISON OPERATION WITHOUT THE USAGE OF NUMBER VALUES");
+        avm_error("COMPARISON OPERATION WITHOUT THE USAGE OF NUMBER VALUES. I NEED NUMBERS PLS");
     }
     
     avm_memcell * rv1 = avm_translate_operand(instr->arg1, &(memory->ax));
@@ -149,7 +151,7 @@ void execute_jlt (avm_instruction * instr, avm_memory * memory){
 void execute_jgt (avm_instruction * instr, avm_memory * memory){
     assert(instr->result.type == label_a);
     if(instr->arg1.type != number_a || instr->arg2.type != number_a){
-        avm_error("COMPARISON OPERATION WITHOUT THE USAGE OF NUMBER VALUES");
+        avm_error("COMPARISON OPERATION WITHOUT THE USAGE OF NUMBER VALUES. I NEED NUMBERS PLS");
     }
     
     avm_memcell * rv1 = avm_translate_operand(instr->arg1, &(memory->ax));
