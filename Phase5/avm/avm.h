@@ -179,9 +179,6 @@ void avm_memclear_string(avm_memcell * m);
 void avm_memclear_table(avm_memcell * m);
 void avm_memcellclear(avm_memcell * m);
 
-/* Stack functions */
-// memory.h
-void avm_dec_top(avm_memory * memory);
 memclear_func_t memclearFuncs[] = {
     0,
     avm_memclear_string,
@@ -193,6 +190,8 @@ memclear_func_t memclearFuncs[] = {
     0
 };
 
-
+/* Stack functions */
+// memory.h
+void avm_dec_top(avm_memory * memory);
 
 #endif
