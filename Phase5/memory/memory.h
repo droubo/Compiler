@@ -96,26 +96,6 @@ void avm_memcellclear(avm_memcell * m){
     }
 }
 
-void avm_dec_top(avm_memory * memory){
-    if(!memory->top)
-        avm_error("STACK OVERFLOW. NOT THE WEBSITE.");
-    else
-        --memory->top; 
-}
-
-void avm_push_envvalue(unsigned val, avm_memory * memory){
-    memory->stack[memory->top].type = number_m;
-    memory->stack[memory->top].data.numVal = val;
-    avm_dec_top(memory);
-}
-
-void avm_callsaveenvironment(avm_memory * memory, unsigned totalActuals){    
-    avm_push_envvalue(totalActuals, memory);
-    avm_push_envvalue(memory->pc + 1, memory);
-    avm_push_envvalue(memory->top + totalActuals + 2, memory);
-    avm_push_envvalue(memory->topsp, memory);
-}
-
 void push_stack(avm_memory * memory, avm_memcell * cell){
     avm_assign(&(memory->stack[memory->top]), cell);
     memory->top--;

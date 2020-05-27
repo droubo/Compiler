@@ -117,8 +117,8 @@ void read_lib_funcs(FILE * file){
     int size = read_unsigned(file);
     char * name;
     lib_funcs = init_avm_memcell_array(size, libfunc_m);
-    for(i = 0; i < size; i++){        
-        lib_funcs.array[i].data.libfuncVal = read_unsigned(file);
+    for(i = 0; i < size; i++){
+        lib_funcs.array[i].data.libfuncVal = read_string(file);
     }
 }
 

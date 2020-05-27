@@ -84,7 +84,7 @@ typedef struct avm_memcell {
 		unsigned char boolVal;
 		avm_table * tableVal;
 		avm_user_func funcVal;
-		unsigned libfuncVal;
+		char * libfuncVal;
 	} data;
 } avm_memcell;
 
@@ -96,6 +96,7 @@ typedef struct avm_memory {
     unsigned currLine;
     unsigned codeSize;
     unsigned executionStarted;
+    unsigned totalActuals;
     avm_memcell stack[AVM_STACK_SIZE];
     avm_memcell ax, bx, cx;
     avm_memcell retval;
@@ -113,10 +114,6 @@ typedef struct avm_instruction{
 	vmarg arg2;
 	vmarg result;
 } avm_instruction;
-
-typedef enum avm_lib_funcs_t {
-    print
-} avm_lib_funcs_t;
 
 /** Controller Functions **/
 // avm_controller.c
