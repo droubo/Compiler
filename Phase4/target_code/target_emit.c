@@ -90,7 +90,7 @@ print_tables(FILE *file, StringStack *StringHead, StringStack *LibHead, Function
         LibTmp = LibTmp->next;
     }
     
-    fprintf(file,"%d\n", FindStringStackSize(GlobalHead));
+    fprintf(file,"%d\n", globals+1);
 
 }
 void print_instruction_arg(vmarg * arg, FILE * file){

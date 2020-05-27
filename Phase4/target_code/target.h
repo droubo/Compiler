@@ -8,6 +8,7 @@ extern StringStack *StringHead, *StringTail;
 extern NumStack *NumHead, *NumTail;
 extern FunctionStack *FunHead, *FunTail;
 extern StringStack *LibHead, *LibTail;
+extern StringStack *GlobalHead, *GlobalTail;
 
 typedef enum avm_opcode
 {

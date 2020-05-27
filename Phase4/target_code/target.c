@@ -48,7 +48,15 @@ void make_operand(expr* e, vmarg* arg){
             arg->num_val = e->sym->offset;
             arg->str_val = e->sym->name;
             switch(e->sym->space){
-                case programvar: arg->type = global_a;  pushStringStack(&GlobalHead, &GlobalTail, arg->str_val); break;
+                case programvar:
+                {   
+                    arg->type = global_a;
+                    if(e->sym->scope == 0 && e->sym->offset > globals)
+                    {
+                        globals = e->sym->offset;
+                    }  
+                    break;
+                }
                 case functionlocal: arg->type = local_a; break;
                 case formalarg: arg->type = formal_a; break;
                 default: assert(0);
