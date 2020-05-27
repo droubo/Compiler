@@ -79,7 +79,7 @@ print_tables(FILE *file, StringStack *StringHead, StringStack *LibHead, Function
     fprintf(file, "%d\n", FindFunStackSize(FunHead));
     FunctionStack *FunTmp = FunHead;
     for(i = 0; i < FindFunStackSize(FunHead); i++){
-        fprintf(file, "%d\n%d\n", FunTmp->address, FunTmp->local_size, FunTmp->id);
+        fprintf(file, "%d\n%d\n", FunTmp->address, FunTmp->local_size);
         FunTmp = FunTmp->next;
     }
 
@@ -89,6 +89,8 @@ print_tables(FILE *file, StringStack *StringHead, StringStack *LibHead, Function
         fprintf(file, "\"%s\"\n", LibTmp->s);
         LibTmp = LibTmp->next;
     }
+    
+    fprintf(file,"%d\n", globals);
 
 }
 void print_instruction_arg(vmarg * arg, FILE * file){
