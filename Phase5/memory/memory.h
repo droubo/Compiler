@@ -67,12 +67,12 @@ char * lib_funcs_getUsed (unsigned index){
     return lib_funcs.array[index].data.strVal;
 }
 
-unsigned user_funcs_getUsed_addr (unsigned index){
-   return user_funcs.array[index].data.numVal;
+unsigned user_funcs_getAddress(unsigned index){
+    return user_funcs.array[index].data.funcVal.address;
 }
 
-char * user_funcs_getUsed_name (unsigned index){
-   return user_funcs.array[index].data.strVal;
+unsigned user_funcs_getLocals(unsigned index){
+    return user_funcs.array[index].data.funcVal.locals;
 }
 
 void avm_memclear_string(avm_memcell* m){
