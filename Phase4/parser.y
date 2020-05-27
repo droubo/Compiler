@@ -1499,9 +1499,9 @@ int main(int argc, char **argv)
 	else
 		printf("Errors present. I-Code Generation has failed.\n");
 
-
+	FILE* binary_file = fopen("test.abc","w");
 	generate();
-	print_instructions(stdout, yylineno);
+	print_instructions(binary_file, yylineno);
 
 	return 0;
 }
