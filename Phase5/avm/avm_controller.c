@@ -149,7 +149,7 @@ void avm_init(char * filename){
     read_globals(file, &memory);
     printf("\n  \033[0;33m> GLOBALS\033[0m\n");
     for(i = 0; i < globals.size; i++){
-        printf("    [%d] %s\n", i, globals.array[i].data.strVal);
+        printf("    [%d]\n", i);
     }
 
     printf("\n  \033[0;33m> CODE\033[0m\n");

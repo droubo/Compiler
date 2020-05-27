@@ -18,10 +18,6 @@ ng1"
 "tan"
 "print"
 4
-"x"
-"y"
-"z"
-"blazeit"
 2
 1 ASSIGN 01:2 04:2
 2 ADD 01:2 04:0 04:1
