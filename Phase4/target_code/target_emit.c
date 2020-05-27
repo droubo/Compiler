@@ -125,17 +125,8 @@ void print_instructions(FILE * file, int max_lines){
     for(i = 0; i < currInstruction; i++){
         curr_instruction = instructions[i];
     
-        if(file == stdout){
-            fprintf(file, "%d", instructions[i].srcLine, i + 1);
+        fprintf(file, "%d", instructions[i].srcLine);
 
-            for(j = 0; j < numPlaces(max_lines) - numPlaces(instructions[i].srcLine) + 2 ; j++){
-                fprintf(file, " ");
-            }
-        
-            for(j = 0; j < numPlaces(currInstruction) - numPlaces(i + 1) + 2 ; j++){
-                fprintf(file, "");
-            }
-        }
         switch(curr_instruction.opcode){
             case assign_v:    	{ fprintf(file, "ASSIGN "); break;}
             case add_v:       	{ fprintf(file, "ADD "); break; }
