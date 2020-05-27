@@ -17,6 +17,46 @@
 
 extern char * avm_tostring(avm_memcell *);
 
+typedef void (*library_func_t)(void);
+
+void libfunc_print(void) {
+
+}
+
+void libfunc_cos(void) {
+
+}
+
+void libfunc_sin(void) {
+
+}
+
+
+library_func_t library_funcs[] = {
+    libfunc_print,
+    libfunc_cos,
+    libfunc_sin
+};
+
+library_func_t avm_getlibraryfunc (char * id){
+    if(strcmp(id, "print") == 0)        return library_funcs[0];
+    else if (strcmp(id, "cos") == 0)    return library_funcs[1];
+    else if (strcmp(id, "sin") == 0)    return library_funcs[1];
+    else avm_error("CALLED INVALID LIBRARY FUNCTION");
+    return NULL;
+}
+
+void avm_calllibfunc(char * id, avm_memory * memory){
+    library_func_t f = avm_getlibraryfunc(id);
+    if(!f) return;
+
+    memory->topsp = memory->top;
+    memory->totalActuals = 0;
+    (*f)();
+    if(!memory->executionFinished)
+        execute_funcexit((avm_instruction *) 0, memory);
+}
+
 void avm_dec_top(avm_memory * memory){
     if(!memory->top)
         avm_error("STACK OVERFLOW. NOT THE WEBSITE.");
@@ -69,46 +109,6 @@ void execute_funcenter (avm_instruction * instr, avm_memory * memory) {
 
 void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
 
-}
-
-typedef void (*library_func_t)(void);
-
-void libfunc_print(void) {
-
-}
-
-void libfunc_cos(void) {
-
-}
-
-void libfunc_sin(void) {
-
-}
-
-
-library_func_t library_funcs[] = {
-    libfunc_print,
-    libfunc_cos,
-    libfunc_sin
-};
-
-library_func_t avm_getlibraryfunc (char * id){
-    if(strcmp(id, "print") == 0)        return library_funcs[0];
-    else if (strcmp(id, "cos") == 0)    return library_funcs[1];
-    else if (strcmp(id, "sin") == 0)    return library_funcs[1];
-    else avm_error("CALLED INVALID LIBRARY FUNCTION");
-    return NULL;
-}
-
-void avm_calllibfunc(char * id, avm_memory * memory){
-    library_func_t f = avm_getlibraryfunc(id);
-    if(!f) return;
-
-    memory->topsp = memory->top;
-    memory->totalActuals = 0;
-    (*f)();
-    if(!memory->executionFinished)
-        execute_funcexit((avm_instruction *) 0, memory);
 }
 
 #endif
