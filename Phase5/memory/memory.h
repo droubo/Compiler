@@ -15,7 +15,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include "../avm/avm.h"
-#include "../table/table.h"
 
 avm_memcell_array const_strings;
 avm_memcell_array const_nums;

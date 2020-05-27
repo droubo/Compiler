@@ -13,7 +13,7 @@
 
 #include "../avm/avm.h"
 #include "../memory/memory.h"
-#include "../table/table.h"
+#include "avm_table.h"
 #include <string.h>
 #include <stdio.h>
 
