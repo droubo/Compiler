@@ -166,7 +166,7 @@ avm_opcode read_op(FILE * file){
     else if(strcmp(buf, "CALL") == 0)       	return call_v;
     else if(strcmp(buf, "PUSHARG") == 0)    	return pusharg_v;
     else if(strcmp(buf, "FUNCENTER") == 0)  	return funcenter_v;
-    else if(strcmp(buf, "UNCEXIT") == 0)    	return funcexit_v;
+    else if(strcmp(buf, "FUNCEXIT") == 0)    	return funcexit_v;
 
     else if(strcmp(buf, "NEWTABLE") == 0)    	return newtable_v;
     else if(strcmp(buf, "TABLEGETELEM") == 0)	return tablegetelem_v;
@@ -190,11 +190,14 @@ vmarg read_vmarg(FILE * file){
 	type = atoi(buf);
 	assert(type <= 10);
 	res.type = type;
-
+    //printf("TYPE = %d\n", res.type);
 	buf[0] = fgetc(file);
-	assert(buf[0] == ':');
+
+    assert(buf[0] == ':');
     if(type != retval_a)
 	    res.val = read_unsigned(file);
+    else
+        fgetc(file);
 	return res;
 }
 
@@ -211,7 +214,7 @@ void read_code(FILE * file, int * codeSize){
             case assign_v: {
                 code[i].result = read_vmarg(file);
                 code[i].arg1 = read_vmarg(file);
-                printf("%d:%d %d:%d\n", code[i].result.type, code[i].result.val,
+                printf("%d:%d %d:%d\n", code[i].result.type, code[i].result.type != retval_a? code[i].result.val : 0,
                                         code[i].arg1.type, code[i].arg1.val);
                 break;
             }
@@ -225,7 +228,7 @@ void read_code(FILE * file, int * codeSize){
                 code[i].result = read_vmarg(file);
                 code[i].arg1 = read_vmarg(file);
                 code[i].arg2 = read_vmarg(file);
-                printf("%d:%d %d:%d %d:%d\n", code[i].result.type, code[i].result.val,
+                printf("%d:%d %d:%d %d:%d\n", code[i].result.type, code[i].result.type != retval_a? code[i].result.val : 0,
                                         code[i].arg1.type, code[i].arg1.val,
                                         code[i].arg2.type, code[i].arg2.val);
                 break;
@@ -239,7 +242,7 @@ void read_code(FILE * file, int * codeSize){
                 code[i].arg1 = read_vmarg(file);
                 code[i].arg2 = read_vmarg(file);
                 code[i].result.val = read_unsigned(file);
-            printf("%d:%d %d:%d %d\n", code[i].result.type, code[i].result.val,
+            printf("%d:%d %d:%d %d\n", code[i].result.type, code[i].result.type != retval_a? code[i].result.val : 0,
                                         code[i].arg1.type, code[i].arg1.val,
                                         code[i].arg2.val);
                 break;
@@ -257,7 +260,7 @@ void read_code(FILE * file, int * codeSize){
             case funcexit_v: 
             case newtable_v: {
                 code[i].result = read_vmarg(file);
-                printf("%d:%d\n", code[i].result.type, code[i].result.val);
+                printf("%d:%d\n", code[i].result.type, code[i].result.type != retval_a? code[i].result.val : 0);
                 break;
             }
             case nop_v:{ break; }
