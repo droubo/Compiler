@@ -89,6 +89,8 @@ print_tables(FILE *file, StringStack *StringHead, StringStack *LibHead, Function
         fprintf(file, "\"%s\"\n", LibTmp->s);
         LibTmp = LibTmp->next;
     }
+    
+    fprintf(file,"%d\n", globals);
 
 }
 void print_instruction_arg(vmarg * arg, FILE * file){

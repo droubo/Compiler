@@ -88,6 +88,6 @@ const char* libfuncs_newused(const char *s);
 
 
 void produce_target_code();
-
+extern int globals;
 
 #endif
