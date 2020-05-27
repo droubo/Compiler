@@ -105,11 +105,13 @@ void avm_parse_error(char * format,...){
 }
 
 void avm_warning(char * format,...){
-    printf("\033[01;33mRUNTIME WARNING: %s\033[0m\n", format);
+    printf("\033[01;33m[%d] @LINE %d RUNTIME WARNING: %s\033[0m\n", 
+    memory.pc, code[memory.pc].srcLine, format);
 }
 
 void avm_error(char * format,...){
-    printf("\033[1;31mRUNTIME ERROR: %s\033[0m\n", format);
+    printf("\033[1;31m[%d] @LINE %d RUNTIME ERROR: %s\033[0m\n", 
+    memory.pc, code[memory.pc].srcLine, format);
     memory.executionFinished = 1;
 }
 
@@ -170,9 +172,6 @@ int main(int argv, char * argc[]) {
     printf("\n\033[01;33m>> EXECUTING CODE...\033[0m\n");
     for(i = 0; i < memory.codeSize; i++)
         avm_execute_cycle();
-
-    if(memory.executionFinished && memory.pc != AVM_ENDING_PC)
-        printf("RUNTIME ERROR.\nPC = %d\n", memory.pc);
 
     printf("\n\033[01;33m>> DONE\033[0m\n");
 }

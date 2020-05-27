@@ -265,8 +265,6 @@ void read_code(FILE * file, int * codeSize){
             }
             case nop_v:{ break; }
         }
-
-		fgetc(file);
     }
 }
 

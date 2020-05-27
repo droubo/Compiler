@@ -75,6 +75,10 @@ unsigned user_funcs_getLocals(unsigned index){
     return user_funcs.array[index].data.funcVal.locals;
 }
 
+avm_user_func avm_getfuncinfo(unsigned address, avm_memory * memory){
+    return user_funcs.array[code[address].result.val].data.funcVal;
+}
+
 void avm_memclear_string(avm_memcell* m){
     assert(m->data.strVal);
     free(m->data.strVal);

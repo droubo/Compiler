@@ -104,10 +104,26 @@ void execute_pusharg (avm_instruction * instr, avm_memory * memory) {
 }
 
 void execute_funcenter (avm_instruction * instr, avm_memory * memory) {
+    avm_memcell * func = avm_translate_operand(instr->result, &(memory->ax));
+    assert(func);
+    assert(memory->pc == func->data.funcVal.address);
 
+    memory->totalActuals = 0;
+    avm_user_func funcInfo = avm_getfuncinfo(memory->pc, memory);
+    memory->topsp = memory->top;
+    memory->top = memory->top - funcInfo.locals;
+    printf("\n\nENTERED USER FUNCTION WITH ADDRESS %d AND LOCALS %d\n\n", funcInfo.address, funcInfo.locals);
+}
+
+unsigned avm_get_envvalue(unsigned i, avm_memory * memory){
+    assert(memory->stack[i].type == number_m);
+    unsigned val = (unsigned) memory->stack[i].data.numVal;
+    assert(memory->stack[i].data.numVal == (double) val);
+    return val;
 }
 
 void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
+    unsigned oldTop = memory->top;
 
 }
 
