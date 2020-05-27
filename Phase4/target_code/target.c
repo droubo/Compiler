@@ -8,6 +8,7 @@ StringStack *StringHead=NULL, *StringTail=NULL;
 NumStack *NumHead=NULL, *NumTail=NULL;
 FunctionStack *FunHead=NULL, *FunTail=NULL;
 StringStack *LibHead=NULL, *LibTail=NULL;
+StringStack *GlobalHead = NULL, *GlobalTail = NULL;
 int globals = 0;
 
 char* consts_newstring(char *s)
@@ -47,7 +48,7 @@ void make_operand(expr* e, vmarg* arg){
             arg->num_val = e->sym->offset;
             arg->str_val = e->sym->name;
             switch(e->sym->space){
-                case programvar: arg->type = global_a;  globals++; break;
+                case programvar: arg->type = global_a;  pushStringStack(&GlobalHead, &GlobalTail, arg->str_val); break;
                 case functionlocal: arg->type = local_a; break;
                 case formalarg: arg->type = formal_a; break;
                 default: assert(0);
