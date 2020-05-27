@@ -128,7 +128,7 @@ void read_globals(FILE * file, avm_memory * memory){
 
     globals = init_avm_memcell_array(size, undef_m);
     for(i = 0; i < size; i++){
-        globals.array[i].data.strVal = read_string(file);
+        globals.array[i].type = undef_m;
         push_stack(memory, &(globals.array[i]));
     }
 }
