@@ -122,10 +122,13 @@ void print_instructions(FILE * file, int max_lines){
     int i, j;
     print_tables(file, StringHead, LibHead, FunHead, NumHead);
     instruction curr_instruction;
+
+    fprintf(file, "%d\n", currInstruction);
+
     for(i = 0; i < currInstruction; i++){
         curr_instruction = instructions[i];
     
-        fprintf(file, "%d", instructions[i].srcLine);
+        fprintf(file, "%d ", instructions[i].srcLine);
 
         switch(curr_instruction.opcode){
             case assign_v:    	{ fprintf(file, "ASSIGN "); break;}
