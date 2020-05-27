@@ -32,27 +32,24 @@
 ** FILE FORMAT **
 
     <MAGIC NUMBER>
-    <SIZE>
+    <CONST_STRING SIZE>
     "STRING1"
     "STRING2"
-    <SIZE>
+    <CONST_NUM SIZE>
     NUM1
     NUM2
-    <SIZE>
+    <USER_FUNCS SIZE>
     <ADDRESS1>
     <LOCAL SIZE1>
     "<ID1>"
     <ADDRESS2>
     <LOCAL SIZE2>
     "<ID2>"
-    <SIZE>
+    <LIB_FUNCS SIZE>
     <INDEX>
     <INDEX>
-    <SIZE>
-    "<ID1>"
-    "<ID2>"
-    CODE 
-    <SIZE>
+    <GLOBAL_VARS SIZE>
+    <CODE_SIZE>
     <CODE>
 
 // Const strings, const nums, user funcs, lib funcs, global vars
