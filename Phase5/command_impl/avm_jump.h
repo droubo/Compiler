@@ -179,7 +179,8 @@ void execute_jump (avm_instruction * instr, avm_memory * memory){
     assert(instr->result.type == label_a);
     assert(instr->result.val > 0 && instr->result.val < memory->codeSize);
     if(!memory->executionFinished)
-        memory->pc = instr->result.val;
+        memory->pc = instr->result.val - 1;
+
 }
 
 #endif

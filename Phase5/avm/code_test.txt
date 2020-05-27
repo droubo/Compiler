@@ -1,23 +1,7 @@
-42069
-3
-"stri 
-ng1"
-"string 2"
-"string 3"
-3
-4
-20
-394
-2
-4
-1
-13
-2
-3
-"cos"
-"tan"
-"print"
-4
-2
-1 ASSIGN 01:2 04:2
-2 ADD 01:2 04:0 04:1
+x = 10;
+y = "hello";
+function f(x,y) { return x+y; }
+z = "world";
+w = cos(3.1415);
+yo = 1;
+print(x,y,z,w);

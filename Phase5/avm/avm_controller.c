@@ -93,7 +93,6 @@ void avm_assign(avm_memcell * lv, avm_memcell * rv){
         avm_warning("ASSIGNMENT FROM UNDEFINED CONTENT");
     avm_memcellclear(lv);
     memcpy(lv, rv, sizeof(avm_memcell));
-
     if(lv->type == string_m)
         lv->data.strVal = strdup(rv->data.strVal);
     else if (lv->type == table_m)
@@ -170,8 +169,8 @@ int main(int argv, char * argc[]) {
     
     memory.executionStarted = 1;
     printf("\n\033[01;33m>> EXECUTING CODE...\033[0m\n");
-    for(i = 0; i < memory.codeSize; i++)
-        avm_execute_cycle();
+    
+    while(!memory.executionFinished) avm_execute_cycle();
 
     printf("\n\033[01;33m>> DONE\033[0m\n");
 }

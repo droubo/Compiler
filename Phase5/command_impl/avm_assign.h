@@ -23,8 +23,7 @@ void execute_assign (avm_instruction * instr, avm_memory * memory) {
     assert(lv && (&(memory->stack[AVM_STACK_SIZE - 1]) >= lv && lv > &(memory->stack[memory->top])) 
             || lv == &(memory->retval));
     assert(rv && (&(memory->stack[AVM_STACK_SIZE - 1]) >= rv && rv > &(memory->stack[memory->top])) 
-            || rv == &(memory->retval) || rv == &(memory->ax));
-    
+            || rv == &(memory->retval) || rv == &(memory->ax)); 
     avm_assign(lv, rv);
 }
 
