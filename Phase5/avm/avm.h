@@ -15,6 +15,9 @@
 #define MAGICNUMBERSIZE 5
 #define AVM_STACK_SIZE 2048
 
+#define AVM_STACKENV_SIZE 4
+#define AVM_MAX_INSTRUCTIONS 2048
+
 #include <stdlib.h>
 
 typedef enum vmarg_t 
@@ -204,9 +207,5 @@ memclear_func_t memclearFuncs[] = {
 /* Stack functions */
 // memory.h
 void avm_dec_top(avm_memory * memory);
-
-unsigned int avm_totalactuals();
-avm_memcell* avm_getactual(unsigned int i);
-char* avm_tostring(avm_memcell* cell);
 
 #endif

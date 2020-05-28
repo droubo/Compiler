@@ -16,9 +16,6 @@
 #include <assert.h>
 #include <string.h>
 
-#define AVM_STACKENV_SIZE 4
-#define AVM_MAX_INSTRUCTIONS 2048
-
 avm_memory memory;
 
 #define AVM_ENDING_PC memory.codeSize
@@ -112,24 +109,6 @@ void avm_error(char * format,...){
     printf("\033[1;31m[%d] @LINE %d RUNTIME ERROR: %s\033[0m\n", 
     memory.pc, code[memory.pc].srcLine, format);
     memory.executionFinished = 1;
-}
-
-unsigned int avm_totalactuals()
-{
-    /* not sure about that */
-    return avm_get_envvalue(memory.topsp + memory.totalActuals,&memory);
-}
-
-avm_memcell* avm_getactual(unsigned int i)
-{
-    assert(i < avm_totalactuals());
-    return &(memory.stack[memory.topsp + AVM_STACKENV_SIZE + 1 + i]);
-}
-
-char* avm_tostring(avm_memcell* cell)
-{
-    char* s = strdup(consts_getString((unsigned)cell->data.numVal));
-    return s;
 }
 
 void avm_init(char * filename){

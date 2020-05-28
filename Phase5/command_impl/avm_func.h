@@ -15,7 +15,26 @@
 #include "../memory/memory.h"
 #include <assert.h>
 
-typedef void (*library_func_t)(void);
+
+typedef void (*library_func_t)(avm_memory*);
+
+unsigned int avm_totalactuals(avm_memory* memory)
+{
+    /* not sure about that */
+    return avm_get_envvalue(memory->topsp + memory->totalActuals,&memory);
+}
+
+avm_memcell* avm_getactual(unsigned int i,avm_memory* memory)
+{
+    assert(i < avm_totalactuals(memory));
+    return &(memory->stack[memory->topsp + AVM_STACKENV_SIZE + 1 + i]);
+}
+
+char* avm_tostring(avm_memcell* cell)
+{
+    char* s = strdup(consts_getString((unsigned)cell->data.numVal));
+    return s;
+}
 
 void avm_dec_top(avm_memory * memory){
     if(!memory->top)
@@ -67,7 +86,13 @@ void execute_call (avm_instruction * instr, avm_memory * memory) {
 }
 
 void execute_pusharg (avm_instruction * instr, avm_memory * memory) {
-
+    
+    assert(instr->opcode == pusharg_v);
+    avm_memcell arg;
+    avm_translate_operand(instr->result,&arg);
+    avm_assign(&(memory->stack[memory->top]),&arg);
+    memory->totalActuals++;
+    avm_dec_top(memory);
 }
 
 void execute_funcenter (avm_instruction * instr, avm_memory * memory) {
@@ -89,13 +114,14 @@ void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
 }
 
 
-void libfunc_print(void) {
-    printf("CALLED PRINT\n");
-   unsigned int n = avm_totalactuals();
+void libfunc_print(avm_memory * memory) {
+   printf("CALLED PRINT\n");
+   unsigned int n = avm_totalactuals(memory);
+   printf("total actuals : %d\n",n);
    unsigned int i;
    for(i=0;i < n;i++)
    {
-       char* s = avm_tostring(avm_getactual(i));
+       char* s = avm_tostring(avm_getactual(i,memory));
        puts(s);
        free(s);
    }
@@ -131,7 +157,7 @@ void avm_calllibfunc(char * id, avm_memory * memory){
 
     memory->topsp = memory->top;
     memory->totalActuals = 0;
-    (*f)();
+    (*f)(memory);
     if(!memory->executionFinished)
         execute_funcexit((avm_instruction *) 0, memory);
 }
