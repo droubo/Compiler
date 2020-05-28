@@ -16,9 +16,6 @@
 #include <assert.h>
 #include <string.h>
 
-#define AVM_STACKENV_SIZE 4
-#define AVM_MAX_INSTRUCTIONS 2048
-
 avm_memory memory;
 
 #define AVM_ENDING_PC memory.codeSize
