@@ -15,6 +15,9 @@
 #define MAGICNUMBERSIZE 5
 #define AVM_STACK_SIZE 2048
 
+#define AVM_STACKENV_SIZE 4
+#define AVM_MAX_INSTRUCTIONS 2048
+
 #include <stdlib.h>
 
 typedef enum vmarg_t 
