@@ -81,7 +81,6 @@ void execute_pusharg (avm_instruction * instr, avm_memory * memory) {
 void execute_funcenter (avm_instruction * instr, avm_memory * memory) {
     avm_memcell * func = avm_translate_operand(instr->result, &(memory->ax));
     assert(func);
-    printf("%d %d\n", memory->pc, func->data.funcVal.address);
     assert(memory->pc == func->data.funcVal.address);
 
     memory->totalActuals = 0;
