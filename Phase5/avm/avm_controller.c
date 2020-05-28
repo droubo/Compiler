@@ -52,7 +52,7 @@ avm_memcell * avm_translate_operand(vmarg arg, avm_memcell * reg){
 
         case userfunc_a: {
             reg->type = userfunc_m;
-            reg->data.funcVal.address = arg.val;
+            reg->data.funcVal.address = user_funcs_getAddress(arg.val);
             return reg;
         }
 

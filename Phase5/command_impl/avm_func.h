@@ -19,43 +19,7 @@ extern char * avm_tostring(avm_memcell *);
 
 typedef void (*library_func_t)(void);
 
-void libfunc_print(void) {
-
-}
-
-void libfunc_cos(void) {
-
-}
-
-void libfunc_sin(void) {
-
-}
-
-
-library_func_t library_funcs[] = {
-    libfunc_print,
-    libfunc_cos,
-    libfunc_sin
-};
-
-library_func_t avm_getlibraryfunc (char * id){
-    if(strcmp(id, "print") == 0)        return library_funcs[0];
-    else if (strcmp(id, "cos") == 0)    return library_funcs[1];
-    else if (strcmp(id, "sin") == 0)    return library_funcs[1];
-    else avm_error("CALLED INVALID LIBRARY FUNCTION");
-    return NULL;
-}
-
-void avm_calllibfunc(char * id, avm_memory * memory){
-    library_func_t f = avm_getlibraryfunc(id);
-    if(!f) return;
-
-    memory->topsp = memory->top;
-    memory->totalActuals = 0;
-    (*f)();
-    if(!memory->executionFinished)
-        execute_funcexit((avm_instruction *) 0, memory);
-}
+void avm_calllibfunc(char * id, avm_memory * memory);
 
 void avm_dec_top(avm_memory * memory){
     if(!memory->top)
@@ -68,6 +32,17 @@ void avm_push_envvalue(unsigned val, avm_memory * memory){
     memory->stack[memory->top].type = number_m;
     memory->stack[memory->top].data.numVal = val;
     avm_dec_top(memory);
+}
+
+unsigned avm_get_envvalue(unsigned i, avm_memory * memory){
+    assert(memory->stack[i].type == number_m);
+    unsigned val = (unsigned) memory->stack[i].data.numVal;
+    assert(memory->stack[i].data.numVal == (double) val);
+    return val;
+}
+
+unsigned avm_totalactuals(avm_memory * memory) {
+    
 }
 
 void avm_callsaveenvironment(avm_memory * memory){    
@@ -106,6 +81,7 @@ void execute_pusharg (avm_instruction * instr, avm_memory * memory) {
 void execute_funcenter (avm_instruction * instr, avm_memory * memory) {
     avm_memcell * func = avm_translate_operand(instr->result, &(memory->ax));
     assert(func);
+    printf("%d %d\n", memory->pc, func->data.funcVal.address);
     assert(memory->pc == func->data.funcVal.address);
 
     memory->totalActuals = 0;
@@ -115,16 +91,48 @@ void execute_funcenter (avm_instruction * instr, avm_memory * memory) {
     printf("\n\nENTERED USER FUNCTION WITH ADDRESS %d AND LOCALS %d\n\n", funcInfo.address, funcInfo.locals);
 }
 
-unsigned avm_get_envvalue(unsigned i, avm_memory * memory){
-    assert(memory->stack[i].type == number_m);
-    unsigned val = (unsigned) memory->stack[i].data.numVal;
-    assert(memory->stack[i].data.numVal == (double) val);
-    return val;
-}
-
 void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
     unsigned oldTop = memory->top;
 
+}
+
+
+void libfunc_print(void) {
+
+}
+
+void libfunc_cos(void) {
+
+}
+
+void libfunc_sin(void) {
+
+}
+
+
+library_func_t library_funcs[] = {
+    libfunc_print,
+    libfunc_cos,
+    libfunc_sin
+};
+
+library_func_t avm_getlibraryfunc (char * id){
+    if(strcmp(id, "print") == 0)        return library_funcs[0];
+    else if (strcmp(id, "cos") == 0)    return library_funcs[1];
+    else if (strcmp(id, "sin") == 0)    return library_funcs[1];
+    else avm_error("CALLED INVALID LIBRARY FUNCTION");
+    return NULL;
+}
+
+void avm_calllibfunc(char * id, avm_memory * memory){
+    library_func_t f = avm_getlibraryfunc(id);
+    if(!f) return;
+
+    memory->topsp = memory->top;
+    memory->totalActuals = 0;
+    (*f)();
+    if(!memory->executionFinished)
+        execute_funcexit((avm_instruction *) 0, memory);
 }
 
 #endif
