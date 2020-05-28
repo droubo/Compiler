@@ -107,7 +107,7 @@ void read_user_funcs(FILE * file){
 
     user_funcs = init_avm_memcell_array(size, userfunc_m);
     for(i = 0; i < size; i++){
-        user_funcs.array[i].data.funcVal.address = read_unsigned(file);
+        user_funcs.array[i].data.funcVal.address = read_unsigned(file) - 1;
         user_funcs.array[i].data.funcVal.locals = read_unsigned(file);
     }
 }
@@ -240,7 +240,8 @@ void read_code(FILE * file, int * codeSize){
             case jgt_v: {
                 code[i].arg1 = read_vmarg(file);
                 code[i].arg2 = read_vmarg(file);
-                code[i].result.val = read_unsigned(file);
+                code[i].result.val = read_unsigned(file) - 1;
+                code[i].result.type = label_a;
             printf("%d:%d %d:%d %d\n", code[i].result.type, code[i].result.type != retval_a? code[i].result.val : 0,
                                         code[i].arg1.type, code[i].arg1.val,
                                         code[i].arg2.val);
@@ -248,7 +249,7 @@ void read_code(FILE * file, int * codeSize){
             }
 
             case jump_v: {
-                code[i].result.val = read_unsigned(file);
+                code[i].result.val = read_unsigned(file) - 1;
                 code[i].result.type = label_a;
                 printf("%d\n", code[i].result.val);
                 break;
