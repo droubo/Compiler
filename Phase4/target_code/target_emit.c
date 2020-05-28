@@ -207,6 +207,7 @@ void print_instructions(FILE * file, int max_lines){
                 break;
             }
             case call_v:
+            case newtable_v:
             case pusharg_v: {
                 print_instruction_arg(curr_instruction.arg1, file);
                 break;                
