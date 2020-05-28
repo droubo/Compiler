@@ -15,11 +15,7 @@
 #include "../memory/memory.h"
 #include <assert.h>
 
-extern char * avm_tostring(avm_memcell *);
-
 typedef void (*library_func_t)(void);
-
-void avm_calllibfunc(char * id, avm_memory * memory);
 
 void avm_dec_top(avm_memory * memory){
     if(!memory->top)
@@ -39,10 +35,6 @@ unsigned avm_get_envvalue(unsigned i, avm_memory * memory){
     unsigned val = (unsigned) memory->stack[i].data.numVal;
     assert(memory->stack[i].data.numVal == (double) val);
     return val;
-}
-
-unsigned avm_totalactuals(avm_memory * memory) {
-    
 }
 
 void avm_callsaveenvironment(avm_memory * memory){    
@@ -98,6 +90,15 @@ void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
 
 
 void libfunc_print(void) {
+    printf("CALLED PRINT\n");
+   unsigned int n = avm_totalactuals();
+   unsigned int i;
+   for(i=0;i < n;i++)
+   {
+       char* s = avm_tostring(avm_getactual(i));
+       puts(s);
+       free(s);
+   }
 
 }
 

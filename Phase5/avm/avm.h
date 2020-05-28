@@ -205,4 +205,8 @@ memclear_func_t memclearFuncs[] = {
 // memory.h
 void avm_dec_top(avm_memory * memory);
 
+unsigned int avm_totalactuals();
+avm_memcell* avm_getactual(unsigned int i);
+char* avm_tostring(avm_memcell* cell);
+
 #endif

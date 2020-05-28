@@ -114,6 +114,24 @@ void avm_error(char * format,...){
     memory.executionFinished = 1;
 }
 
+unsigned int avm_totalactuals()
+{
+    /* not sure about that */
+    return avm_get_envvalue(memory.topsp + memory.totalActuals,&memory);
+}
+
+avm_memcell* avm_getactual(unsigned int i)
+{
+    assert(i < avm_totalactuals());
+    return &(memory.stack[memory.topsp + AVM_STACKENV_SIZE + 1 + i]);
+}
+
+char* avm_tostring(avm_memcell* cell)
+{
+    char* s = strdup(consts_getString((unsigned)cell->data.numVal));
+    return s;
+}
+
 void avm_init(char * filename){
 	memory = avm_init_memory();
 
