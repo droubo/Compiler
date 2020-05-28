@@ -47,6 +47,7 @@ void pushStringStack(StringStack **head, StringStack **tail, char *s){
 	 return;
 	}
 	(*tail)->next = temp;
+	(*tail) = temp;
 }
 
 int FindStringStackIndex(StringStack *head, char *s){
@@ -77,6 +78,7 @@ void pushNumStack(NumStack **head, NumStack **tail, double num){
 	 return;
 	}
 	(*tail)->next = temp;
+	(*tail) = temp;
 }
 
 int FindNumStackIndex(NumStack *head, double num){
@@ -109,6 +111,7 @@ void pushFunctionStack(FunctionStack **head, FunctionStack **tail, char *id, int
 	 return;
 	}
 	(*tail)->next = temp;
+	(*tail) = temp;
 }
 
 int FindFunctionStackIndex(FunctionStack *head, char *id){

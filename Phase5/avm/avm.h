@@ -76,7 +76,8 @@ typedef struct avm_user_func{
 } avm_user_func;
 
 typedef struct avm_table {
-    unsigned refcounter;
+	unsigned refcounter;
+	struct avm_hashtable *table;
 } avm_table;
 
 typedef struct avm_memcell {
@@ -90,6 +91,12 @@ typedef struct avm_memcell {
 		char * libfuncVal;
 	} data;
 } avm_memcell;
+
+typedef struct avm_hashtable {
+	avm_memcell* index;
+	avm_memcell* content;
+	struct avm_hashtable*next;
+}avm_hashtable;
 
 typedef struct avm_memory {
     unsigned top;
