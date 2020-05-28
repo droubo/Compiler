@@ -12,11 +12,14 @@
 #define AVM_FUNC_H
 
 #define ACTUALS_OFFSET 4
+#define AVM_SAVEDPC_OFFSET 3
+#define AVM_SAVEDTOP_OFFSET 2
+#define AVM_SAVEDTOPSP_OFFSET 1
 
 #include "../avm/avm.h"
 #include "../memory/memory.h"
 #include <assert.h>
-
+#include "../command_impl/HashTable.h"
 
 typedef void (*library_func_t)(avm_memory*);
 
@@ -38,6 +41,7 @@ avm_memcell* avm_getactual(unsigned int i,avm_memory* memory)
     return &(memory->stack[memory->topsp + AVM_STACKENV_SIZE + 1 + i]);
 }
 
+/* please call free() after you call this function */
 char* avm_tostring(avm_memcell* cell)
 {
     assert(cell);
@@ -65,7 +69,38 @@ char* avm_tostring(avm_memcell* cell)
             else assert(0);
             break;
         }
-        default: assert(0);
+        case nil_m:
+        {
+            s = malloc(4);
+            sprintf(s,"nil");
+            break;
+        }
+        case userfunc_m :
+        {
+            s = malloc(50);
+            sprintf(s,"%0.f",cell->data.funcVal.address);
+            break;
+        }
+        case libfunc_m :
+        {
+            s = malloc(50);
+            sprintf(s,"libfunc");
+            break;
+        }
+        case undef_m :
+        {
+            s = malloc(20);
+            sprintf(s,"(undefined var)");
+            break;
+        }
+        case table_m :
+        {
+            print_table(cell->data.tableVal);
+            s = NULL;
+            break;
+        }
+
+        default: printf("cell->type : %d",cell->type); assert(0);
     }
     return s;
 }
@@ -86,7 +121,7 @@ void avm_push_envvalue(unsigned val, avm_memory * memory){
 void avm_callsaveenvironment(avm_memory * memory){    
     avm_push_envvalue(memory->totalActuals, memory);
     avm_push_envvalue(memory->pc + 1, memory);
-    avm_push_envvalue(memory->top ,memory);
+    avm_push_envvalue(memory->top + memory->totalActuals + 2 ,memory);
     avm_push_envvalue(memory->topsp, memory);
 }
 
@@ -137,6 +172,12 @@ void execute_funcenter (avm_instruction * instr, avm_memory * memory) {
 
 void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
     unsigned oldTop = memory->top;
+    memory->top = avm_get_envvalue(memory->topsp + AVM_SAVEDTOP_OFFSET,memory);
+    memory->pc = avm_get_envvalue(memory->topsp + AVM_SAVEDPC_OFFSET,memory);
+    memory->topsp = avm_get_envvalue(memory->topsp + AVM_SAVEDTOPSP_OFFSET,memory);
+
+    while(++oldTop < memory->top)
+        avm_memcellclear(&(memory->stack[oldTop]));
 
 }
 
@@ -149,8 +190,11 @@ void libfunc_print(avm_memory * memory) {
    for(i=0;i < n;i++)
    {
        char* s = avm_tostring(avm_getactual(i,memory));
-       puts(s);
-       free(s);
+       if(s != NULL)
+       {
+            puts(s);
+            free(s);
+       }
    }
 
 }
@@ -183,8 +227,9 @@ void avm_calllibfunc(char * id, avm_memory * memory){
     if(!f) return;
 
     memory->topsp = memory->top;
-    (*f)(memory);
     memory->totalActuals = 0;
+    (*f)(memory);
+    
     if(!memory->executionFinished)
         execute_funcexit((avm_instruction *) 0, memory);
 }
