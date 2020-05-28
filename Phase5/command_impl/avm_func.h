@@ -18,10 +18,16 @@
 
 typedef void (*library_func_t)(avm_memory*);
 
+unsigned int avm_get_envvalue(unsigned i, avm_memory * memory){
+    assert(memory->stack[i].type == number_m);
+    unsigned int val = (unsigned) memory->stack[i].data.numVal;
+    assert(memory->stack[i].data.numVal == (double) val);
+    return val;
+}
+
 unsigned int avm_totalactuals(avm_memory* memory)
 {
-    /* not sure about that */
-    return avm_get_envvalue(memory->topsp + memory->totalActuals,&memory);
+    return avm_get_envvalue(memory->topsp + memory->totalActuals,memory);
 }
 
 avm_memcell* avm_getactual(unsigned int i,avm_memory* memory)
@@ -32,7 +38,33 @@ avm_memcell* avm_getactual(unsigned int i,avm_memory* memory)
 
 char* avm_tostring(avm_memcell* cell)
 {
-    char* s = strdup(consts_getString((unsigned)cell->data.numVal));
+    assert(cell);
+
+    char* s;
+
+    switch (cell->type)
+    {
+        case string_m :
+        {
+            s = strdup(cell->data.strVal);
+            break;
+        }
+        case number_m :
+        {
+            s = malloc(50);
+            sprintf(s,"%0.f",cell->data.numVal);
+            break;
+        }
+        case bool_m :
+        {
+            s = malloc(6);
+            if(cell->data.boolVal == 1) sprintf(s,"true");
+            else if(cell->data.boolVal == 0) sprintf(s,"false");
+            else assert(0);
+            break;
+        }
+        default: assert(0);
+    }
     return s;
 }
 
@@ -47,13 +79,6 @@ void avm_push_envvalue(unsigned val, avm_memory * memory){
     memory->stack[memory->top].type = number_m;
     memory->stack[memory->top].data.numVal = val;
     avm_dec_top(memory);
-}
-
-unsigned avm_get_envvalue(unsigned i, avm_memory * memory){
-    assert(memory->stack[i].type == number_m);
-    unsigned val = (unsigned) memory->stack[i].data.numVal;
-    assert(memory->stack[i].data.numVal == (double) val);
-    return val;
 }
 
 void avm_callsaveenvironment(avm_memory * memory){    
@@ -88,9 +113,9 @@ void execute_call (avm_instruction * instr, avm_memory * memory) {
 void execute_pusharg (avm_instruction * instr, avm_memory * memory) {
     
     assert(instr->opcode == pusharg_v);
-    avm_memcell arg;
-    avm_translate_operand(instr->result,&arg);
-    avm_assign(&(memory->stack[memory->top]),&arg);
+    avm_memcell * arg = malloc(sizeof(avm_memcell));
+    arg = avm_translate_operand(instr->result,arg);
+    avm_assign(&(memory->stack[memory->top]),arg);
     memory->totalActuals++;
     avm_dec_top(memory);
 }
@@ -116,8 +141,7 @@ void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
 
 void libfunc_print(avm_memory * memory) {
    printf("CALLED PRINT\n");
-   unsigned int n = avm_totalactuals(memory);
-   printf("total actuals : %d\n",n);
+   unsigned int n = memory->totalActuals;
    unsigned int i;
    for(i=0;i < n;i++)
    {
@@ -156,8 +180,8 @@ void avm_calllibfunc(char * id, avm_memory * memory){
     if(!f) return;
 
     memory->topsp = memory->top;
-    memory->totalActuals = 0;
     (*f)(memory);
+    memory->totalActuals = 0;
     if(!memory->executionFinished)
         execute_funcexit((avm_instruction *) 0, memory);
 }
