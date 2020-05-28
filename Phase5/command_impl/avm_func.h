@@ -11,6 +11,8 @@
 #ifndef AVM_FUNC_H
 #define AVM_FUNC_H
 
+#define ACTUALS_OFFSET 4
+
 #include "../avm/avm.h"
 #include "../memory/memory.h"
 #include <assert.h>
@@ -27,7 +29,7 @@ unsigned int avm_get_envvalue(unsigned i, avm_memory * memory){
 
 unsigned int avm_totalactuals(avm_memory* memory)
 {
-    return avm_get_envvalue(memory->topsp + memory->totalActuals,memory);
+    return avm_get_envvalue(memory->topsp + ACTUALS_OFFSET,memory);
 }
 
 avm_memcell* avm_getactual(unsigned int i,avm_memory* memory)
@@ -84,7 +86,7 @@ void avm_push_envvalue(unsigned val, avm_memory * memory){
 void avm_callsaveenvironment(avm_memory * memory){    
     avm_push_envvalue(memory->totalActuals, memory);
     avm_push_envvalue(memory->pc + 1, memory);
-    avm_push_envvalue(memory->top + memory->totalActuals + 2, memory);
+    avm_push_envvalue(memory->top ,memory);
     avm_push_envvalue(memory->topsp, memory);
 }
 
@@ -97,6 +99,7 @@ void execute_call (avm_instruction * instr, avm_memory * memory) {
         case userfunc_m: {
             memory->pc = func->data.funcVal.address;
             assert(memory->pc < memory->codeSize);
+            printf("execute call opcode %d\n",code[memory->pc].opcode);               
             assert(code[memory->pc].opcode == funcenter_v);
             break;
         }
@@ -123,7 +126,6 @@ void execute_pusharg (avm_instruction * instr, avm_memory * memory) {
 void execute_funcenter (avm_instruction * instr, avm_memory * memory) {
     avm_memcell * func = avm_translate_operand(instr->result, &(memory->ax));
     assert(func);
-    printf("%d %d\n", memory->pc, func->data.funcVal.address);
     assert(memory->pc == func->data.funcVal.address);
 
     memory->totalActuals = 0;
@@ -141,7 +143,8 @@ void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
 
 void libfunc_print(avm_memory * memory) {
    printf("CALLED PRINT\n");
-   unsigned int n = memory->totalActuals;
+   unsigned int n = avm_totalactuals(memory);
+   printf("total actuals %d\n",n);
    unsigned int i;
    for(i=0;i < n;i++)
    {

@@ -189,7 +189,6 @@ vmarg read_vmarg(FILE * file){
 	type = atoi(buf);
 	assert(type <= 10);
 	res.type = type;
-    //printf("TYPE = %d\n", res.type);
 	buf[0] = fgetc(file);
 
     assert(buf[0] == ':');
