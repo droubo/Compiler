@@ -315,9 +315,10 @@ void generate_CALL(quad *q) {
 void generate_GETRETVAL(quad *q) {
     //quad->taddress = nextinstructionlabel();
     instruction *t = (instruction*) make_new_instruction();
-    t->opcode = assign;
+    t->opcode = assign_v;
     make_operand(q->result, t->arg1);
     make_retvaloperand(t->result);
+    t->result->is_getretval = 1;
     t->srcLine = q->line;
     emit_instruction(t);
 } 

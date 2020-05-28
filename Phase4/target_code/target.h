@@ -44,6 +44,7 @@ typedef struct vmarg
     unsigned int bool_val;
     double num_val;
     char *str_val;
+    int is_getretval;
 }vmarg;
 
 typedef struct instruction 

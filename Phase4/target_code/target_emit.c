@@ -186,9 +186,19 @@ void print_instructions(FILE * file, int max_lines){
                     break; }
             case assign_v:
             {
-                print_instruction_arg(curr_instruction.result, file);
-                fprintf(file," ");
-		        print_instruction_arg(curr_instruction.arg1, file);
+                if(curr_instruction.result->type == retval_a && curr_instruction.result->is_getretval != 1)
+                {
+                    print_instruction_arg(curr_instruction.arg1, file);
+                    fprintf(file," ");
+		            print_instruction_arg(curr_instruction.result, file);
+                }
+                else
+                {
+                    print_instruction_arg(curr_instruction.result, file);
+                    fprintf(file," ");
+		            print_instruction_arg(curr_instruction.arg1, file);
+                }
+                
                 break;
             }
             case funcenter_v:
