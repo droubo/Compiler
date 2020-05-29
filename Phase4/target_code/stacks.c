@@ -110,8 +110,11 @@ void pushFunctionStack(FunctionStack **head, FunctionStack **tail, char *id, int
 	 (*tail) = temp;
 	 return;
 	}
-	(*tail)->next = temp;
-	(*tail) = temp;
+	if((*tail))
+	{
+		(*tail)->next = temp;
+		(*tail) = temp;
+	}
 }
 
 int FindFunctionStackIndex(FunctionStack *head, char *id){

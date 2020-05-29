@@ -58,7 +58,7 @@ char* avm_tostring(avm_memcell* cell)
         case number_m :
         {
             s = malloc(50);
-            sprintf(s,"%0.f",cell->data.numVal);
+            sprintf(s,"%3.f",cell->data.numVal);
             break;
         }
         case bool_m :
@@ -78,13 +78,13 @@ char* avm_tostring(avm_memcell* cell)
         case userfunc_m :
         {
             s = malloc(50);
-            sprintf(s,"%0.f",cell->data.funcVal.address);
+            sprintf(s,"userfunc : %0.f",cell->data.funcVal.address);
             break;
         }
         case libfunc_m :
         {
             s = malloc(50);
-            sprintf(s,"libfunc");
+            sprintf(s,"libfunc (not implemented fully yet)");
             break;
         }
         case undef_m :
@@ -176,7 +176,7 @@ void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
     memory->pc = avm_get_envvalue(memory->topsp + AVM_SAVEDPC_OFFSET,memory);
     memory->topsp = avm_get_envvalue(memory->topsp + AVM_SAVEDTOPSP_OFFSET,memory);
 
-    while(++oldTop < memory->top)
+    while(++oldTop <= memory->top)
         avm_memcellclear(&(memory->stack[oldTop]));
 
 }
@@ -186,6 +186,11 @@ void libfunc_print(avm_memory * memory) {
    printf("CALLED PRINT\n");
    unsigned int n = avm_totalactuals(memory);
    printf("total actuals %d\n",n);
+   if(n == 0) 
+   {
+       avm_error("libfunc print : CALLED WITH NO ARGUMENTS");
+       return;
+   }
    unsigned int i;
    for(i=0;i < n;i++)
    {
@@ -200,24 +205,121 @@ void libfunc_print(avm_memory * memory) {
 }
 
 void libfunc_cos(void) {
+    avm_warning("libfunc cos : has not been inmplemented yet");
 
 }
 
 void libfunc_sin(void) {
+    avm_warning("libfunc sin : has not been inmplemented yet");
 
 }
 
+char* typeStrings(avm_memcell_t type)
+{
+    char* s;
+    switch (type)
+    {
+        case number_m :
+        {
+            s = "number";
+            break;
+        }
+        case string_m :
+        {
+            s = "string";
+            break;
+        }
+        case bool_m :
+        {
+            s = "bool";
+            break;
+        }
+        case table_m :
+        {
+            s = "table";
+        }
+        case userfunc_m :
+        {
+            s = "userfunc";
+            break;
+        }
+        case libfunc_m :
+        {
+            s = "libfunc";
+            break;
+        }
+        case nil_m :
+        {
+            s = "nil";
+            break;
+        }
+        case undef_m :
+        {
+            s = "undef";
+            break;
+        }
+        default: printf("type was %d",type); assert(0);
+    }
+    return s;
+}
+
+void libfunc_typeof(avm_memory* memory)
+{
+    unsigned int n = avm_totalactuals(memory);
+
+    if(n != 1)
+        avm_error("libfunc typeof : ONE ARGUMENT (NOT %d) EXPECTED IN typeof",n);
+    else
+    {
+        avm_memcellclear(&(memory->retval));
+        memory->retval.type = string_m;
+        memory->retval.data.strVal = strdup(typeStrings(avm_getactual(0,memory)->type));
+    }
+    
+}
+
+void libfunc_totalarguments(avm_memory* memory)
+{
+    /* topsp of previous activation record */
+    unsigned prev_topsp = avm_get_envvalue(memory->topsp + AVM_SAVEDTOPSP_OFFSET ,memory);
+    avm_memcellclear(&(memory->retval));
+
+    /* case of no previous activation record */
+    if(prev_topsp == AVM_STACK_SIZE - 1)
+    {
+        avm_error("libfunc totalarguments : CALLED OUTSIDE OF A FUNCTION");
+        memory->retval.type = nil_m;
+    }
+    else
+    {
+        /* extract number of actual arguments for the previous activation record */
+        memory->retval.type = number_m;
+        memory->retval.data.numVal = avm_get_envvalue(prev_topsp + ACTUALS_OFFSET,memory);
+    }
+    
+}
+
+void input()
+{
+    avm_warning("libfunc input : has not been inmplemented yet");
+}
 
 library_func_t library_funcs[] = {
     libfunc_print,
     libfunc_cos,
-    libfunc_sin
+    libfunc_sin,
+    libfunc_typeof,
+    libfunc_totalarguments,
+    input
 };
 
 library_func_t avm_getlibraryfunc (char * id){
     if(strcmp(id, "print") == 0)        return library_funcs[0];
     else if (strcmp(id, "cos") == 0)    return library_funcs[1];
-    else if (strcmp(id, "sin") == 0)    return library_funcs[1];
+    else if (strcmp(id, "sin") == 0)    return library_funcs[2];
+    else if (strcmp(id,"typeof") == 0) return library_funcs[3];
+    else if(strcmp(id,"totalarguments") == 0) return library_funcs[4];
+    else if(strcmp(id,"input") == 0) return library_funcs[5];
     else avm_error("CALLED INVALID LIBRARY FUNCTION");
     return NULL;
 }
