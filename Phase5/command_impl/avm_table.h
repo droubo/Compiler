@@ -50,7 +50,7 @@ void execute_tablegetelem(avm_instruction *instr, avm_memory *memory) {
 	else {
 		print_table(t->data.tableVal);
 		avm_memcell *content = avm_tablegetelem(t->data.tableVal, i);
-		printf("CONTENT %d\n", (int)content->data.numVal);
+		//printf("CONTENT %d\n", (int)content->data.numVal);
 		if (content) avm_assign(lv, content);
 		else {
 			//char *ts = avm_tostring(t);
@@ -67,7 +67,6 @@ void execute_tablesetelem(avm_instruction *instr, avm_memory *memory) {
 	avm_memcell *c = avm_translate_operand(instr->arg2, &memory->bx);
 
 	
-	if(t->data.tableVal->table != NULL) printf("HEAD2: %d\n", (int)((avm_hashtable*)t->data.tableVal->table)->content->data.numVal);
 	assert(t && &memory->stack[AVM_STACK_SIZE - 1] >= t && t > &memory->stack[memory->top]);
 	assert(i && c);
 	//printf("SETELEM %d %d %d\n", instr->result.val, instr->arg1.val, instr->arg2.val);
