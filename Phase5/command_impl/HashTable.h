@@ -33,7 +33,7 @@ avm_memcell *avm_tablegetelem(
 	}
 }
 
-avm_hashtable *avm_tablegetHash(
+avm_hashtable *avm_tablegetPreviousHash(
 	avm_table* table,
 	avm_memcell* index
 ) {
@@ -43,14 +43,14 @@ avm_hashtable *avm_tablegetHash(
 	else if (index->type != number_m && index->type != string_m) return NULL;
 	else {
 		avm_hashtable *tmp = (avm_hashtable*)table->table;
-		while (tmp != NULL) {
-			if (tmp->index->type == number_m && index->type == number_m) {
-				if (tmp->index->data.numVal == index->data.numVal) {
+		while (tmp->next != NULL) {
+			if (tmp->next->index->type == number_m && index->type == number_m) {
+				if (tmp->next->index->data.numVal == index->data.numVal) {
 					return tmp;
 				}
 			}
-			else if (tmp->index->type == string_m && index->type == string_m) {
-				if (!strcmp(tmp->index->data.strVal, index->data.strVal)) {
+			else if (tmp->next->index->type == string_m && index->type == string_m) {
+				if (!strcmp(tmp->next->index->data.strVal, index->data.strVal)) {
 					return tmp;
 				}
 			}
@@ -83,12 +83,29 @@ void avm_tablesetelem(
 		global_tmp = newelem;
 		return;
 	}
-	tmp = avm_tablegetHash(table, index);
-	if (tmp != NULL) {
-		tmp->content = content;
+	if (tmp->index->type == number_m && index->type == number_m) {
+		if (tmp->index->data.numVal == index->data.numVal) {
+			tmp->content = content;
+			return;
+		}
 	}
-	//printf("HEAD: %d\n", (int)((avm_hashtable*)table->table)->content->data.numVal);
+	else if (tmp->index->type == string_m && index->type == string_m) {
+		if (!strcmp(tmp->next->index->data.strVal, index->data.strVal)) {
+			tmp->content = content;
+			return;
+		}
+	}
+	tmp = avm_tablegetPreviousHash(table, index);
+	if (tmp != NULL) {
+		if (content->type == nil_m) {
+			avm_hashtable *to_remove = tmp->next;
+			tmp->next = to_remove->next;
+			free(to_remove);
+		}
+		else tmp->next->content = content;
+	}
 	tmp = table->table;
+	if (content->type == nil_m) return;
 	while (tmp->next != NULL) tmp = tmp->next;
 	avm_hashtable *newelem = (avm_hashtable *)malloc(sizeof(avm_hashtable));
 	newelem->index = index;
