@@ -58,7 +58,7 @@ char* avm_tostring(avm_memcell* cell)
         case number_m :
         {
             s = malloc(50);
-            sprintf(s,"%3.f",cell->data.numVal);
+            sprintf(s,"%.2f",cell->data.numVal);
             break;
         }
         case bool_m :
@@ -78,7 +78,7 @@ char* avm_tostring(avm_memcell* cell)
         case userfunc_m :
         {
             s = malloc(50);
-            sprintf(s,"userfunc : %0.f",cell->data.funcVal.address);
+            sprintf(s,"userfunc : %.0f",cell->data.funcVal.address);
             break;
         }
         case libfunc_m :
@@ -95,6 +95,7 @@ char* avm_tostring(avm_memcell* cell)
         }
         case table_m :
         {
+            printf("printint table (not fully implemented)\n");
             print_table(cell->data.tableVal);
             s = NULL;
             break;
@@ -133,8 +134,7 @@ void execute_call (avm_instruction * instr, avm_memory * memory) {
     switch(func->type) {
         case userfunc_m: {
             memory->pc = func->data.funcVal.address;
-            assert(memory->pc < memory->codeSize);
-            printf("execute call opcode %d\n",code[memory->pc].opcode);               
+            assert(memory->pc < memory->codeSize);         
             assert(code[memory->pc].opcode == funcenter_v);
             break;
         }
@@ -185,7 +185,7 @@ void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
 void libfunc_print(avm_memory * memory) {
    printf("CALLED PRINT\n");
    unsigned int n = avm_totalactuals(memory);
-   printf("total actuals %d\n",n);
+   printf("print : total actuals %d\n",n);
    if(n == 0) 
    {
        avm_error("libfunc print : CALLED WITH NO ARGUMENTS");
@@ -204,13 +204,15 @@ void libfunc_print(avm_memory * memory) {
 
 }
 
-void libfunc_cos(void) {
+void libfunc_cos(avm_memory* memory) {
     avm_warning("libfunc cos : has not been inmplemented yet");
+    avm_memcellclear(&(memory->retval));
 
 }
 
-void libfunc_sin(void) {
+void libfunc_sin(avm_memory* memory) {
     avm_warning("libfunc sin : has not been inmplemented yet");
+    avm_memcellclear(&(memory->retval));
 
 }
 
