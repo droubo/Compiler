@@ -341,7 +341,6 @@ void generate_RETURN(quad *q)
     instruction *t2 = (instruction*) make_new_instruction();
     t->opcode = assign_v;
     make_retvaloperand(t->result);
-    printf("STRRR %s %d\n\n\n\n", q->result->sym->name, q->result->type);
     make_operand(q->result, t->arg1);
     emit_instruction(t);
     //SymTabEntry f = top(funcstack);
@@ -365,6 +364,13 @@ void generate_FUNCEND(quad *q)
     t->srcLine = q->line;
     emit_instruction(t);
 }
+void generate_UMINUS(quad *q){
+    expr *tmp = (expr *)malloc(sizeof(expr));
+    tmp->type = constnum_e;
+    tmp->numConst = -1;
+    q->arg2 = tmp;
+    generate_MUL(q);
+}
 
 void generate_AND(quad *q)
 {
@@ -380,8 +386,8 @@ generator_func_t generators[] = {
     generate_MUL,
     generate_DIV,
     generate_MOD,
+    generate_UMINUS,
     generate_AND,
-    generate_NOT,
     generate_OR,
     generate_IF_EQ,
     generate_IF_NOTEQ,
@@ -399,6 +405,7 @@ generator_func_t generators[] = {
     generate_TABLEGETELEM,
     generate_TABLESETELEM,
     generate_JUMP,
+    generate_NOT
 };
 
 /* generate instructions from quads */

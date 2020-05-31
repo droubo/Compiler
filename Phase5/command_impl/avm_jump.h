@@ -125,11 +125,7 @@ void execute_jle (avm_instruction * instr, avm_memory * memory){
 }
 
 void execute_jge (avm_instruction * instr, avm_memory * memory){
-    assert(instr->result.type == label_a);
-    if(instr->arg1.type != number_a || instr->arg2.type != number_a){
-        avm_error("COMPARISON OPERATION WITHOUT THE USAGE OF NUMBER VALUES. I NEED NUMBERS PLS.");
-    }
-    
+    assert(instr->result.type == label_a);    
     avm_memcell * rv1 = avm_translate_operand(instr->arg1, &(memory->ax));
     avm_memcell * rv2 = avm_translate_operand(instr->arg1, &(memory->bx));
 
@@ -180,7 +176,7 @@ void execute_jgt (avm_instruction * instr, avm_memory * memory){
 
 void execute_jump (avm_instruction * instr, avm_memory * memory){
     assert(instr->result.type == label_a);
-    assert(instr->result.val > 0 && instr->result.val < memory->codeSize);
+    assert(instr->result.val > 0 && instr->result.val <= memory->codeSize);
     if(!memory->executionFinished)
         memory->pc = instr->result.val;
 }

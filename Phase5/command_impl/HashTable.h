@@ -42,6 +42,7 @@ avm_hashtable *avm_tablegetPreviousHash(
 	}
 	else if (index->type != number_m && index->type != string_m) return NULL;
 	else {
+
 		avm_hashtable *tmp = (avm_hashtable*)table->table;
 		while (tmp->next != NULL) {
 			if (tmp->next->index->type == number_m && index->type == number_m) {
@@ -73,7 +74,6 @@ void avm_tablesetelem(
 	avm_memcell *content = (avm_memcell *)malloc(sizeof(avm_memcell *));
 	content->type = old_content->type;
 	content->data = old_content->data;
-
 	if (tmp == NULL) {
 		avm_hashtable *newelem = (avm_hashtable *)malloc(sizeof(avm_hashtable));
 		newelem->index = index;
@@ -90,7 +90,7 @@ void avm_tablesetelem(
 		}
 	}
 	else if (tmp->index->type == string_m && index->type == string_m) {
-		if (!strcmp(tmp->next->index->data.strVal, index->data.strVal)) {
+		if (!strcmp(tmp->index->data.strVal, index->data.strVal)) {
 			tmp->content = content;
 			return;
 		}
