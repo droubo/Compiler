@@ -59,7 +59,6 @@ void emit_instruction(instruction* i) {
 
 print_tables(FILE *file, StringStack *StringHead, StringStack *LibHead, FunctionStack *FunHead, NumStack *NumHead){
     int i;
-    printf("ssss\n");
     fprintf(file, "42069\n");
 
 

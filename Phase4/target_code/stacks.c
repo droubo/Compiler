@@ -106,7 +106,7 @@ void pushFunctionStack(FunctionStack **head, FunctionStack **tail, char *id, int
 	 return;
 	}
 	else if((*tail) == NULL){
-	 (*tail)->next = temp;
+	 (*head)->next = temp;
 	 (*tail) = temp;
 	 return;
 	}
