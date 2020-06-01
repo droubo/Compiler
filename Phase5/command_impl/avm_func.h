@@ -154,6 +154,7 @@ void execute_pusharg (avm_instruction * instr, avm_memory * memory) {
     avm_memcell * arg = malloc(sizeof(avm_memcell));
     arg = avm_translate_operand(instr->result,arg);
     avm_assign(&(memory->stack[memory->top]),arg);
+    
     memory->totalActuals++;
     avm_dec_top(memory);
 }
@@ -167,7 +168,7 @@ void execute_funcenter (avm_instruction * instr, avm_memory * memory) {
     avm_user_func funcInfo = avm_getfuncinfo(memory->pc, memory);
     memory->topsp = memory->top;
     memory->top = memory->top - funcInfo.locals;
-    printf("\n\nENTERED USER FUNCTION WITH ADDRESS %d AND LOCALS %d\n\n", funcInfo.address, funcInfo.locals);
+   // printf("\n\nENTERED USER FUNCTION WITH ADDRESS %d AND LOCALS %d\n\n", funcInfo.address, funcInfo.locals);
 }
 
 void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
@@ -183,9 +184,9 @@ void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
 
 
 void libfunc_print(avm_memory * memory) {
-   printf("CALLED PRINT\n");
+   //printf("CALLED PRINT\n");
    unsigned int n = avm_totalactuals(memory);
-   printf("print : total actuals %d\n",n);
+   //printf("print : total actuals %d\n",n);
    if(n == 0) 
    {
        avm_error("libfunc print : CALLED WITH NO ARGUMENTS");

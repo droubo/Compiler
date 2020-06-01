@@ -194,8 +194,10 @@ vmarg read_vmarg(FILE * file){
     assert(buf[0] == ':');
     if(type != retval_a)
 	    res.val = read_unsigned(file);
-    else
+    else {
+        res.val = 0;
         fgetc(file);
+    }
 	return res;
 }
 
@@ -241,9 +243,9 @@ void read_code(FILE * file, int * codeSize){
                 code[i].arg2 = read_vmarg(file);
                 code[i].result.val = read_unsigned(file) - 1;
                 code[i].result.type = label_a;
-            printf("%d:%d %d:%d %d\n", code[i].result.type, code[i].result.type != retval_a? code[i].result.val : 0,
-                                        code[i].arg1.type, code[i].arg1.val,
-                                        code[i].arg2.val);
+            printf("%d:%d %d:%d %d\n", code[i].arg1.type, code[i].arg1.type != retval_a? code[i].arg1.val : 0,
+                                        code[i].arg2.type, code[i].arg2.type != retval_a? code[i].arg2.val : 0,
+                                        code[i].result.val);
                 break;
             }
 

@@ -45,8 +45,7 @@ void execute_jeq (avm_instruction * instr, avm_memory * memory){
     assert(instr->result.type == label_a);
 
     avm_memcell * rv1 = avm_translate_operand(instr->arg1, &(memory->ax));
-    avm_memcell * rv2 = avm_translate_operand(instr->arg1, &(memory->bx));
-
+    avm_memcell * rv2 = avm_translate_operand(instr->arg2, &(memory->bx));
     unsigned char result = 0;
 
     if(rv1->type == undef_m || rv2->type == undef_m)
@@ -62,7 +61,6 @@ void execute_jeq (avm_instruction * instr, avm_memory * memory){
         switch(rv1->type){
             case number_m:  { result = rv1->data.numVal == rv2->data.numVal; break; }
             case string_m:  { result = strcmp(rv1->data.strVal, rv2->data.strVal) == 0; break; }
-            //case bool_m:    { return rv1->data.boolVal == rv2->data.boolVal; }
             case table_m:
             case userfunc_m:
             case libfunc_m:   { result = 1; break; }
@@ -78,7 +76,7 @@ void execute_jne (avm_instruction * instr, avm_memory * memory){
     assert(instr->result.type == label_a);
 
     avm_memcell * rv1 = avm_translate_operand(instr->arg1, &(memory->ax));
-    avm_memcell * rv2 = avm_translate_operand(instr->arg1, &(memory->bx));
+    avm_memcell * rv2 = avm_translate_operand(instr->arg2, &(memory->bx));
 
     unsigned char result = 0;
 
@@ -111,7 +109,7 @@ void execute_jle (avm_instruction * instr, avm_memory * memory){
     assert(instr->result.type == label_a);
     
     avm_memcell * rv1 = avm_translate_operand(instr->arg1, &(memory->ax));
-    avm_memcell * rv2 = avm_translate_operand(instr->arg1, &(memory->bx));
+    avm_memcell * rv2 = avm_translate_operand(instr->arg2, &(memory->bx));
 
     if(rv1->type != number_m || rv2->type != number_m)
         avm_error("COMPARISON OPERATION WITHOUT THE USAGE OF NUMBER VALUES. I NEED NUMBERS PLS");
@@ -127,7 +125,7 @@ void execute_jle (avm_instruction * instr, avm_memory * memory){
 void execute_jge (avm_instruction * instr, avm_memory * memory){
     assert(instr->result.type == label_a);    
     avm_memcell * rv1 = avm_translate_operand(instr->arg1, &(memory->ax));
-    avm_memcell * rv2 = avm_translate_operand(instr->arg1, &(memory->bx));
+    avm_memcell * rv2 = avm_translate_operand(instr->arg2, &(memory->bx));
 
     if(rv1->type != number_m || rv2->type != number_m)
         avm_error("COMPARISON OPERATION WITHOUT THE USAGE OF NUMBER VALUES. I NEED NUMBERS PLS");
@@ -144,7 +142,7 @@ void execute_jlt (avm_instruction * instr, avm_memory * memory){
     assert(instr->result.type == label_a);
     
     avm_memcell * rv1 = avm_translate_operand(instr->arg1, &(memory->ax));
-    avm_memcell * rv2 = avm_translate_operand(instr->arg1, &(memory->bx));
+    avm_memcell * rv2 = avm_translate_operand(instr->arg2, &(memory->bx));
 
     if(rv1->type != number_m || rv2->type != number_m)
         avm_error("COMPARISON OPERATION WITHOUT THE USAGE OF NUMBER VALUES. I NEED NUMBERS PLS");
@@ -161,7 +159,7 @@ void execute_jgt (avm_instruction * instr, avm_memory * memory){
     assert(instr->result.type == label_a);
     
     avm_memcell * rv1 = avm_translate_operand(instr->arg1, &(memory->ax));
-    avm_memcell * rv2 = avm_translate_operand(instr->arg1, &(memory->bx));
+    avm_memcell * rv2 = avm_translate_operand(instr->arg2, &(memory->bx));
 
     if(rv1->type != number_m || rv2->type != number_m)
         avm_error("COMPARISON OPERATION WITHOUT THE USAGE OF NUMBER VALUES. I NEED NUMBERS PLS");
