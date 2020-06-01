@@ -78,7 +78,8 @@ char* avm_tostring(avm_memcell* cell)
         case userfunc_m :
         {
             s = malloc(50);
-            sprintf(s,"userfunc : %.0f",cell->data.funcVal.address);
+            int adr = (int) cell->data.funcVal.address;
+            sprintf(s,"userfunc : %d",adr);
             break;
         }
         case libfunc_m :
@@ -151,8 +152,7 @@ void execute_call (avm_instruction * instr, avm_memory * memory) {
 void execute_pusharg (avm_instruction * instr, avm_memory * memory) {
     
     assert(instr->opcode == pusharg_v);
-    avm_memcell * arg = malloc(sizeof(avm_memcell));
-    arg = avm_translate_operand(instr->result,arg);
+    avm_memcell * arg = avm_translate_operand(instr->result,&(memory->ax));
     avm_assign(&(memory->stack[memory->top]),arg);
     memory->totalActuals++;
     avm_dec_top(memory);

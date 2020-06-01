@@ -84,7 +84,7 @@ void avm_execute_cycle(void) {
 void avm_assign(avm_memcell * lv, avm_memcell * rv){
     if(lv == rv)
         return;
-	if (lv->type == userfunc_m && rv->type == userfunc_m)
+	if (rv->type == userfunc_m)
 	{
 		memcpy(lv, rv, sizeof(avm_memcell));
 		return;
