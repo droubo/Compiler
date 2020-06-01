@@ -16,31 +16,6 @@
 #include <stdio.h>
 #include <string.h>
 
-char * read_string(FILE * file){
-    char in1, in2;
-    char * string;
-    int i;
-    in1 = fgetc(file);
-    if(in1 != '\"')
-        return NULL;
-    
-    in1 = fgetc(file);
-    in2 = fgetc(file);
-    string = (char *) malloc(sizeof(char));
-    i = 0;
-    while((in1 != '\"' || in2 != '\n') && in1 != EOF && in2 != EOF){
-        string[i] = in1;
-        string[i + 1] = in2;
-        string = (char *) realloc(string, sizeof(char) * i + 2);
-        i += 2 ;
-        in1 = fgetc(file);
-        in2 = fgetc(file);
-    }
-    string[i] = '\0';
-    fgetc(file);
-    return string;
-}
-
 double read_double(FILE * file){
     char * buf;
     int i;
@@ -66,6 +41,22 @@ unsigned read_unsigned(FILE * file){
 	}
 	buf[i] = '\0';
     return atoi(buf);
+}
+
+char * read_string(FILE * file){
+    char in;
+    char * string;
+    int i, size;
+    size = read_unsigned(file);
+    in = fgetc(file);
+    string = (char *) malloc(size);
+
+    for(i = 0; i < size; i++) {
+        string[i] = in;
+        in = fgetc(file);
+    }
+    string[i] = '\0';
+    return string;
 }
 
 int do_magic(FILE * file){
