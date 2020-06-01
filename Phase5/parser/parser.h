@@ -17,21 +17,24 @@
 #include <string.h>
 
 char * read_string(FILE * file){
-    char in;
+    char in1, in2;
     char * string;
     int i;
-    in = fgetc(file);
-    if(in != '\"')
+    in1 = fgetc(file);
+    if(in1 != '\"')
         return NULL;
     
-    in = fgetc(file);
+    in1 = fgetc(file);
+    in2 = fgetc(file);
     string = (char *) malloc(sizeof(char));
     i = 0;
-    while(in != '\"' && in != EOF){
-        string[i] = in;
+    while((in1 != '\"' || in2 != '\n') && in1 != EOF && in2 != EOF){
+        string[i] = in1;
+        string[i + 1] = in2;
         string = (char *) realloc(string, sizeof(char) * i + 2);
-        i++;
-        in = fgetc(file);
+        i += 2 ;
+        in1 = fgetc(file);
+        in2 = fgetc(file);
     }
     string[i] = '\0';
     fgetc(file);
