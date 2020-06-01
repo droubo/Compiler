@@ -20,9 +20,9 @@
 void execute_assign (avm_instruction * instr, avm_memory * memory) {
     avm_memcell * lv = avm_translate_operand(instr->result, (avm_memcell *) 0);
     avm_memcell * rv = avm_translate_operand(instr->arg1, &(memory->ax)); 
-    assert(lv && (&(memory->stack[AVM_STACK_SIZE - 1]) >= lv && lv > &(memory->stack[memory->top])) 
+    assert(lv && (&(memory->stack[AVM_STACK_SIZE - 1]) >= lv && lv >= &(memory->stack[memory->top])) 
             || lv == &(memory->retval));
-    assert(rv && (&(memory->stack[AVM_STACK_SIZE - 1]) >= rv && rv > &(memory->stack[memory->top])) 
+    assert(rv && (&(memory->stack[AVM_STACK_SIZE - 1]) >= rv && rv >= &(memory->stack[memory->top])) 
             || rv == &(memory->retval) || rv == &(memory->ax)); 
     avm_assign(lv, rv);
 }

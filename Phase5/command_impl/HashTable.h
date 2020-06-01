@@ -70,7 +70,6 @@ void avm_tablesetelem(
 	avm_memcell *index = (avm_memcell *)malloc(sizeof(avm_memcell *));
 	index->type = old_index->type;
 	index->data = old_index->data;
-
 	avm_memcell *content = (avm_memcell *)malloc(sizeof(avm_memcell *));
 	content->type = old_content->type;
 	content->data = old_content->data;
@@ -116,8 +115,21 @@ void avm_tablesetelem(
 
 print_table(avm_table *table) {
 	avm_hashtable *tbl = table->table;
+	if (tbl != NULL) printf("{");
+	else printf("nil table\n");
 	while (tbl != NULL) {
-		printf("TABLEELEM: %d\n", (int)tbl->content->data.numVal);
+		if((char*)tbl->index->data.strVal != NULL) printf("\"%s\":", (char*)tbl->index->data.strVal);
+		else {
+			printf("%.3f:", tbl->index->data.numVal);
+		}
+		if (tbl->content->type == table_m) printf("table");
+		//if (tbl->content->data.tableVal != NULL && tbl->content->data.tableVal != table) print_table(tbl->content->data.tableVal);
+		else if ((char*)tbl->content->data.strVal != NULL) printf("\"%s\"", (char*)tbl->content->data.strVal);
+		else {
+			printf("%.3f", tbl->content->data.numVal);
+		}
+		if (tbl->next != NULL) printf(", ");
+		else printf("}");
 		tbl = tbl->next;
 	}
 }

@@ -167,6 +167,7 @@ void execute_funcenter (avm_instruction * instr, avm_memory * memory) {
     avm_user_func funcInfo = avm_getfuncinfo(memory->pc, memory);
     memory->topsp = memory->top;
     memory->top = memory->top - funcInfo.locals;
+    //printf("\n\nENTERED USER FUNCTION WITH ADDRESS %d AND LOCALS %d\n\n", funcInfo.address, funcInfo.locals);
 }
 
 void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
@@ -182,7 +183,9 @@ void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
 
 
 void libfunc_print(avm_memory * memory) {
+   //printf("CALLED PRINT\n");
    unsigned int n = avm_totalactuals(memory);
+   //printf("print : total actuals %d\n",n);
    if(n == 0) 
    {
        avm_error("libfunc print : CALLED WITH NO ARGUMENTS");
@@ -198,7 +201,6 @@ void libfunc_print(avm_memory * memory) {
            free(s);
        }
    }
-
 }
 
 void libfunc_cos(avm_memory* memory) {
