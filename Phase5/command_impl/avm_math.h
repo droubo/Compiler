@@ -61,7 +61,9 @@ void execute_arithmetic(avm_instruction * instr, avm_memory * memory){
         avm_memcellclear(lv);
         lv->type = number_m;
         lv->data.numVal = (*op)(rv1->data.numVal, rv2->data.numVal);
+        //printf("MATH %f %d %f = %f\n", rv1->data.numVal, op, rv2->data.numVal, lv->data.numVal);
     }
+    
 }
 
 void execute_add(avm_instruction * instr, avm_memory * memory){ 

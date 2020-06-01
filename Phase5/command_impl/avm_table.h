@@ -50,7 +50,7 @@ void execute_tablegetelem(avm_instruction *instr, avm_memory *memory) {
 	else {
 		//print_table(t->data.tableVal);
 		avm_memcell *content = avm_tablegetelem(t->data.tableVal, i);
-		//printf("CONTENT %d\n", (int)content->data.numVal);
+		//printf("CONTENT %f\n", content->data.numVal);
 		if (content) avm_assign(lv, content);
 		else {
 			//char *ts = avm_tostring(t);

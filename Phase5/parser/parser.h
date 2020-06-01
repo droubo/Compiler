@@ -11,6 +11,8 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#define BUFSIZE 64
+
 #include "../avm/avm.h"
 #include "../memory/memory.h"
 #include <stdio.h>
@@ -19,9 +21,9 @@
 double read_double(FILE * file){
     char * buf;
     int i;
-    buf = (char *) malloc(sizeof(char) * 11);
+    buf = (char *) malloc(sizeof(char) * BUFSIZE);
 
-    fgets(buf, 11, file);
+    fgets(buf, BUFSIZE, file);
     return atof(buf);
 }
 
@@ -29,7 +31,7 @@ unsigned read_unsigned(FILE * file){
     char * buf;
     int i;
     char in;
-    buf = (char *) malloc(sizeof(char) * 11);
+    buf = (char *) malloc(sizeof(char) * BUFSIZE);
 	i = 0;
 	in = fgetc(file);
 	while(in != ' ' && in != EOF && in != '\n'){
