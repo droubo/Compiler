@@ -24,7 +24,7 @@
 typedef void (*library_func_t)(avm_memory*);
 
 unsigned int avm_get_envvalue(unsigned i, avm_memory * memory){
-    assert(memory->stack[i].type == number_m);
+    //assert(memory->stack[i].type == number_m);
     unsigned int val = (unsigned) memory->stack[i].data.numVal;
     assert(memory->stack[i].data.numVal == (double) val);
     return val;
@@ -154,7 +154,6 @@ void execute_pusharg (avm_instruction * instr, avm_memory * memory) {
     avm_memcell * arg = malloc(sizeof(avm_memcell));
     arg = avm_translate_operand(instr->result,arg);
     avm_assign(&(memory->stack[memory->top]),arg);
-    
     memory->totalActuals++;
     avm_dec_top(memory);
 }
@@ -168,7 +167,7 @@ void execute_funcenter (avm_instruction * instr, avm_memory * memory) {
     avm_user_func funcInfo = avm_getfuncinfo(memory->pc, memory);
     memory->topsp = memory->top;
     memory->top = memory->top - funcInfo.locals;
-   // printf("\n\nENTERED USER FUNCTION WITH ADDRESS %d AND LOCALS %d\n\n", funcInfo.address, funcInfo.locals);
+    //printf("\n\nENTERED USER FUNCTION WITH ADDRESS %d AND LOCALS %d\n\n", funcInfo.address, funcInfo.locals);
 }
 
 void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
@@ -198,8 +197,8 @@ void libfunc_print(avm_memory * memory) {
        char* s = avm_tostring(avm_getactual(i,memory));
        if(s != NULL)
        {
-            puts(s);
-            free(s);
+		   printf("%s", s);
+           free(s);
        }
    }
 

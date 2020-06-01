@@ -48,7 +48,7 @@ void execute_tablegetelem(avm_instruction *instr, avm_memory *memory) {
 		avm_error("illegal use of type %s as table!", t->type);
 	}
 	else {
-		print_table(t->data.tableVal);
+		//print_table(t->data.tableVal);
 		avm_memcell *content = avm_tablegetelem(t->data.tableVal, i);
 		//printf("CONTENT %d\n", (int)content->data.numVal);
 		if (content) avm_assign(lv, content);
@@ -68,7 +68,7 @@ void execute_tablesetelem(avm_instruction *instr, avm_memory *memory) {
 	
 	assert(t && &memory->stack[AVM_STACK_SIZE - 1] >= t && t > &memory->stack[memory->top]);
 	assert(i && c);
-	printf("SETELEM %d %d %d\n", instr->result.val, instr->arg1.val, instr->arg2.val);
+	//printf("SETELEM %d %d %d\n", instr->result.val, instr->arg1.val, instr->arg2.val);
 
 	if (t->type != table_m) {
 		avm_error("illegal use of type %s as table!", t->type);
@@ -76,7 +76,7 @@ void execute_tablesetelem(avm_instruction *instr, avm_memory *memory) {
 	else {
 
 		avm_tablesetelem(t->data.tableVal, i, c);
-		printf("HEAD: %d\n", (int)((avm_hashtable*)t->data.tableVal->table)->content->data.numVal);
+		//printf("HEAD: %d\n", (int)((avm_hashtable*)t->data.tableVal->table)->content->data.numVal);
 	}
 }
 
