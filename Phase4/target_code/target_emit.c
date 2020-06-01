@@ -23,16 +23,6 @@ int isInteger(double val)
     return (val == truncated);
 }
 
-instruction* make_new_instruction()
-{
-    instruction *t = (instruction*) malloc(sizeof(instruction));
-    t->arg1 = malloc(sizeof(vmarg));
-    t->arg2 = malloc(sizeof(vmarg));
-    t->result = malloc(sizeof(vmarg));
-
-    return t;
-}
-
 void expand_instruction (void){
     assert(total_Instructions == currInstruction);
     instruction * p = (instruction *) malloc(NEW_SIZE_I);
@@ -110,7 +100,7 @@ void print_instruction_arg(vmarg * arg, FILE * file){
            case string_a : fprintf(file,"05:"); fprintf(file,"%d",FindStringStackIndex(StringHead,arg->str_val)); break;
            case bool_a : fprintf(file,"06:"); fprintf(file,"%d",arg->bool_val); break;
            case nil_a : fprintf(file,"07:"); fprintf(file,"NULL"); break;
-           case userfunc_a : fprintf(file,"08:"); fprintf(file,"%d",FindFunctionStackIndex(FunHead,arg->str_val)); break;
+           case userfunc_a : fprintf(file,"08:"); fprintf(file,"%d",FindFunctionStackIndex(FunHead,arg->str_val, arg->num_val)); break;
            case libfunc_a : fprintf(file,"09:"); fprintf(file,"%d",FindStringStackIndex(LibHead,arg->str_val)); break;
            case retval_a : fprintf(file,"10:"); break;
            default : printf("\nPRINT INSTRUCTION ASSERT FAILED : %d\n",arg->type); assert(0);

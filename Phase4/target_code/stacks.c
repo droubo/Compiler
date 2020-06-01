@@ -95,7 +95,7 @@ int FindNumStackIndex(NumStack *head, double num){
 void pushFunctionStack(FunctionStack **head, FunctionStack **tail, char *id, int address, int local_size){
 	FunctionStack *temp = (FunctionStack*)malloc(sizeof(FunctionStack));
 
-	if(FindFunctionStackIndex(*head, id) != - 1) return;
+	if(FindFunctionStackIndex(*head, id, address) != - 1) return;
 
 	temp->id = id;
 	temp->address = address;
@@ -117,11 +117,11 @@ void pushFunctionStack(FunctionStack **head, FunctionStack **tail, char *id, int
 	}
 }
 
-int FindFunctionStackIndex(FunctionStack *head, char *id){
+int FindFunctionStackIndex(FunctionStack *head, char *id, int address){
 	FunctionStack*temp = head;
 	int i = 0;
 	while(temp != NULL){
-		if(!strcmp(temp->id,id)) return i;
+		if(!strcmp(temp->id,id) && (temp->address == address)) return i;
 		temp = temp->next;
 		i++;
 	}

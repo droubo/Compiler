@@ -11,6 +11,16 @@ StringStack *LibHead=NULL, *LibTail=NULL;
 StringStack *GlobalHead = NULL, *GlobalTail = NULL;
 int globals = 0;
 
+instruction* make_new_instruction()
+{
+    instruction *t = (instruction*) malloc(sizeof(instruction));
+    t->arg1 = malloc(sizeof(vmarg));
+    t->arg2 = malloc(sizeof(vmarg));
+    t->result = malloc(sizeof(vmarg));
+
+    return t;
+}
+
 char* consts_newstring(char *s)
 {
     char *tmp = malloc(strlen(s));
@@ -46,12 +56,12 @@ void make_operand(expr* e, vmarg* arg){
         case retval_e:
         case newtable_e: {
             arg->num_val = e->sym->offset;
-            arg->str_val = e->sym->name;
+            arg->str_val = strdup(e->sym->name);
             switch(e->sym->space){
                 case programvar:
                 {   
                     arg->type = global_a;
-                    if(e->sym->scope == 0 && e->sym->offset > globals)
+                    if(e->sym->offset > globals)
                     {
                         globals = e->sym->offset;
                     }  
@@ -88,15 +98,15 @@ void make_operand(expr* e, vmarg* arg){
 
         case programfunc_e: {
             arg->type = userfunc_a;
-            arg->num_val = e->sym->taddress;
-            arg->str_val = e->sym->name;
-            pushFunctionStack(&FunHead, &FunTail, e->sym->name, e->sym->value.funcVal->iaddress, e->sym->value.funcVal->num_of_locals);
+            arg->num_val = e->sym->value.funcVal->iaddress;
+            arg->str_val = strdup(e->sym->name);
+            pushFunctionStack(&FunHead, &FunTail, arg->str_val, e->sym->value.funcVal->iaddress, e->sym->value.funcVal->num_of_locals);
             break;
         }
 
         case libraryfunc_e: {
             arg->type = libfunc_a;
-            arg->str_val = libfuncs_newused(e->sym->name);
+            arg->str_val = strdup(libfuncs_newused(e->sym->name));
             pushStringStack(&LibHead, &LibTail, arg->str_val);
             break;
         }
@@ -117,7 +127,7 @@ void make_retvaloperand(vmarg *arg){
 
 void generate_op(avm_opcode op,quad *q, int flag)
 {
-    instruction *t = (instruction*) make_new_instruction();
+    instruction *t = make_new_instruction();
     t->opcode = op;
     make_operand(q->arg1, t->arg1);
     if(flag == 0) make_operand(q->arg2, t->arg2);
@@ -128,7 +138,7 @@ void generate_op(avm_opcode op,quad *q, int flag)
 }
 
 generate_relational(avm_opcode op, quad* q) {
-    instruction *t = (instruction*) make_new_instruction();
+    instruction *t = make_new_instruction();
     t->opcode = op;
     make_operand(q->arg1, t->arg1);
     make_operand(q->arg2, t->arg2);
@@ -298,7 +308,7 @@ void generate_OR (quad *q) {
 
 void generate_PARAM(quad *q) {
     //quad->taddress = nextinstructionlabel();
-    instruction *t = (instruction*) make_new_instruction();
+    instruction *t = make_new_instruction();
     t->opcode = pusharg_v;
     make_operand(q->arg1, t->arg1);
     t->srcLine = q->line;
@@ -306,7 +316,7 @@ void generate_PARAM(quad *q) {
 }
 void generate_CALL(quad *q) {
     //quad->taddress = nextinstructionlabel();
-    instruction *t = (instruction*) make_new_instruction();
+    instruction *t = make_new_instruction();
     t->opcode = call_v;
     make_operand(q->arg1, t->arg1);
     t->srcLine = q->line;
@@ -314,7 +324,7 @@ void generate_CALL(quad *q) {
 }
 void generate_GETRETVAL(quad *q) {
     //quad->taddress = nextinstructionlabel();
-    instruction *t = (instruction*) make_new_instruction();
+    instruction *t = make_new_instruction();
     t->opcode = assign_v;
     make_operand(q->result, t->arg1);
     make_retvaloperand(t->result);
@@ -328,7 +338,7 @@ void generate_FUNCSTART(quad *q)
     //SymTabEntry *f = quad->result->sym;
     //userfunctions.add(f->id, f->taddress, f->totallocals);
     //push(funcstack, f);
-    instruction *t = (instruction*) make_new_instruction();
+    instruction *t = make_new_instruction();
     t->opcode = funcenter_v;
     make_operand(q->result, t->result);
     t->srcLine = q->line;
@@ -337,8 +347,8 @@ void generate_FUNCSTART(quad *q)
 
 void generate_RETURN(quad *q)
 {
-    instruction *t = (instruction*) make_new_instruction();
-    instruction *t2 = (instruction*) make_new_instruction();
+    instruction *t = make_new_instruction();
+    instruction *t2 = make_new_instruction();
     t->opcode = assign_v;
     make_retvaloperand(t->result);
     make_operand(q->result, t->arg1);
@@ -358,7 +368,7 @@ void generate_FUNCEND(quad *q)
     //SymTabEntry f = pop(funcstack);
     //backpatch(f.returnList, nexrinstructionlabel());
     //quad->taddress = nextinstructionlabel();
-    instruction* t = (instruction*) make_new_instruction();
+    instruction* t = make_new_instruction();
     t->opcode = funcexit_v;
     make_operand(q->result, t->result);
     t->srcLine = q->line;
@@ -412,7 +422,6 @@ generator_func_t generators[] = {
 void generate(void) {
     unsigned int i;
     for(i = 0; i < currQuad; ++i){
-	//printf("I: %d\n\n\n", quads[i].op);
         (*generators[quads[i].op])((quads+i));
     }
     print_LibraryStack(LibHead);

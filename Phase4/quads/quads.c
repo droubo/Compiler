@@ -51,6 +51,8 @@ expr * newexpr(expr_t type, SymTabEntry* sym){
     temp->numConst = 0;
     temp->strConst = NULL;
     temp->boolConst = (unsigned char) 0;
+    temp->truelist = NULL;
+    temp->falselist = NULL;
     temp->index = NULL;
     return temp;
 }

@@ -30,7 +30,7 @@ void pushNumStack(NumStack **head, NumStack **tail, double num);
 int FindNumStackIndex(NumStack *head, double num);
 
 void pushFunctionStack(FunctionStack **head, FunctionStack **tail, char *id, int address, int local_size);
-int FindFunctionStackIndex(FunctionStack *head, char *id);
+int FindFunctionStackIndex(FunctionStack *head, char *id, int address);
 
 void print_Stack(StringStack *head);
 void print_StringStack(StringStack *head);
