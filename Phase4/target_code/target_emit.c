@@ -55,7 +55,7 @@ print_tables(FILE *file, StringStack *StringHead, StringStack *LibHead, Function
     fprintf(file, "%d\n", FindStringStackSize(StringHead));
     StringStack *StringTmp = StringHead;
     for(i = 0; i < FindStringStackSize(StringHead); i++){
-        fprintf(file, "\"%s\"\n", StringTmp->s);
+        fprintf(file, "%d %s\n", strlen(StringTmp->s), StringTmp->s);
         StringTmp = StringTmp->next;
     }
 
@@ -75,7 +75,7 @@ print_tables(FILE *file, StringStack *StringHead, StringStack *LibHead, Function
     fprintf(file, "%d\n", FindStringStackSize(LibHead));
     StringStack *LibTmp = LibHead;
     for(i = 0; i < FindStringStackSize(LibHead); i++){
-        fprintf(file, "\"%s\"\n", LibTmp->s);
+        fprintf(file, "%d %s\n", strlen(LibTmp->s), LibTmp->s);
         LibTmp = LibTmp->next;
     }
     
