@@ -30,8 +30,6 @@ unsigned read_unsigned(FILE * file){
     int i;
     char in;
     buf = (char *) malloc(sizeof(char) * 11);
-
-    buf = malloc(sizeof(char) * 11);
 	i = 0;
 	in = fgetc(file);
 	while(in != ' ' && in != EOF && in != '\n'){
@@ -47,15 +45,16 @@ char * read_string(FILE * file){
     char in;
     char * string;
     int i, size;
+
     size = read_unsigned(file);
-    in = fgetc(file);
-    string = (char *) malloc(size);
+    string = (char *) malloc(size + 1);
 
     for(i = 0; i < size; i++) {
-        string[i] = in;
         in = fgetc(file);
+        string[i] = in;
     }
     string[i] = '\0';
+    fgetc(file);
     return string;
 }
 
