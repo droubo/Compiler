@@ -118,13 +118,13 @@ print_table(avm_table *table) {
 	if (tbl != NULL) printf("{");
 	else printf("nil table\n");
 	while (tbl != NULL) {
-		if((char*)tbl->index->data.strVal != NULL) printf("\"%s\":", (char*)tbl->index->data.strVal);
+		if(tbl->index->type == string_m) printf("\"%s\":", (char*)tbl->index->data.strVal);
 		else {
 			printf("%.3f:", tbl->index->data.numVal);
 		}
 		if (tbl->content->type == table_m) printf("table");
 		//if (tbl->content->data.tableVal != NULL && tbl->content->data.tableVal != table) print_table(tbl->content->data.tableVal);
-		else if ((char*)tbl->content->data.strVal != NULL) printf("\"%s\"", (char*)tbl->content->data.strVal);
+		else if (tbl->content->type == string_m) printf("\"%s\"", (char*)tbl->content->data.strVal);
 		else {
 			printf("%.3f", tbl->content->data.numVal);
 		}

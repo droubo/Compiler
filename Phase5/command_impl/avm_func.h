@@ -58,7 +58,7 @@ char* avm_tostring(avm_memcell* cell)
         case number_m :
         {
             s = malloc(50);
-            sprintf(s,"%.2f",cell->data.numVal);
+            sprintf(s,"%.3f",cell->data.numVal);
             break;
         }
         case bool_m :
@@ -96,7 +96,7 @@ char* avm_tostring(avm_memcell* cell)
         }
         case table_m :
         {
-            printf("printint table (not fully implemented)\n");
+            //printf("printint table (not fully implemented)\n");
             print_table(cell->data.tableVal);
             s = NULL;
             break;
