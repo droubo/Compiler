@@ -117,7 +117,8 @@ void avm_init(char * filename){
 
 	FILE * file;
     file = fopen(filename, "r");
-    do_magic(file);
+    if(!do_magic(file))
+        avm_parse_error("INVALID FILE PROVIDED");
     read_const_strings(file);
     int i;
     printf("\033[01;33m>> LOADING ALPHA FILE\033[0m");
