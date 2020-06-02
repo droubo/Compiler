@@ -29,4 +29,7 @@
 #define CURR_SIZE_I (total*sizeof(instruction))
 #define NEW_SIZE_I (EXPAND_SIZE * sizeof(instruction) + CURR_SIZE)
 
+void print_instructions(FILE * file, int max_lines);
+void emit_instruction(instruction* i);
+
 #endif

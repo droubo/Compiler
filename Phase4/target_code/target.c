@@ -1,4 +1,6 @@
 #include "target.h"
+#include "target_emit.h"
+
 #include <string.h>
 #include <stdio.h>
 #define true 1
@@ -137,7 +139,7 @@ void generate_op(avm_opcode op,quad *q, int flag)
     emit_instruction(t); 
 }
 
-generate_relational(avm_opcode op, quad* q) {
+void generate_relational(avm_opcode op, quad* q) {
     instruction *t = make_new_instruction();
     t->opcode = op;
     make_operand(q->arg1, t->arg1);
@@ -423,11 +425,11 @@ void generate(void) {
     unsigned int i;
     for(i = 0; i < currQuad; ++i){
         (*generators[quads[i].op])((quads+i));
-    }
+    }/*
     print_LibraryStack(LibHead);
     print_StringStack(StringHead);
     print_NumStack(NumHead);
-    print_FuncStack(FunHead);
+    print_FuncStack(FunHead);*/
 }
 
 

@@ -47,7 +47,7 @@ void emit_instruction(instruction* i) {
     p->srcLine = i->srcLine;
 }
 
-print_tables(FILE *file, StringStack *StringHead, StringStack *LibHead, FunctionStack *FunHead, NumStack *NumHead){
+void print_tables(FILE *file, StringStack *StringHead, StringStack *LibHead, FunctionStack *FunHead, NumStack *NumHead){
     int i;
     fprintf(file, "42069\n");
 

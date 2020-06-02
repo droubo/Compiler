@@ -1521,11 +1521,11 @@ int main(int argc, char **argv)
 	}
 
 	else
-		printf("Errors present. I-Code Generation has failed.\n");
+		printf("Errors present. I-Code / Binary File Generation has failed.\n");
 
-	FILE* binary_file = fopen("test.bin","w");
+	FILE* binary_file = fopen("output.abc","wb");
 	generate();
 	print_instructions(binary_file, yylineno);
-
+	printf("Binary file \"output.abc\" ready.\n");
 	return 0;
 }
