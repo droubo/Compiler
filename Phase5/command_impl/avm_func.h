@@ -276,7 +276,6 @@ void libfunc_typeof(avm_memory* memory)
         memory->retval.type = string_m;
         memory->retval.data.strVal = strdup(typeStrings(avm_getactual(0,memory)->type));
     }
-    
 }
 
 void libfunc_totalarguments(avm_memory* memory)
@@ -295,14 +294,29 @@ void libfunc_totalarguments(avm_memory* memory)
     {
         /* extract number of actual arguments for the previous activation record */
         memory->retval.type = number_m;
-        memory->retval.data.numVal = avm_get_envvalue(prev_topsp + ACTUALS_OFFSET,memory);
-    }
-    
+        memory->retval.data.numVal = avm_get_envvalue(prev_topsp + ACTUALS_OFFSET,memory);        
+    }  
 }
 
-void input()
+void libfunc_argument(avm_memory* memory)
 {
-    avm_warning("libfunc input : has not been inmplemented yet");
+    /* topsp of previous activation record */
+    unsigned prev_topsp = avm_get_envvalue(memory->topsp + AVM_SAVEDTOPSP_OFFSET ,memory);
+    avm_memcellclear(&(memory->retval));
+
+    /* case of no previous activation record */
+    if(prev_topsp == AVM_STACK_SIZE - 1)
+    {
+        avm_error("libfunc totalarguments : CALLED OUTSIDE OF A FUNCTION");
+        memory->retval.type = nil_m;
+    }
+    else
+    {
+        if(avm_getactual(0, memory)->type != number_m)
+            avm_error("CALLED ARGUMENT(INDEX) WITH INVALID PARAMETERS.");
+        unsigned i = (unsigned) avm_getactual(0, memory)->data.numVal;  
+        avm_assign(&(memory->retval), &(memory->stack[i + prev_topsp + ACTUALS_OFFSET + 1]));
+    }  
 }
 
 library_func_t library_funcs[] = {
@@ -311,7 +325,7 @@ library_func_t library_funcs[] = {
     libfunc_sin,
     libfunc_typeof,
     libfunc_totalarguments,
-    input
+    libfunc_argument
 };
 
 library_func_t avm_getlibraryfunc (char * id){
@@ -320,7 +334,7 @@ library_func_t avm_getlibraryfunc (char * id){
     else if (strcmp(id, "sin") == 0)    return library_funcs[2];
     else if (strcmp(id,"typeof") == 0) return library_funcs[3];
     else if(strcmp(id,"totalarguments") == 0) return library_funcs[4];
-    else if(strcmp(id,"input") == 0) return library_funcs[5];
+    else if(strcmp(id,"argument") == 0) return library_funcs[5];
     else avm_error("CALLED INVALID LIBRARY FUNCTION");
     return NULL;
 }
