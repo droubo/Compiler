@@ -541,7 +541,6 @@ term :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : term -> - expr\n", yylineno);
 			fail_icode = 1;
 		}
-		
 		expr *temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
 		emit(uminus, $2, NULL, temp, yylineno);
 		
@@ -555,9 +554,15 @@ term :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : term -> ++ lvalue\n", yylineno);
 			fail_icode = 1;
 		}
-
+		expr *tmp = NULL;
+		if($lvalue->type == tableitem_e) {
+			tmp = $lvalue;
+			$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, yylineno);
+		}
 		emit(add, $2, newconstnumexpr(1), $2, yylineno);
 		emit(assign, $2, NULL, newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc)), yylineno);
+		if(tmp != NULL) emit(tablesetelem, tmp->index, $2, tmp, yylineno);
+
 		$$ = $2;
 		elist_flag++;
 	}
@@ -568,11 +573,17 @@ term :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : term -> lvalue ++\n", yylineno);
 			fail_icode = 1;
 		}
-
-		emit(assign, $1, NULL, newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc)), yylineno);
+		expr *tmp = NULL, *ret;
+		if($lvalue->type == tableitem_e) {
+			tmp = $lvalue;
+			$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, yylineno);
+		}
+		ret = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+		emit(assign, $1, NULL, ret , yylineno);
 		emit(add, $1, newconstnumexpr(1), $1, yylineno);
+		if(tmp != NULL) emit(tablesetelem, tmp->index, $1, tmp, yylineno);
 
-		$$ = $1;
+		$$ = ret;
 		elist_flag++;
 	}
 	| MINUS_MINUS lvalue
@@ -582,9 +593,14 @@ term :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : term -- lvalue\n", yylineno);
 			fail_icode = 1;
 		}
-
+		expr *tmp = NULL;
+		if($lvalue->type == tableitem_e) {
+			tmp = $lvalue;
+			$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, yylineno);
+		}
 		emit(sub, $2, newconstnumexpr(1), $2, yylineno);
 		emit(assign, $2, NULL, newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc)), yylineno);
+		if(tmp != NULL) emit(tablesetelem, tmp->index, $2, tmp, yylineno);
 
 		$$ = $2;
 		elist_flag++;
@@ -596,10 +612,16 @@ term :
 			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with function : lavlue --\n", yylineno);
 			fail_icode = 1;
 		}
-	
-		emit(assign, $1, NULL, newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc)), yylineno);
+		expr *tmp = NULL, *ret;
+		if($lvalue->type == tableitem_e) {
+			tmp = $lvalue;
+			$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, yylineno);
+		}
+		ret = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+		emit(assign, $1, NULL, ret , yylineno);
 		emit(sub, $1, newconstnumexpr(1), $1, yylineno);
-		$$ = $1;
+		if(tmp != NULL) emit(tablesetelem, tmp->index, $1, tmp, yylineno);
+		$$ = ret;
 		elist_flag++;
 	}
 	| primary { $$ = $1; }
