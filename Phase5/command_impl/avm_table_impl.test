@@ -1,0 +1,30 @@
+/*#include "avm_table_impl.h"
+
+int main() {
+    avm_table * table;
+    avm_memcell number1, string1, number2, string2;
+    table = avm_newTable();
+    number1.type = number_m;
+    number1.data.numVal = 420;
+    string1.type = string_m;
+    string1.data.strVal = malloc(6);  
+    strcpy(string1.data.strVal, "Hello");
+
+    number2.type = number_m;
+    number2.data.numVal = 42069;
+    string2.type = string_m;
+    string2.data.strVal = malloc(4);  
+    strcpy(string2.data.strVal, "pls");
+
+    printf("Setting elements\n");
+    avm_table_setElement(table, &number1, &string1);
+    printf("%d %f %s\n", table->currIndex, table->indexTable[table->currIndex - 1].data.numVal, table->contentTable[table->currIndex - 1].data.strVal);
+
+    avm_table_setElement(table, &number2, &string2);
+    printf("%d %f %s\n", table->currIndex, table->indexTable[table->currIndex - 1].data.numVal, table->contentTable[table->currIndex - 1].data.strVal);
+
+    printf("Getting elements\n");
+    avm_memcell * result;
+    result = avm_table_getElement(table, &number1);
+    printf("%f %s\n", number1.data.numVal, result->data.strVal);
+}*/

@@ -62,6 +62,7 @@ avm_memcell * avm_translate_operand(vmarg arg, avm_memcell * reg){
 }
 
 void avm_execute_cycle(void) {
+    printf("PC = %d\n", memory.pc);
     if(memory.executionFinished)
         return;
     else if (memory.pc == AVM_ENDING_PC) {

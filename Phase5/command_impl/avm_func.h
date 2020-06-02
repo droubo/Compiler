@@ -19,7 +19,6 @@
 #include "../avm/avm.h"
 #include "../memory/memory.h"
 #include <assert.h>
-#include "../command_impl/HashTable.h"
 
 typedef void (*library_func_t)(avm_memory*);
 
