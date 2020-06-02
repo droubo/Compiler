@@ -13,7 +13,7 @@ avm_memcell *avm_tablegetelem(
 	if (table->table == NULL) {
 		return NULL;
 	}
-	else if (index->type != number_m && index->type != string_m) return NULL;
+	else if (index->type != number_m && index->type != string_m && index->type != table_m) return NULL;
 	else {
 		avm_hashtable *tmp = (avm_hashtable*) table->table;
 		while (tmp != NULL) {
@@ -24,6 +24,11 @@ avm_memcell *avm_tablegetelem(
 			}
 			else if (tmp->index->type == string_m && index->type == string_m) {
 				if (!strcmp(tmp->index->data.strVal,index->data.strVal)) {
+					return tmp->content;
+				}
+			}
+			else if (tmp->index->type == table_m && index->type == table_m) {
+				if (tmp->index->data.tableVal == index->data.tableVal) {
 					return tmp->content;
 				}
 			}
@@ -52,6 +57,11 @@ avm_hashtable *avm_tablegetPreviousHash(
 			}
 			else if (tmp->next->index->type == string_m && index->type == string_m) {
 				if (!strcmp(tmp->next->index->data.strVal, index->data.strVal)) {
+					return tmp;
+				}
+			}
+			else if (tmp->next->index->type == table_m && index->type == table_m) {
+				if (tmp->next->index->data.tableVal == index->data.tableVal) {
 					return tmp;
 				}
 			}
@@ -92,6 +102,11 @@ void avm_tablesetelem(
 		if (!strcmp(tmp->index->data.strVal, index->data.strVal)) {
 			tmp->content = content;
 			return;
+		}
+	}
+	else if (tmp->index->type == table_m && index->type == table_m) {
+		if (tmp->index->data.tableVal == index->data.tableVal) {
+			return tmp->content;
 		}
 	}
 	tmp = avm_tablegetPreviousHash(table, index);

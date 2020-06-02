@@ -221,6 +221,13 @@ hashTableElement* newHashTableElement(expr* key, expr* value){
 
 }
 
+forpre *newForPrefix(){
+	forpre *temp;
+	temp = (forpre*) malloc(sizeof(forpre));
+	temp->currQ = 0;
+	temp->jumpL = 0;
+}
+
 void print_double(double d, FILE * file){
     if((ceilf(d) == d && floor(d) == d) || d == 0.0)
         fprintf(file, "%.0f ", d);

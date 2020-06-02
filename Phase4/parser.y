@@ -137,7 +137,7 @@ extern void generate();
 %type<integer> ifexpr 
 %type<integer> whilestart 
 %type<integer> whilecond 
-%type<integer> forprefix 
+%type<forPreF> forprefix 
 %type<integer> N 
 %type<integer> M_
 %type<integer> elseprefix
@@ -192,6 +192,7 @@ extern void generate();
 	SymTabEntry *sym;
 	call_struct call_;
 	hashTableElement* hashElement;
+	forpre* forPreF;
 }
 
 
@@ -1247,9 +1248,9 @@ forstmt : forprefix N elist RIGHT_PARENTHESIS N { loop_flag = 1; }
 	loopstmt N
 	{
 		loop_flag = 0;
-		edit_quad((int)$forprefix, NULL, NULL, NULL, $5 + 2);
+		edit_quad((int)$forprefix->currQ, NULL, NULL, NULL, $5 + 2);
 		edit_quad((int)$2, NULL, NULL, NULL, currQuad + 1);
-		edit_quad((int)$5, NULL, NULL, NULL, jump_label);
+		edit_quad((int)$5, NULL, NULL, NULL, $forprefix->jumpL);
 		edit_quad((int)$8, NULL, NULL, NULL, $2 + 2);
 		patchlist($loopstmt.breakList, currQuad + 1);
 		patchlist($loopstmt.contList, $2 + 2);
@@ -1259,7 +1260,8 @@ forstmt : forprefix N elist RIGHT_PARENTHESIS N { loop_flag = 1; }
 
 forprefix : FOR LEFT_PARENTHESIS elist SEMICOLON M_ expr SEMICOLON
 	{
-		jump_label = $M_;
+		$$ = newForPrefix();
+		$$->jumpL = $M_;
 		expr *temp = NULL;
 		if ($expr->type == boolexpr_e)
 		{
@@ -1281,7 +1283,7 @@ forprefix : FOR LEFT_PARENTHESIS elist SEMICOLON M_ expr SEMICOLON
 			}
 			else temp = $expr;
 		}
-		$$ = currQuad;
+		$$->currQ = currQuad;
 		emit_jump(if_eq, temp, newconstboolexpr(1), 0, yylineno);
 	}
 	;

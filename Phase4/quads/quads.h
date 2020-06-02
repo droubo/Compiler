@@ -98,6 +98,11 @@ typedef struct hashTableElement{
         struct hashTableElement* next;
 } hashTableElement;
 
+typedef struct forpre {
+	int currQ;
+	int jumpL;
+} forpre;
+
 
 
 expr * make_call(expr* lv, expr* elist, SymTable **table, int yyline, int currscope, int funcscope);
@@ -138,6 +143,7 @@ void edit_quad(int index, expr * arg1, expr * arg2, expr * result, unsigned int 
 
 hashTableElement* newHashTableElement(expr* key, expr* value);
 
+forpre *newForPrefix();
 
 extern quad * quads;
 #endif
