@@ -316,7 +316,6 @@ void libfunc_argument(avm_memory* memory)
             avm_error("CALLED ARGUMENT(INDEX) WITH INVALID PARAMETERS.");
         unsigned i = (unsigned) avm_getactual(0, memory)->data.numVal;  
         avm_assign(&(memory->retval), &(memory->stack[i + prev_topsp + ACTUALS_OFFSET + 1]));
-        printf("HEY %f\n", memory->retval.data.numVal);
     }  
 }
 
