@@ -36,6 +36,7 @@ unsigned int avm_totalactuals(avm_memory* memory)
 
 avm_memcell* avm_getactual(unsigned int i,avm_memory* memory)
 {
+    //printf("i = %d\n", i);
     assert(i < avm_totalactuals(memory));
     return &(memory->stack[memory->topsp + AVM_STACKENV_SIZE + 1 + i]);
 }
@@ -275,7 +276,6 @@ void libfunc_typeof(avm_memory* memory)
         memory->retval.type = string_m;
         memory->retval.data.strVal = strdup(typeStrings(avm_getactual(0,memory)->type));
     }
-    
 }
 
 void libfunc_totalarguments(avm_memory* memory)
@@ -294,7 +294,7 @@ void libfunc_totalarguments(avm_memory* memory)
     {
         /* extract number of actual arguments for the previous activation record */
         memory->retval.type = number_m;
-        memory->retval.data.numVal = avm_get_envvalue(prev_topsp + ACTUALS_OFFSET,memory);
+        memory->retval.data.numVal = avm_get_envvalue(prev_topsp + ACTUALS_OFFSET,memory);        
     }  
 }
 
@@ -312,9 +312,11 @@ void libfunc_argument(avm_memory* memory)
     }
     else
     {
-        /* extract number of actual arguments for the previous activation record */
-        memory->retval.type = number_m;
-        memory->retval.data.numVal = avm_get_envvalue(prev_topsp + ACTUALS_OFFSET,memory);
+        if(avm_getactual(0, memory)->type != number_m)
+            avm_error("CALLED ARGUMENT(INDEX) WITH INVALID PARAMETERS.");
+        unsigned i = (unsigned) avm_getactual(0, memory)->data.numVal;  
+        avm_assign(&(memory->retval), &(memory->stack[i + prev_topsp + ACTUALS_OFFSET + 1]));
+        printf("HEY %f\n", memory->retval.data.numVal);
     }  
 }
 

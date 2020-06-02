@@ -1,5 +1,5 @@
 function f(x, y){
-    print(totalarguments());
+    print(argument(1));
 }
 
 f(1, 2);
