@@ -184,9 +184,7 @@ void execute_funcexit (avm_instruction * instr, avm_memory * memory) {
 
 
 void libfunc_print(avm_memory * memory) {
-   //printf("CALLED PRINT\n");
    unsigned int n = avm_totalactuals(memory);
-   //printf("print : total actuals %d\n",n);
    if(n == 0) 
    {
        avm_error("libfunc print : CALLED WITH NO ARGUMENTS");
@@ -202,18 +200,6 @@ void libfunc_print(avm_memory * memory) {
            free(s);
        }
    }
-}
-
-void libfunc_cos(avm_memory* memory) {
-    avm_warning("libfunc cos : has not been inmplemented yet");
-    avm_memcellclear(&(memory->retval));
-
-}
-
-void libfunc_sin(avm_memory* memory) {
-    avm_warning("libfunc sin : has not been inmplemented yet");
-    avm_memcellclear(&(memory->retval));
-
 }
 
 char* typeStrings(avm_memcell_t type)
@@ -263,6 +249,18 @@ char* typeStrings(avm_memcell_t type)
         default: printf("type was %d",type); assert(0);
     }
     return s;
+}
+
+void libfunc_cos(avm_memory* memory) {
+    avm_warning("libfunc cos : has not been inmplemented yet");
+    avm_memcellclear(&(memory->retval));
+
+}
+
+void libfunc_sin(avm_memory* memory) {
+    avm_warning("libfunc sin : has not been inmplemented yet");
+    avm_memcellclear(&(memory->retval));
+
 }
 
 void libfunc_typeof(avm_memory* memory)
@@ -320,13 +318,26 @@ void libfunc_argument(avm_memory* memory)
     }  
 }
 
+void libfunc_input (avm_memory * memory) { }
+void libfunc_objectmemberkeys (avm_memory * memory) { }
+void libfunc_objecttotalmembers (avm_memory * memory) { }
+void libfunc_objectcopy (avm_memory * memory) { }
+void libfunc_strtonum (avm_memory * memory) { }
+void libfunc_sqrt (avm_memory * memory) { }
+
 library_func_t library_funcs[] = {
     libfunc_print,
     libfunc_cos,
     libfunc_sin,
     libfunc_typeof,
     libfunc_totalarguments,
-    libfunc_argument
+    libfunc_argument,
+    libfunc_input,
+    libfunc_objectmemberkeys,
+    libfunc_objecttotalmembers,
+    libfunc_objectcopy,
+    libfunc_strtonum,
+    libfunc_sqrt
 };
 
 library_func_t avm_getlibraryfunc (char * id){
@@ -336,6 +347,12 @@ library_func_t avm_getlibraryfunc (char * id){
     else if (strcmp(id,"typeof") == 0) return library_funcs[3];
     else if(strcmp(id,"totalarguments") == 0) return library_funcs[4];
     else if(strcmp(id,"argument") == 0) return library_funcs[5];
+    else if(strcmp(id,"input") == 0) return library_funcs[6];
+    else if(strcmp(id,"objectmemberkeys") == 0) return library_funcs[7];
+    else if(strcmp(id,"objecttotalmembers") == 0) return library_funcs[8];
+    else if(strcmp(id,"objectcopy") == 0) return library_funcs[9];
+    else if(strcmp(id,"strtonum") == 0) return library_funcs[10];
+    else if(strcmp(id,"sqrt") == 0) return library_funcs[11];
     else avm_error("CALLED INVALID LIBRARY FUNCTION");
     return NULL;
 }
