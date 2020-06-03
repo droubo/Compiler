@@ -167,13 +167,14 @@ extern void generate();
 %right ASSIGN
 %left OR 
 %left AND
+%right NOT
 %nonassoc EQUAL NOT_EQUAL 
 %nonassoc GREATER GREATER_EQUAL LESS LESS_EQUAL
 %left PLUS MINUS 
 %left MULT DIV MOD
 
 /* UMINUS is minus infront of a term */
-%right NOT PLUS_PLUS MINUS_MINUS UMINUS
+%right PLUS_PLUS MINUS_MINUS UMINUS
 %left DOT DOUBLE_DOT 
 %left LEFT_BRACKET RIGHT_BRACKET 
 %left LEFT_PARENTHESIS RIGHT_PARENTHESIS
@@ -211,7 +212,16 @@ statements:
 	{
 		$$.breakList = mergelist($3.breakList, $1.breakList);
 		$$.contList = mergelist($3.contList, $1.contList);
-		if ($statement->type == boolexpr_e)
+	}
+
+| error_statement statements
+;
+
+error_statement : error {fail_icode = 1;} statement;
+
+statement : 
+	expr SEMICOLON { 
+		if ($expr->type == boolexpr_e)
 		{
 			expr *temp;
 			temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
@@ -223,16 +233,8 @@ statements:
 			$expr = temp;
 			
 		}
-
+		make_stmt(&$$);
 	}
-
-| error_statement statements
-;
-
-error_statement : error {fail_icode = 1;} statement;
-
-statement : 
-	expr SEMICOLON { make_stmt(&$$);}
 	| ifstmt { $$ = $1;}
 	| whilestmt {$$ = $1;}
 	| forstmt { $$ = $1; }
@@ -311,7 +313,7 @@ expr :
 
 		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
 		{
-			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr - expr\n", yylineno);
 			fail_icode = 1;
 		}
 
@@ -329,7 +331,7 @@ expr :
 
 		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
 		{
-			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr * expr\n", yylineno);
 			fail_icode = 1;
 		}
 
@@ -347,7 +349,7 @@ expr :
 
 		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
 		{
-			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr / expr\n", yylineno);
 			fail_icode = 1;
 		}
 
@@ -365,7 +367,7 @@ expr :
 
 		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
 		{
-			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr MOD expr\n", yylineno);
 			fail_icode = 1;
 		}
 
@@ -383,7 +385,7 @@ expr :
 
 		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
 		{
-			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr > expr\n", yylineno);
 			fail_icode = 1;
 		}
 		flag_op = 1;
@@ -404,7 +406,7 @@ expr :
 
 		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
 		{
-			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr >= expr\n", yylineno);
 			fail_icode = 1;
 		}
 		flag_op = 1;
@@ -425,7 +427,7 @@ expr :
 		
 		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
 		{
-			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr < expr\n", yylineno);
 			fail_icode = 1;
 		}
 		flag_op = 1;
@@ -446,7 +448,7 @@ expr :
 
 		if ($1->type == boolexpr_e || $3->type == boolexpr_e)
 		{
-			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr + expr\n", yylineno);
+			fprintf(errorFile, "ERROR @ line %d: Unable to do this operation with booleans : expr -> expr <= expr\n", yylineno);
 			fail_icode = 1;
 		}
 		flag_op = 1;	
@@ -529,7 +531,7 @@ expr :
 	| NOT expr
 	{
 		flag_op = 1;
-	
+		
 		if($2->type != boolexpr_e){
 			$2->truelist = booleanList_makeList(currQuad);
 			$2->falselist = booleanList_makeList(currQuad + 1);
