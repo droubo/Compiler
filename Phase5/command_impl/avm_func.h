@@ -15,11 +15,13 @@
 #define AVM_SAVEDPC_OFFSET 3
 #define AVM_SAVEDTOP_OFFSET 2
 #define AVM_SAVEDTOPSP_OFFSET 1
+#define INPUT_BUFFER_SIZE 512
 
 #include "../avm/avm.h"
 #include "../memory/memory.h"
 #include <assert.h>
 #include "../command_impl/HashTable.h"
+#include <math.h>
 
 typedef void (*library_func_t)(avm_memory*);
 void avm_calllibfunc(char * id, avm_memory * memory);
@@ -252,14 +254,30 @@ char* typeStrings(avm_memcell_t type)
 }
 
 void libfunc_cos(avm_memory* memory) {
-    avm_warning("libfunc cos : has not been inmplemented yet");
+    unsigned int n = avm_totalactuals(memory);
+
+    if(n != 1)  avm_error("libfunc cos : ONE ARGUMENT (NOT %d) EXPECTED IN cos", n);
+    avm_memcell * arg = avm_getactual(0,memory);
+
+    if(arg->type != number_m) avm_error("libfunc cos : CALLED cos WITH NON-NUMBER ARGUMENT");
+
     avm_memcellclear(&(memory->retval));
+    memory->retval.type = number_m;
+    memory->retval.data.numVal = cos(arg->data.numVal);
 
 }
 
 void libfunc_sin(avm_memory* memory) {
-    avm_warning("libfunc sin : has not been inmplemented yet");
+    unsigned int n = avm_totalactuals(memory);
+
+    if(n != 1)  avm_error("libfunc sin : ONE ARGUMENT (NOT %d) EXPECTED IN sin", n);
+    avm_memcell * arg = avm_getactual(0,memory);
+
+    if(arg->type != number_m) avm_error("libfunc sin : CALLED sin WITH NON-NUMBER ARGUMENT");
+
     avm_memcellclear(&(memory->retval));
+    memory->retval.type = number_m;
+    memory->retval.data.numVal = sin(arg->data.numVal);
 
 }
 
@@ -268,7 +286,7 @@ void libfunc_typeof(avm_memory* memory)
     unsigned int n = avm_totalactuals(memory);
 
     if(n != 1)
-        avm_error("libfunc typeof : ONE ARGUMENT (NOT %d) EXPECTED IN typeof",n);
+        avm_error("libfunc typeof : ONE ARGUMENT (NOT %d) EXPECTED IN typeof", n);
     else
     {
         avm_memcellclear(&(memory->retval));
@@ -318,12 +336,127 @@ void libfunc_argument(avm_memory* memory)
     }  
 }
 
-void libfunc_input (avm_memory * memory) { }
-void libfunc_objectmemberkeys (avm_memory * memory) { }
-void libfunc_objecttotalmembers (avm_memory * memory) { }
-void libfunc_objectcopy (avm_memory * memory) { }
-void libfunc_strtonum (avm_memory * memory) { }
-void libfunc_sqrt (avm_memory * memory) { }
+int isNumeric (const char * s)
+{
+    if (s == NULL || *s == '\0' || *s == ' ')
+      return 0;
+    char * p;
+    strtod (s, &p);
+    return *p == '\0';
+}
+
+void libfunc_input (avm_memory * memory) {
+    unsigned int n = avm_totalactuals(memory);
+    char * buf;
+    int i = 0;
+    if(n != 0) avm_error("libfunc input : CALLED WITH INVALID ARGUMENTS");
+    
+    avm_memcellclear(&(memory->retval));
+
+    fgets(buf, INPUT_BUFFER_SIZE, stdin);
+    if(strcmp(buf, "true") == 0 || strcmp(buf, "false") == 0){
+        memory->retval.type = bool_m;
+        memory->retval.data.boolVal = strcmp(buf, "true") == 0;
+    } else if(isNumeric(buf)){
+        memory->retval.type = number_m;
+        memory->retval.data.numVal = atof(buf);
+    } else {
+        memory->retval.type = string_m;
+        memory->retval.data.strVal = buf;
+    }
+}
+
+void libfunc_objectmemberkeys (avm_memory * memory) {
+    unsigned int n = avm_totalactuals(memory);
+    unsigned i;
+    if(n != 1)  avm_error("libfunc objectcopy : ONE ARGUMENT (NOT %d) EXPECTED IN objectcopy", n);
+
+    avm_memcell * arg = avm_getactual(0,memory);
+
+    if(arg->type != table_m) avm_error("libfunc objectcopy : CALLED objectcopy WITH NON-TABLE ARGUMENT");
+    
+    avm_hashtable * entry = arg->data.tableVal->table;
+    avm_memcellclear(&(memory->retval));
+
+    memory->retval.type = table_m;
+	memory->retval.data.tableVal = (avm_table*)malloc(sizeof(avm_table));
+	memory->retval.data.tableVal->refcounter = 0;
+	memory->retval.data.tableVal->table = NULL;
+	avm_refcounter_incr(memory->retval.data.tableVal);
+
+    i = 0;
+    while(entry != NULL){
+        memory->ax.type = number_m;
+        memory->ax.data.numVal = i;
+        avm_tablesetelem(memory->retval.data.tableVal, &(memory->ax), entry->index);
+        i++;
+        entry = entry->next;
+    }   
+}
+
+void libfunc_objecttotalmembers (avm_memory * memory) {
+    unsigned int n = avm_totalactuals(memory);
+    if(n != 1)  avm_error("libfunc objectcopy : ONE ARGUMENT (NOT %d) EXPECTED IN objectcopy", n);
+
+    avm_memcell * arg = avm_getactual(0,memory);
+
+    if(arg->type != table_m) avm_error("libfunc objectcopy : CALLED objectcopy WITH NON-TABLE ARGUMENT");
+    
+    int count = 0;
+    avm_hashtable * entry = arg->data.tableVal->table;
+    while(entry != NULL){
+        count++;
+        entry = entry->next;
+    }
+
+    avm_memcellclear(&(memory->retval));
+    memory->retval.type = number_m;
+    memory->retval.data.numVal = count;
+    //avm_refcounter_incr(memory->retval.data.tableVal);
+
+}
+
+void libfunc_objectcopy (avm_memory * memory) {
+    unsigned int n = avm_totalactuals(memory);
+    if(n != 1)  avm_error("libfunc objectcopy : ONE ARGUMENT (NOT %d) EXPECTED IN objectcopy", n);
+
+    avm_memcell * arg = avm_getactual(0,memory);
+
+    if(arg->type != table_m) avm_error("libfunc objectcopy : CALLED objectcopy WITH NON-TABLE ARGUMENT");
+
+    avm_memcellclear(&(memory->retval));
+    memory->retval.type = table_m;
+    memory->retval.data.tableVal = arg->data.tableVal;
+    //avm_refcounter_incr(memory->retval.data.tableVal);
+}
+
+void libfunc_strtonum (avm_memory * memory) {
+    unsigned int n = avm_totalactuals(memory);
+    if(n != 1)  avm_error("libfunc strtonum : ONE ARGUMENT (NOT %d) EXPECTED IN strtonum", n);
+
+    avm_memcell * arg = avm_getactual(0,memory);
+
+    if(arg->type != string_m) avm_error("libfunc strtonum : CALLED strtonum WITH NON-STRING ARGUMENT");
+
+    if(!isNumeric(arg->data.strVal)) avm_error("libfunc strtonum : UNABLE TO CONVERT STRING");
+
+    avm_memcellclear(&(memory->retval));
+    memory->retval.type = number_m;
+    memory->retval.data.numVal = atof(arg->data.strVal);
+}
+
+void libfunc_sqrt (avm_memory * memory) {
+    unsigned int n = avm_totalactuals(memory);
+
+    if(n != 1)  avm_error("libfunc sqrt : ONE ARGUMENT (NOT %d) EXPECTED IN sqrt", n);
+    avm_memcell * arg = avm_getactual(0,memory);
+
+    if(arg->type != number_m) avm_error("libfunc sqrt : CALLED sqrt WITH NON-NUMBER ARGUMENT");
+
+    avm_memcellclear(&(memory->retval));
+    memory->retval.type = number_m;
+    memory->retval.data.numVal = sqrt(arg->data.numVal);
+}
 
 library_func_t library_funcs[] = {
     libfunc_print,
