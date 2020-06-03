@@ -22,6 +22,7 @@
 #include "../command_impl/HashTable.h"
 
 typedef void (*library_func_t)(avm_memory*);
+void avm_calllibfunc(char * id, avm_memory * memory);
 
 unsigned int avm_get_envvalue(unsigned i, avm_memory * memory){
     //assert(memory->stack[i].type == number_m);

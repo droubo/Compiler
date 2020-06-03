@@ -71,7 +71,7 @@ avm_hashtable *avm_tablegetPreviousHash(
 	}
 }
 
-void avm_tablesetelem(
+avm_memcell * avm_tablesetelem(
 	avm_table* table,
 	avm_memcell *old_index,
 	avm_memcell *old_content) {
@@ -90,18 +90,18 @@ void avm_tablesetelem(
 		newelem->next = NULL;
 		table->table = (avm_hashtable*) newelem;
 		global_tmp = newelem;
-		return;
+		return NULL;
 	}
 	if (tmp->index->type == number_m && index->type == number_m) {
 		if (tmp->index->data.numVal == index->data.numVal) {
 			tmp->content = content;
-			return;
+			return NULL;
 		}
 	}
 	else if (tmp->index->type == string_m && index->type == string_m) {
 		if (!strcmp(tmp->index->data.strVal, index->data.strVal)) {
 			tmp->content = content;
-			return;
+			return NULL;
 		}
 	}
 	else if (tmp->index->type == table_m && index->type == table_m) {
@@ -119,7 +119,7 @@ void avm_tablesetelem(
 		else tmp->next->content = content;
 	}
 	tmp = table->table;
-	if (content->type == nil_m) return;
+	if (content->type == nil_m) return NULL;
 	while (tmp->next != NULL) tmp = tmp->next;
 	avm_hashtable *newelem = (avm_hashtable *)malloc(sizeof(avm_hashtable));
 	newelem->index = index;
@@ -128,7 +128,7 @@ void avm_tablesetelem(
 	tmp->next = newelem;
 }
 
-print_table(avm_table *table) {
+void print_table(avm_table *table) {
 	avm_hashtable *tbl = table->table;
 	if (tbl != NULL) printf("{");
 	else printf("nil table\n");
