@@ -667,7 +667,7 @@ assignexpr :
 		else if ($1->index != NULL)
 		{
 			emit(tablesetelem, $1->index, $4, $1, yylineno);
-			emit_iftableitem($lvalue, table, currscope, currfunc, yylineno);
+			if($expr->type != nil_e) emit_iftableitem($lvalue, table, currscope, currfunc, yylineno);
 		}
 		else
 		{
@@ -697,6 +697,7 @@ assignexpr :
 			emit(assign,$lvalue,NULL,temp,yylineno);
 			$$ = temp;
 		}
+
 
 		//$$->type = assignexpr_e;
 		table_flag = 0;
@@ -896,6 +897,7 @@ tableitem :
 	| lvalue {}
 	callsuffix
 	{
+		printf("NAME %s\n" , $lvalue->sym->name);
 		$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, yylineno);
 		if ($callsuffix.method)
 		{
@@ -997,7 +999,22 @@ comaindexedelem : {$$ = NULL;}
 ;
 
 indexedelem : LEFT_BRACE expr COLON expr RIGHT_BRACE {
-	$$ = newHashTableElement($2, $4);
+	
+		if ($4->type == boolexpr_e)
+		{
+			expr *temp;
+			temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+			emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
+			emit_jump(jump, NULL, NULL, currQuad + 3, yylineno);
+			emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
+			backpatch($4->truelist, currQuad - 2);
+			backpatch($4->falselist, currQuad);
+			//emit(assign, temp, NULL, $1, yylineno);
+			$$ = newHashTableElement($2, temp);
+		}
+		else {
+			$$ = newHashTableElement($2, $4);
+		}
 }
 ;
 block : 
