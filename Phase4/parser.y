@@ -211,6 +211,18 @@ statements:
 	{
 		$$.breakList = mergelist($3.breakList, $1.breakList);
 		$$.contList = mergelist($3.contList, $1.contList);
+		if ($statement->type == boolexpr_e)
+		{
+			expr *temp;
+			temp = newexpr(var_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
+			emit(assign, newconstboolexpr(VAR_TRUE), NULL, temp, yylineno);
+			emit_jump(jump, NULL, NULL, currQuad + 3, yylineno);
+			emit(assign, newconstboolexpr(VAR_FALSE), NULL, temp, yylineno);
+			backpatch($expr->truelist, currQuad - 2);
+			backpatch($expr->falselist, currQuad);
+			$expr = temp;
+			
+		}
 
 	}
 

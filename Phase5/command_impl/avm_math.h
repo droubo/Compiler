@@ -54,8 +54,15 @@ void execute_arithmetic(avm_instruction * instr, avm_memory * memory){
         assert(rv2 && (&(memory->stack[AVM_STACK_SIZE - 1]) >= rv2 && rv2 > &(memory->stack[memory->top])) 
                 || rv2 == &(memory->retval) || rv2 == &(memory->ax));
 
-    if(rv1->type != number_m || rv2->type != number_m )
-        avm_error("PERFORMING MATHEMATICAL OPERATION ON NON-ARITHMETIC VALUES. SEE THE PROBLEM WITH THAT?");
+    if(rv1->type == string_m && rv2->type == string_m){
+        avm_memcellclear(lv);
+        lv->type = string_m;
+        lv->data.strVal = malloc(strlen(rv1->data.strVal) + strlen(rv2->data.strVal));
+        strcpy(lv->data.strVal, rv1->data.strVal);
+        strcat(lv->data.strVal, rv2->data.strVal);
+    }
+    else if(rv1->type != number_m || rv2->type != number_m )
+        avm_error("PERFORMING MATHEMATICAL OPERATION ON NON-ARITHMETIC OR STRING VALUES. SEE THE PROBLEM WITH THAT?");
     else {
         arithmetic_func_t op = arithmetic_funcs[instr->opcode - add_v];
         avm_memcellclear(lv);
