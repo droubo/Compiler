@@ -109,7 +109,7 @@ void avm_error(char * format,...){
     printf("\033[1;31m[%d] @LINE %d RUNTIME ERROR: %s\033[0m\n", 
     memory.pc, code[memory.pc].srcLine, format);
     memory.executionFinished = 1;
-    //exit(0);
+    exit(0);
 }
 
 void avm_init(char * filename){

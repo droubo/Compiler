@@ -44,72 +44,6 @@ avm_memcell* avm_getactual(unsigned int i,avm_memory* memory)
     return &(memory->stack[memory->topsp + AVM_STACKENV_SIZE + 1 + i]);
 }
 
-/* please call free() after you call this function */
-char* avm_tostring(avm_memcell* cell)
-{
-    assert(cell);
-
-    char* s;
-
-    switch (cell->type)
-    {
-        case string_m :
-        {
-            s = strdup(cell->data.strVal);
-            break;
-        }
-        case number_m :
-        {
-            s = malloc(50);
-            sprintf(s,"%.3f",cell->data.numVal);
-            break;
-        }
-        case bool_m :
-        {
-            s = malloc(6);
-            if(cell->data.boolVal == 1) sprintf(s,"true");
-            else if(cell->data.boolVal == 0) sprintf(s,"false");
-            else assert(0);
-            break;
-        }
-        case nil_m:
-        {
-            s = malloc(4);
-            sprintf(s,"nil");
-            break;
-        }
-        case userfunc_m :
-        {
-            s = malloc(50);
-            int adr = (int) cell->data.funcVal.address;
-            sprintf(s,"userfunc : %d",adr);
-            break;
-        }
-        case libfunc_m :
-        {
-            s = malloc(50);
-            sprintf(s,"libfunc (not implemented fully yet)");
-            break;
-        }
-        case undef_m :
-        {
-            s = malloc(20);
-            sprintf(s,"(undefined var)");
-            break;
-        }
-        case table_m :
-        {
-            //printf("printint table (not fully implemented)\n");
-            print_table(cell->data.tableVal);
-            s = NULL;
-            break;
-        }
-
-        default: printf("cell->type : %d",cell->type); assert(0);
-    }
-    return s;
-}
-
 void avm_dec_top(avm_memory * memory){
     if(!memory->top)
         avm_error("STACK OVERFLOW. NOT THE WEBSITE.");
@@ -251,6 +185,7 @@ char* typeStrings(avm_memcell_t type)
         case table_m :
         {
             s = "table";
+            break;
         }
         case userfunc_m :
         {
@@ -328,8 +263,9 @@ void libfunc_totalarguments(avm_memory* memory)
     /* case of no previous activation record */
     if(prev_topsp == AVM_STACK_SIZE - 1)
     {
-        avm_error("libfunc totalarguments : CALLED OUTSIDE OF A FUNCTION");
+        avm_warning("libfunc totalarguments : CALLED OUTSIDE OF A FUNCTION");
         memory->retval.type = nil_m;
+        return;
     }
     else
     {
@@ -346,15 +282,14 @@ void libfunc_argument(avm_memory* memory)
     avm_memcellclear(&(memory->retval));
 
     /* case of no previous activation record */
-    if(prev_topsp == AVM_STACK_SIZE - 1)
+    if(prev_topsp == AVM_STACK_SIZE - 1 || avm_getactual(0, memory)->type != number_m)
     {
-        avm_error("libfunc totalarguments : CALLED OUTSIDE OF A FUNCTION");
+        avm_warning("libfunc argument : CALLED OUTSIDE OF A FUNCTION");
         memory->retval.type = nil_m;
+        return;
     }
     else
     {
-        if(avm_getactual(0, memory)->type != number_m)
-            avm_error("CALLED ARGUMENT(INDEX) WITH INVALID PARAMETERS.");
         unsigned i = (unsigned) avm_getactual(0, memory)->data.numVal;  
         avm_assign(&(memory->retval), &(memory->stack[i + prev_topsp + ACTUALS_OFFSET + 1]));
     }  
@@ -376,8 +311,9 @@ void libfunc_input (avm_memory * memory) {
     if(n != 0) avm_error("libfunc input : CALLED WITH INVALID ARGUMENTS");
     
     avm_memcellclear(&(memory->retval));
-
+    buf = malloc(INPUT_BUFFER_SIZE);
     fgets(buf, INPUT_BUFFER_SIZE, stdin);
+    buf[strlen(buf) - 1] = '\0';
     if(strcmp(buf, "true") == 0 || strcmp(buf, "false") == 0){
         memory->retval.type = bool_m;
         memory->retval.data.boolVal = strcmp(buf, "true") == 0;
@@ -388,6 +324,7 @@ void libfunc_input (avm_memory * memory) {
         memory->retval.type = string_m;
         memory->retval.data.strVal = buf;
     }
+    //free(buf);
 }
 
 void libfunc_objectmemberkeys (avm_memory * memory) {
@@ -462,8 +399,12 @@ void libfunc_strtonum (avm_memory * memory) {
 
     if(arg->type != string_m) avm_error("libfunc strtonum : CALLED strtonum WITH NON-STRING ARGUMENT");
 
-    if(!isNumeric(arg->data.strVal)) avm_error("libfunc strtonum : UNABLE TO CONVERT STRING");
-
+    if(!isNumeric(arg->data.strVal)) {
+        avm_warning("libfunc strtonum : UNABLE TO CONVERT STRING");
+        avm_memcellclear(&(memory->retval));
+        memory->retval.type = nil_m;
+        return;
+    }
     avm_memcellclear(&(memory->retval));
     memory->retval.type = number_m;
     memory->retval.data.numVal = atof(arg->data.strVal);
@@ -476,7 +417,12 @@ void libfunc_sqrt (avm_memory * memory) {
     avm_memcell * arg = avm_getactual(0,memory);
 
     if(arg->type != number_m) avm_error("libfunc sqrt : CALLED sqrt WITH NON-NUMBER ARGUMENT");
-
+    if(arg->data.numVal < 0) {
+        avm_warning("libfunc sqrt : UNABLE TO DO SQRT OF NEGATIVE NUMBER");
+        avm_memcellclear(&(memory->retval));
+        memory->retval.type = nil_m;
+        return;
+    }
     avm_memcellclear(&(memory->retval));
     memory->retval.type = number_m;
     memory->retval.data.numVal = sqrt(arg->data.numVal);

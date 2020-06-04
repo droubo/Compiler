@@ -84,7 +84,7 @@ void execute_jne (avm_instruction * instr, avm_memory * memory){
     if(rv1->type == undef_m || rv2->type == undef_m)
         avm_error("UNDEFINED VALUE IN INEQUALITY. I HAVE TO KNOW WHAT THEY ARE TO COMPARE THEM.");
     else if (rv1->type == nil_m || rv2->type == nil_m)
-        result = rv1->type == nil_m && rv2->type == nil_m;
+        result = rv1->type != nil_m && rv2->type != nil_m;
     else if (rv1->type == bool_m || rv2->type == bool_m)
         result = (avm_tobool(rv1) != avm_tobool(rv2));
     else if (rv1->type != rv2->type)
@@ -94,7 +94,6 @@ void execute_jne (avm_instruction * instr, avm_memory * memory){
         switch(rv1->type){
             case number_m:  { result = rv1->data.numVal != rv2->data.numVal; break; }
             case string_m:  { result = strcmp(rv1->data.strVal, rv2->data.strVal) != 0; break; }
-            //case bool_m:    { return rv1->data.boolVal == rv2->data.boolVal; }
             case table_m:
             case userfunc_m:
             case libfunc_m:   { result = 0; break; }
@@ -175,7 +174,7 @@ void execute_jgt (avm_instruction * instr, avm_memory * memory){
 
 void execute_jump (avm_instruction * instr, avm_memory * memory){
     assert(instr->result.type == label_a);
-    assert(instr->result.val > 0 && instr->result.val <= memory->codeSize);
+    assert(instr->result.val >= 0 && instr->result.val <= memory->codeSize);
     if(!memory->executionFinished)
         memory->pc = instr->result.val;
 }

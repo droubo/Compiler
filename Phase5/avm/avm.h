@@ -19,6 +19,9 @@
 #define AVM_MAX_INSTRUCTIONS 2048
 
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <assert.h>
 
 typedef enum vmarg_t 
 {
@@ -210,6 +213,96 @@ memclear_func_t memclearFuncs[] = {
     0,
     0
 };
+
+/* please call free() after you call this function */
+char* avm_tostring(avm_memcell* cell)
+{
+    assert(cell);
+
+    char* s;
+
+    switch (cell->type)
+    {
+        case string_m :
+        {
+            s = strdup(cell->data.strVal);
+            break;
+        }
+        case number_m :
+        {
+            s = malloc(50);
+            sprintf(s,"%.3f",cell->data.numVal);
+            break;
+        }
+        case bool_m :
+        {
+            s = malloc(6);
+            if(cell->data.boolVal == 1) sprintf(s,"true");
+            else if(cell->data.boolVal == 0) sprintf(s,"false");
+            else assert(0);
+            break;
+        }
+        case nil_m:
+        {
+            s = malloc(4);
+            sprintf(s,"nil");
+            break;
+        }
+        case userfunc_m :
+        {
+            s = malloc(50);
+            int adr = (int) cell->data.funcVal.address;
+            sprintf(s,"userfunc : %d",adr);
+            break;
+        }
+        case libfunc_m :
+        {
+            s = malloc(50);
+            sprintf(s, cell->data.libfuncVal);
+            break;
+        }
+        case undef_m :
+        {
+            s = malloc(20);
+            sprintf(s,"(undefined var)");
+            break;
+        }
+        case table_m :
+        {
+            avm_hashtable *tbl = cell->data.tableVal->table;
+	        if (tbl != NULL) printf("{");
+	        else printf("nil table\n");
+	        while (tbl != NULL) {
+	        	if (tbl->index->type != table_m) {
+	        		char* s = avm_tostring(tbl->index);
+	        		if(s != NULL){
+	        	   		printf("%s", s);
+                   		free(s);
+               		}
+	        	} else printf("table @%d\n", tbl->index->data.tableVal);
+	        	printf(" : ");
+	        	if (tbl->content->type != table_m) {
+	        		char* s = avm_tostring(tbl->content);
+	        		if(s != NULL){
+	        	   		printf("%s", s);
+                   		free(s);
+               		}
+	        	}
+
+	        	if (tbl->next != NULL) printf(", ");
+	        	else printf("}");
+	        	tbl = tbl->next;
+	        }
+            s = NULL;
+            break;
+        }
+
+        default: printf("cell->type : %d",cell->type); assert(0);
+    }
+    return s;
+}
+
+
 
 /* Stack functions */
 // memory.h

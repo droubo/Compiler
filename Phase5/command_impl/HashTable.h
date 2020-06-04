@@ -2,6 +2,7 @@
 #define HASH_TABLE_H
 
 #include <string.h>
+#include <stdio.h>
 #include "../avm/avm.h"
 
 avm_hashtable *global_tmp;
@@ -126,33 +127,6 @@ avm_memcell * avm_tablesetelem(
 	newelem->content = content;
 	newelem->next = NULL;
 	tmp->next = newelem;
-}
-
-void print_table(avm_table *table) {
-	avm_hashtable *tbl = table->table;
-	if (tbl != NULL) printf("{");
-	else printf("nil table\n");
-	while (tbl != NULL) {
-		if (tbl->index->type != table_m) {
-			char* s = avm_tostring(tbl->index);
-			if(s != NULL){
-		   		printf("%s", s);
-           		free(s);
-       		}
-		} else printf("table @%d\n", tbl->index->data.tableVal);
-		printf(" : ");
-		if (tbl->content->type != table_m) {
-			char* s = avm_tostring(tbl->content);
-			if(s != NULL){
-		   		printf("%s", s);
-           		free(s);
-       		}
-		}
-
-		if (tbl->next != NULL) printf(", ");
-		else printf("}");
-		tbl = tbl->next;
-	}
 }
 
 #endif
