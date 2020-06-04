@@ -132,10 +132,35 @@ void avm_callsaveenvironment(avm_memory * memory){
 
 void execute_call (avm_instruction * instr, avm_memory * memory) {
     avm_memcell * func = avm_translate_operand(instr->result, &(memory->ax));
+	
     assert(func);
     avm_callsaveenvironment(memory);
 
     switch(func->type) {
+	case table_m: {
+			avm_hashtable *tbl = func->data.tableVal->table;
+			func = NULL;
+			while (tbl != NULL) {
+				if (tbl->index->type == string_m) {
+					if (!strcmp(tbl->index->data.strVal, "()")) {
+						func = tbl->content;
+					}
+				}
+				tbl = tbl->next;
+			}
+			if (func == NULL) {
+				avm_error("TABLE HAS NO ELEMENT ()");
+			}
+			else {
+				avm_instruction tmp;
+				tmp.result = instr->result;
+				tmp.arg1 = instr->arg1;
+				tmp.arg2 = instr->arg2;
+				tmp.opcode = pusharg_v;
+				execute_pusharg(&tmp, memory);
+				avm_callsaveenvironment(memory);
+			}
+		}
         case userfunc_m: {
             memory->pc = func->data.funcVal.address;
             assert(memory->pc < memory->codeSize);         

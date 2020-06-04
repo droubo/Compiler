@@ -60,7 +60,8 @@ int tmp_args = 0;
 int elist_flag = 0;
 extern int tempcounter;
 extern void generate();
-
+int table_tmpC = 0;
+int table_flag2 = 0, prev_table_flag = 0;
 %}
 
 /* Yacc Definitions */
@@ -208,7 +209,7 @@ statements
 statements: 
 	{ make_stmt(&$$); }
 
-	| statement {resettemp();} statements
+	| statement {if(table_tmpC < tempcounter && table_flag2) table_tmpC = tempcounter; resettemp();} statements
 	{
 		$$.breakList = mergelist($3.breakList, $1.breakList);
 		$$.contList = mergelist($3.contList, $1.contList);
@@ -698,8 +699,11 @@ assignexpr :
 			$$ = temp;
 		}
 
-
 		//$$->type = assignexpr_e;
+		if($expr->type == newtable_e){
+			insertTable(&tablesList, $1->sym->name);
+			 printf("ANOTHER %s\n", $1->sym->name);
+		}
 		table_flag = 0;
 		elist_flag--;
 	}
@@ -876,7 +880,9 @@ tableitem :
 		}
 		$$ = tmp;
 	}
-	| LEFT_BRACKET indexed RIGHT_BRACKET {
+	| LEFT_BRACKET {prev_table_flag = table_flag2; table_flag2 = 1;} indexed RIGHT_BRACKET {
+			tempcounter = table_tmpC;
+			table_tmpC = 0;
 			expr *tmp = newexpr(newtable_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
 			emit(tablecreate, tmp, NULL, NULL, yylineno);
 			int i = 0;
@@ -884,6 +890,7 @@ tableitem :
 			{
 				emit(tablesetelem ,$indexed->key ,$indexed->value ,tmp ,yylineno);
 			}
+			table_flag2 = prev_table_flag;
 			$$ = tmp;
 	}
 	;
@@ -897,7 +904,6 @@ tableitem :
 	| lvalue {}
 	callsuffix
 	{
-		printf("NAME %s\n" , $lvalue->sym->name);
 		$lvalue = emit_iftableitem($lvalue, table, currscope, currfunc, yylineno);
 		if ($callsuffix.method)
 		{
