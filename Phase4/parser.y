@@ -700,10 +700,6 @@ assignexpr :
 		}
 
 		//$$->type = assignexpr_e;
-		if($expr->type == newtable_e){
-			insertTable(&tablesList, $1->sym->name);
-			 printf("ANOTHER %s\n", $1->sym->name);
-		}
 		table_flag = 0;
 		elist_flag--;
 	}
