@@ -54,10 +54,11 @@ void execute_jeq (avm_instruction * instr, avm_memory * memory){
         result = rv1->type == nil_m && rv2->type == nil_m;
     else if (rv1->type == bool_m || rv2->type == bool_m)
         result = (avm_tobool(rv1) == avm_tobool(rv2));
-    else if (rv1->type != rv2->type)
+    else if (rv1->type != rv2->type){
         avm_error("ILLEGAL COMPARISON OF DIFFERENT TYPED VALUES (%d comp %d).\n" 
         "YOUR MATH TEACHER TOLD YOU TO COMPARE APPLES WITH APPLES.\n", rv1->type, rv2->type);
-    else {
+        printf("%d %d\n", rv1->data.numVal, rv2->data.strVal);
+    } else {
         switch(rv1->type){
             case number_m:  { result = rv1->data.numVal == rv2->data.numVal; break; }
             case string_m:  { result = strcmp(rv1->data.strVal, rv2->data.strVal) == 0; break; }

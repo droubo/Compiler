@@ -81,7 +81,7 @@ void execute_tablesetelem(avm_instruction *instr, avm_memory *memory) {
 }
 
 void execute_nop(avm_instruction * instr, avm_memory * memory) {
-
+	// no op. do nuthin, simple.
 }
 
 #endif
