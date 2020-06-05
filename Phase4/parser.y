@@ -877,7 +877,7 @@ tableitem :
 		$$ = tmp;
 	}
 	| LEFT_BRACKET {prev_table_flag = table_flag2; table_flag2 = 1;} indexed RIGHT_BRACKET {
-			tempcounter = table_tmpC;
+			tempcounter = table_tmpC+1;
 			table_tmpC = 0;
 			expr *tmp = newexpr(newtable_e, (SymTabEntry *)newtemp(table, currscope, currfunc));
 			emit(tablecreate, tmp, NULL, NULL, yylineno);

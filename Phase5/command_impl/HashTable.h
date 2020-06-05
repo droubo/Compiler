@@ -84,6 +84,12 @@ avm_memcell * avm_tablesetelem(
 	avm_memcell *content = (avm_memcell *)malloc(sizeof(avm_memcell *));
 	content->type = old_content->type;
 	content->data = old_content->data;
+	if (content->type == 1) {
+		content->data.strVal = strdup(old_content->data.strVal);
+	}
+	if (index->type == 1) {
+		index->data.strVal = strdup(index->data.strVal);
+	}
 	if (tmp == NULL) {
 		avm_hashtable *newelem = (avm_hashtable *)malloc(sizeof(avm_hashtable));
 		newelem->index = index;
@@ -107,7 +113,8 @@ avm_memcell * avm_tablesetelem(
 	}
 	else if (tmp->index->type == table_m && index->type == table_m) {
 		if (tmp->index->data.tableVal == index->data.tableVal) {
-			return tmp->content;
+			tmp->content = content;
+			return NULL;
 		}
 	}
 	tmp = avm_tablegetPreviousHash(table, index);
@@ -115,7 +122,7 @@ avm_memcell * avm_tablesetelem(
 		if (content->type == nil_m) {
 			avm_hashtable *to_remove = tmp->next;
 			tmp->next = to_remove->next;
-			free(to_remove);
+			//free(to_remove);
 		}
 		else tmp->next->content = content;
 	}

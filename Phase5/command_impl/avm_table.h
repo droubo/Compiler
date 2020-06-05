@@ -55,7 +55,7 @@ void execute_tablegetelem(avm_instruction *instr, avm_memory *memory) {
 		else {
 			//char *ts = avm_tostring(t);
 			//char *is = avm_tostring(i);
-			avm_warning("GETELEM not found!");
+			avm_error("GETELEM not found!");
 			//free(ts);
 			//free(is);
 		}
@@ -65,10 +65,11 @@ void execute_tablesetelem(avm_instruction *instr, avm_memory *memory) {
 	avm_memcell *t = avm_translate_operand(instr->result, (avm_memcell *)0);
 	avm_memcell *i = avm_translate_operand(instr->arg1, &memory->ax);
 	avm_memcell *c = avm_translate_operand(instr->arg2, &memory->bx);
-	
+	avm_memcell *tmp;
 	assert(t && &memory->stack[AVM_STACK_SIZE - 1] >= t && t > &memory->stack[memory->top]);
 	assert(i && c);
 	//printf("SETELEM %d %d %d\n", instr->result.val, instr->arg1.val, instr->arg2.val);
+
 
 	if (t->type != table_m) {
 		avm_error("illegal use of type %s as table!", t->type);
