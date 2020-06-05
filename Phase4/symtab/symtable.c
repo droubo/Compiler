@@ -100,7 +100,7 @@ void hide_Scope(SymTable * table, int scope){
 
     currEntry = list->firstSymEntry;
     while(currEntry != NULL){
-        currEntry->isActive = 0;
+        if(currEntry->scope == scope) currEntry->isActive = 0;
         currEntry = currEntry->nextInScope;
     }    
 }
