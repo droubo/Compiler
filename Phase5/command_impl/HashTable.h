@@ -100,34 +100,36 @@ avm_memcell * avm_tablesetelem(
 		return NULL;
 	}
 	if(content->type == nil_m){
-		avm_hashtable *to_remove = tmp;
+		avm_hashtable *to_remove;
 		tmp = avm_tablegetPreviousHash(table, index);
 		if(tmp != NULL) {
-			tmp->next = to_remove->next;
+			to_remove = tmp->next;
+			if(to_remove != NULL) tmp->next = to_remove->next;
+			else tmp->next = NULL;
 			free(to_remove);
 		}
 		return NULL;
 	}
 	while (tmp != NULL) {
-	if (tmp->index->type == number_m && index->type == number_m) {
-		if (tmp->index->data.numVal == index->data.numVal) {
-			tmp->content = content;
-			return NULL;
+		if (tmp->index->type == number_m && index->type == number_m) {
+			if (tmp->index->data.numVal == index->data.numVal) {
+				tmp->content = content;
+				return NULL;
+			}
 		}
-	}
-	else if (tmp->index->type == string_m && index->type == string_m) {
-		if (!strcmp(tmp->index->data.strVal, index->data.strVal)) {
-			tmp->content = content;
-			return NULL;
+		else if (tmp->index->type == string_m && index->type == string_m) {
+			if (!strcmp(tmp->index->data.strVal, index->data.strVal)) {
+				tmp->content = content;
+				return NULL;
+			}
 		}
-	}
-	else if (tmp->index->type == table_m && index->type == table_m) {
-		if (tmp->index->data.tableVal == index->data.tableVal) {
-			tmp->content = content;
-			return NULL;
+		else if (tmp->index->type == table_m && index->type == table_m) {
+			if (tmp->index->data.tableVal == index->data.tableVal) {
+				tmp->content = content;
+				return NULL;
+			}
 		}
-	}
-	tmp = tmp->next;
+		tmp = tmp->next;
 	}
 	tmp = table->table;
 	if (content->type == nil_m) return NULL;

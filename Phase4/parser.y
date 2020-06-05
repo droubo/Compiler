@@ -39,8 +39,8 @@ extern char *yytext;
 extern FILE *yyin;
 extern FILE *yyout;
 SymTable *table;
-unsigned int currscope = 0;
-unsigned int currfunc = 0;
+int currscope = 0;
+int currfunc = 0;
 unsigned int anonym_func_count = 0;
 unsigned int flag_op = 0;
 unsigned int fail_icode = 0;
@@ -719,7 +719,17 @@ primary :
 lvalue : 
 	ID
 	{
-		SymTabEntry *tmp = lookup_SymTable(table, $ID);
+		SymTabEntry *tmp;
+		int tmpfunc = currscope;
+		while(tmpfunc >= currfunc){
+			
+			tmp = lookup_SymTableScope(table, tmpfunc, $ID);
+			if(tmp != NULL) break;
+			tmpfunc--;
+		}
+		if(tmp == NULL){
+			tmp = lookup_SymTableScope(table, 0, $ID);
+		}
 		if (tmp != NULL && tmp->isActive == 1)
 		{
 			if (tmp->scope != 0 && tmp->func_scope != currfunc && strcmp(SymbolTypeToString(tmp->type), "LIBFUNC") && strcmp(SymbolTypeToString(tmp->type), "USERFUNC"))
@@ -778,9 +788,7 @@ lvalue :
 	}
 	| local ID
 	{
-		SymTabEntry *tmp = lookup_SymTable(table, $2);
-
-
+		SymTabEntry *tmp = lookup_SymTableScope(table, currscope, $ID);
 
 		if (tmp != NULL && tmp->isActive == 1)
 		{

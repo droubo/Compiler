@@ -52,7 +52,7 @@ void execute_arithmetic(avm_instruction * instr, avm_memory * memory){
                 || rv1 == &(memory->retval) || rv1 == &(memory->ax));
     if(instr->arg2.type != number_a)    
         assert(rv2 && (&(memory->stack[AVM_STACK_SIZE - 1]) >= rv2 && rv2 > &(memory->stack[memory->top])) 
-                || rv2 == &(memory->retval) || rv2 == &(memory->ax));
+                || rv2 == &(memory->retval) || rv2 == &(memory->bx));
 
     if(rv1->type == string_m && rv2->type == string_m){
         avm_memcellclear(lv);
