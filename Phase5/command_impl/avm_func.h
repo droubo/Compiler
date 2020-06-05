@@ -112,8 +112,9 @@ void execute_call (avm_instruction * instr, avm_memory * memory) {
 void execute_pusharg (avm_instruction * instr, avm_memory * memory) {
     
     assert(instr->opcode == pusharg_v);
-
+    //printf("type inst : %d ,  value : %d\n",instr->result.type,instr->result.val);
     avm_memcell * arg = avm_translate_operand(instr->result,&(memory->ax));
+
     avm_assign(&(memory->stack[memory->top]),arg);
     memory->totalActuals++;
     avm_dec_top(memory);

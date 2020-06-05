@@ -779,6 +779,9 @@ lvalue :
 	| local ID
 	{
 		SymTabEntry *tmp = lookup_SymTable(table, $2);
+
+
+
 		if (tmp != NULL && tmp->isActive == 1)
 		{
 			if (!strcmp(SymbolTypeToString(tmp->type), "LIBFUNC"))
@@ -798,11 +801,26 @@ lvalue :
 			/* insert local on different scope */
 			else
 			{
+				if(tmp != NULL) printf("var name : %s , scope : %d\n",tmp->name,tmp->scope);
 				tmp = insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, currfunc, LOCAL));
 				tmp->space = currscopespace();
 				tmp->offset = currscopeoffset();
 				inccurrscopeoffset();
 			}
+		}
+		else if (tmp != NULL && tmp->isActive == 0)
+		{
+			/* exist in another scope , so insert*/
+			SymbolType type;
+			if (currscope == 0)
+				type = GLOBAL;
+			else
+				type = LOCAL;
+			tmp = insert_SymTable(table, new_SymTabEntry($2, yylineno, 1, new_Variable(NULL), new_Function(NULL), currscope, currfunc, type));
+			tmp->space = currscopespace();
+			tmp->offset = currscopeoffset();
+			inccurrscopeoffset();
+			
 		}
 		/* insert local */
 		else if (tmp == NULL)
@@ -812,6 +830,7 @@ lvalue :
 			tmp->offset = currscopeoffset();
 			inccurrscopeoffset();
 		}
+
 		$$ = lvalue_expr(tmp);
 	}
 	| DOUBLE_COLON ID
@@ -1555,10 +1574,13 @@ int main(int argc, char **argv)
 
 	else
 		printf("Errors present. I-Code / Binary File Generation has failed.\n");
-
-	FILE* binary_file = fopen("output.abc","wb");
-	generate();
-	print_instructions(binary_file, yylineno);
-	printf("Binary file \"output.abc\" ready.\n");
+	
+	if(fail_icode == 0)
+	{
+		FILE* binary_file = fopen("output.abc","wb");
+		generate();
+		print_instructions(binary_file, yylineno);
+		printf("Binary file \"output.abc\" ready.\n");
+	}
 	return 0;
 }

@@ -99,6 +99,16 @@ avm_memcell * avm_tablesetelem(
 		global_tmp = newelem;
 		return NULL;
 	}
+	if(content->type == nil_m){
+		avm_hashtable *to_remove = tmp;
+		tmp = avm_tablegetPreviousHash(table, index);
+		if(tmp != NULL) {
+			tmp->next = to_remove->next;
+			free(to_remove);
+		}
+		return NULL;
+	}
+	while (tmp != NULL) {
 	if (tmp->index->type == number_m && index->type == number_m) {
 		if (tmp->index->data.numVal == index->data.numVal) {
 			tmp->content = content;
@@ -117,14 +127,7 @@ avm_memcell * avm_tablesetelem(
 			return NULL;
 		}
 	}
-	tmp = avm_tablegetPreviousHash(table, index);
-	if (tmp != NULL) {
-		if (content->type == nil_m) {
-			avm_hashtable *to_remove = tmp->next;
-			tmp->next = to_remove->next;
-			//free(to_remove);
-		}
-		else tmp->next->content = content;
+	tmp = tmp->next;
 	}
 	tmp = table->table;
 	if (content->type == nil_m) return NULL;

@@ -57,7 +57,7 @@ void make_operand(expr* e, vmarg* arg){
 	    case assignexpr_e:
         case retval_e:
         case newtable_e: {
-            arg->num_val = e->sym->offset;
+            arg->num_val = (double) e->sym->offset;
             arg->str_val = strdup(e->sym->name);
             switch(e->sym->space){
                 case programvar:

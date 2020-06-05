@@ -279,7 +279,7 @@ char* avm_tostring(avm_memcell* cell)
 	        	   		printf("%s", s);
                    		free(s);
                		}
-	        	} else printf("table @%d\n", tbl->index->data.tableVal);
+	        	} else avm_tostring(tbl->index);
 	        	printf(" : ");
 	        	if (tbl->content->type != table_m) {
 	        		char* s = avm_tostring(tbl->content);
@@ -288,6 +288,9 @@ char* avm_tostring(avm_memcell* cell)
                    		free(s);
                		}
 	        	}
+                else {
+                    avm_tostring(tbl->content);
+                }
 
 	        	if (tbl->next != NULL) printf(", ");
 	        	else printf("}");
